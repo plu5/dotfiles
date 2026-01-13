@@ -1,0 +1,25 @@
+[Color]
+textColor=218,237,255
+
+[Font]
+hourFont=Sans Serif,128,-1,5,50,0,0,0,0,0
+minFont=Sans Serif,128,-1,5,50,0,0,0,0,0
+
+[General]
+menuBarNeverShown=false
+showLapSecondFractions=false
+showSecondFractions=false
+
+[MainWindow]
+1280x720 screen: Height=704
+1280x720 screen: Width=1280
+1280x720 screen: XPosition=0
+1280x720 screen: YPosition=16
+1920x1080 screen: Height=507
+1920x1080 screen: Width=1014
+1920x1080 screen: XPosition=2
+1920x1080 screen: YPosition=571
+State=AAAA/wAAAAD9AAAAAAAABQAAAAJxAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAWAG0AYQBpAG4AVABvAG8AbABCAGEAcgEAAAAA/////wAAAAAAAAAA
+StatusBar=Disabled
+ToolBarsMovable=Disabled
+eDP-1=eDP-1

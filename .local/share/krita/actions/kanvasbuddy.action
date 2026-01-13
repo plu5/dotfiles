@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionCollection version="2" name="KanvasBuddy">
+    <Actions category="Scripts">
+        <text>KanvasBuddy</text>
+
+        <Action name="kanvasbuddy">
+        <icon></icon>
+        <text>Launch KanvasBuddy</text>
+        <whatsThis>Minimalist toolbar for Krita</whatsThis>
+        <toolTip>Minimalist toolbar for Krita</toolTip>
+        <iconText>KB</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+k</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="kanvasbuddy2">
+        <icon></icon>
+        <text>KanvasBuddy switch between panels</text>
+        <whatsThis>Minimalist toolbar for Krita</whatsThis>
+        <toolTip>Minimalist toolbar for Krita</toolTip>
+        <iconText>KB</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+shift+k</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="kanvasbuddy3">
+        <icon></icon>
+        <text>KanvasBuddy switch between panels inverse</text>
+        <whatsThis>Minimalist toolbar for Krita</whatsThis>
+        <toolTip>Minimalist toolbar for Krita</toolTip>
+        <iconText>KB</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+shift+alt+k</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+    </Actions>
+</ActionCollection>

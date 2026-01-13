@@ -1,0 +1,3 @@
+- S :: open shell in pwd
+- C-d :: return from shell to ranger. also possible with entering exit
+- yp :: copy path

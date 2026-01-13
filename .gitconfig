@@ -1,0 +1,13 @@
+[user]
+	name = plus
+	email = plu5@users.noreply.github.com
+[safe]
+	directory = /media/Windows/Users/pm/*
+[alias]
+	postpr = !git fetch origin main:main && git switch --force-create dev-pr dev && git rebase origin/main && git push --force-with-lease origin dev-pr && git push origin dev && git switch dev
+	prepr = "!git fetch origin main:main && git switch --force-create dev-pr dev && git rebase --onto origin/main @~\"${1}\" dev-pr --autostash && git push --force-with-lease origin dev-pr && git push origin dev && git switch dev #"
+[core]
+	editor = nano
+	autocrlf = input
+[init]
+	defaultBranch = main

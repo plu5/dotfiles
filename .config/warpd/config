@@ -1,0 +1,45 @@
+hint_size: 33
+hint_bgcolor: 00800055
+hint_fgcolor: ffffffff
+# not working properly. = doesn't let me exit out of hint mode but yes out of normal mode. 9 lets me exit out of hint mode but gets stuck in normal mode and makes 0 not work after
+#exit: q equal 9
+exit: q equal minus
+hint_font: SourceCodePro
+# hint_border_radius: 10 # lag
+hint_border_radius: 0
+scroll_down: e apostrophe space
+scroll_up: r bracketleft S-space
+drag: v n
+# hint: x 0
+# because by default it's n - / and minus i click by accident and it exits me, so putting it out of the way. but alas it does not work and it still presses mouse 2 and exits me when i press - :-/
+# oneshot_buttons: 1 2 3
+# ^ these hotkeys work but it doesn't disable the original ones. i guess i have to bind minus to do something else to prevent it from being used for oneshot.
+# "unbind is not a valid key name" but it should work https://github.com/rvaiya/warpd/issues/245
+# oneshot_buttons: unbind
+# hint_exit: minus
+# hint: minus
+
+# i give in
+up: o
+left: k
+down: l
+right: semicolon slash
+
+start: K
+end: colon
+top: O
+bottom: L
+middle: less
+# there's no key to centre horizontally. "middle" only centres vertically. but a trick is to activate grid mode with g that puts the cursor at the centre of the screen then quit it with q. or:
+grid_exit: g
+# that works. with this it lets you press g two times to go to the centre (it enters and exits grid mode) also useful in that it flashes on the screen a bit which would help if i lose cursor position which is usually why i want to centre it.
+grid: g j
+grid_exit: g j
+
+# utile : a d pour accélerer et decelerer
+
+indicator: topleft
+
+scroll_speed: 350
+
+# remember to put an empty line at the end of script or it fails

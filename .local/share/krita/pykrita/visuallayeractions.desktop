@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=visuallayeractions
+X-Python-2-Compatible=false
+X-Krita-Manual=manual.html
+Name=visuallayeractions
+Comment=Layer actions with feedback

@@ -1,0 +1,87 @@
+#! /bin/sh
+
+xrandr --output eDP-1 --mode 1280x720
+
+~/pm/scripts/toggle_internal_kbd.sh disable # disable internal keyboard bc i'm probably using external. maybe should check if if external is connected or not in future
+# ~/pm/scripts/toggle_internal_kbd.sh enable
+
+pgrep -x sxhkd > /dev/null || sxhkd &
+
+bspc monitor -d 1 2 3 4 5 6 7 8 9 0
+
+bspc config border_width         0 # 2
+bspc config window_gap           0 # 12 # 0
+
+bspc config split_ratio          0.52
+bspc config borderless_monocle   true
+bspc config gapless_monocle      true
+
+# Border colors
+# bspc config normal_border_color "#1a1a1a"
+# bspc config focused_border_color "#000000"
+# bspc config urgent_border_color "#B58900"
+# bspc config presel_border_color "#26E2FF"
+# #5f9ea0
+# i just don't use borders bc too ugly and problematic if we only have one window open. to see which window is focused have to consult the window itself or the polybar title. sometimes it's not obvious i'll admit so it's not ideal but borders are too ugly
+# it actually helps to have a small amount of border so you can tell the difference between a monocled and unmonocled window when you press super-m in a workspace with only one window
+
+# bspc rule -a "*" split_dir=left
+bspc rule -a '*:*:Picture-in-Picture' state=floating # firefox picture-in-picture, curtesy of hymat. remains resizeable. to reposition, hold super and drag with mouse
+bspc rule -a 'Magnus' state=floating
+bspc rule -a 'Peek' state=floating
+
+xsettingsd &
+
+polybar &
+nm-applet &
+~/.fehbg &
+# --bg-fill
+# feh --bg-scale ~/pm/r/wallpapers/diablo3-belialtempcolor1.jpg
+#exploded-thinkpad-t480.png
+# emacs ~/pm/verdicts ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc &
+xsetroot -cursor_name left_ptr &
+alttab -w 1 -d 1 & # without -w 1 it gets populated with garbage if autostarted. the -d 1 is to get windows across all workspaces
+
+dunst &
+
+# emacs &
+# dropbox &
+# autokey-gtk &
+
+# connect apms:
+# systemctl start bluetooth
+# bluetoothctl connect 08:FF:44:1E:52:CA
+
+# eisenhour
+# export NODE_OPTIONS=--openssl-legacy-provider
+# npm start --prefix /media/Windows/Users/pm/dev/eisenhour > /media/Windows/Users/pm/dev/eisenhour/eisenhour-logfile 2>&1 &
+# firefox &
+
+# onedrive
+[ -e "/media/pnotes/Day One" ] && onedrive -m > ~/OneDrive-log.txt 2>&1 &
+
+# bspc rule -a thunar -o desktop="^2" split_ratio=0.7
+# thunar &
+
+# sleep 2
+bspc rule -a '*:*:2nd - GNU Emacs at pos' desktop="^2"
+# emacs "/media/pnotes/PlainText 2/pers/gtd/2025.org" &
+emacs &
+
+bspc config external_rules_command $HOME/.config/bspwm/external_rules.sh
+
+# take screenshot with clipping region:
+# maim -s ~/pm/r/screen/name.png
+
+# firefox &
+
+# sleep 5
+# bspc rule -a kasts -o desktop="^2"
+# kasts &
+
+# start thing that allows hotspot:
+# systemctl start usbmuxd
+
+# systemctl start sonixkbd.service --user
+# systemctl start wacom.service --user
+# ^ ils sont enabled alors pas besoin

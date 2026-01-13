@@ -1,0 +1,55 @@
+[global]
+   # font = SourceCodePro 14
+   font = MiscTamsyn 14
+   format = "%s %p\n%b"
+   height = (0, 600)
+   width = (0, 600)
+   frame_width = 1
+   offset = (0, 17)
+   shrink = yes
+   separator_color = "#333333"
+   separator_height = 5
+   # ça ne marche pas
+   # mouse_right_click = context
+   mouse_left_click = do_action, close_current
+   show_indicators = no #yes
+   dmenu = /usr/bin/dmenu -p dunst:
+   browser = /usr/bin/xdg-open
+   # c'est seulement pour une ligne pas pour le message entier malheureusement. aucune indication s'il est trop long.
+   ellipsize = end
+   indicate_hidden = yes
+   # grumpyrumpus (cf en dessous)
+   frame_color = "#b4befe"
+   separator_color= frame
+   highlight = "#74c7ec"
+   background = "#1e1e2e"
+   foreground = "#cdd6f4"
+
+[urgency_normal]
+    background = "#000000"
+    frame_color = "#8b7500"
+    foreground = "#ffffff"
+
+# [onedrive]
+#    appname = onedrive
+#    summary = OneDrive Client for Linux
+#    body = Skipping item*
+#    skip_display=true
+
+# j'utilise maintenant au lieu de ça un script qui utilise `dunstctl history` et ouvre un dmenu/rofi avec les dernières notifications et on peut choisir lequel recopier. car avec actions elles ne marchent plus après que la notification ferme la première fois ; les notifications qu'on renvoie avec history-pop n'ont pas d'action
+# [copyhack]
+#    appname = notify-send
+#    script = ~/pm/scripts/dunstaction
+
+# GrumpyRumpus https://github.com/GrumpyRumpus/dotfiles/blob/main/.config/dunst/dunstrc https://github.com/dunst-project/dunst/issues/826
+[urgency_low]
+foreground = "#a6e3a1"
+frame_color = "#a6e3a1"
+
+[urgency_normal]
+foreground = "#74c7ec"
+frame_color = "#74c7ec"
+
+[urgency_critical]
+foreground = "#f38ba8"
+frame_color = "#f38ba8"

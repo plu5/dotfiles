@@ -1,0 +1,1 @@
+from .hidenews import *

@@ -1,0 +1,386 @@
+scroll_up j
+scroll_down k
+scroll_left h
+scroll_right l
+mirror numbersign
+# prev_dir
+# next_dir
+# prev_img bracketleft S-space Left comma
+# next_img bracketright space Right period
+prev_img comma S-space Left
+next_img period space Right
+# next_img n space Right apostrophe at bracketright
+# prev_img p BackSpace Left S-space bracketleft
+toggle_menu
+zoom_in  Up n 
+zoom_out Down m
+# zoom_default d
+# zoom_fit s
+
+# I only hit these accidentally
+save_image
+save_filelist
+
+# KEYS CONFIG SYNTAX
+#        .config/feh/keys defines key bindings.  It has entries of the form "action [key1 [key2 [key3]]]".
+
+#        Each key is an X11 keysym name as shown by xev(1), like "Delete".  It may optionally  start  with  modifiers
+#        for  things like Control, in which case key looks like mod-keysym (for example "C-Delete" for Ctrl+Delete or
+#        "C-1-Delete" for Ctrl+Alt+Delete)
+
+#        Available modifiers are C for Control, S for Shift and 1, 4 for Mod1 and Mod4.  To match an uppercase letter
+#        like "S" instead of "s", the Shift modifier is not required.
+
+#        Specifying an action without any keys unbinds it (i.e. the default bindings are removed).
+# ...skipping...
+
+# KEYS
+#        The  following  actions  and  default  key bindings can be used in an image window.  (The strings in [square
+#        brackets] are the config action names).  If feh is running inside a terminal and its standard input  is  not
+#        used for images or filelists, key input from the terminal is also accepted.  However, terminal input support
+#        is  currently  limited  to  most alphanumeric characters (0-9 a-z A-Z and some more), arrow keys, return and
+#        backspace.  The Alt (Mod1) modifier is also supported.
+
+#        a [toggle_actions]
+#                Toggle actions display (see --draw-actions)
+
+#        A [toggle_aliasing]
+#                Enable/Disable anti-aliasing
+
+#        c [toggle_caption]
+#                Caption entry mode.  If --caption-path has been specified, then this enables caption  editing.   The
+#                caption  at  the bottom of the screen will turn yellow and can be edited.  Hit return to confirm and
+#                save the caption, or escape to cancel editing.  Note that you can insert an actual newline into  the
+#                caption using ⟨Ctrl+return⟩.
+
+#        d [toggle_filenames]
+#                Toggle filename display (see --draw-filename)
+
+#        e [toggle_exif]
+#                (optional feature, available in this build) Toggle EXIF tag display
+
+#        f [toggle_fullscreen]
+#                Toggle fullscreen
+
+#        g [toggle_fixed_geometry]
+#                Enable/Disable automatic window resize when changing images.
+
+#        h [toggle_pause]
+#                Pause/Continue  the  slideshow.  When it is paused, it will not automatically change slides based on
+#                --slideshow-delay.
+
+#        i [toggle_info]
+#                Toggle info display (see --info)
+
+#        k [toggle_keep_vp]
+#                Toggle zoom and viewport keeping.  When enabled, feh will keep zoom and X, Y offset  when  switching
+#                images.
+
+#        L [save_filelist]
+#                Save  the  current  filelist  as  "feh_PID_ID_filelist".   It is saved in the directory specified by
+#                --output-dir, if set, and in the current working directory otherwise.
+
+#        m [toggle_menu]
+#                Show menu.  Use the arrow keys and return to select items, and ⟨escape⟩ to close the menu.
+
+#        n, ⟨space⟩, ⟨Right⟩ [next_img]
+#                Show next image.  Selects the next image in thumbnail mode.
+
+#        o [toggle_pointer]
+#                Toggle pointer visibility
+
+#        p, ⟨BackSpace⟩, ⟨Left⟩ [prev_img]
+#                Show previous image.  Selects the previous image in thumbnail mode.
+
+#        q, ⟨Escape⟩ [quit]
+#                Quit feh
+
+#        r [reload_image]
+#                Reload current image.  Useful for webcams
+
+#        s [save_image]
+#                Save the current image as  "feh_PID_ID_FILENAME".   It  is  saved  in  the  directory  specified  by
+#                --output-dir, if set, and in the current working directory otherwise.
+
+#        w [size_to_image]
+#                Change  window  size  to fit current image size (plus/minus zoom, if set).  In scale-down and fixed-
+#                geometry mode, this also updates the window size limits.
+
+#        x [close]
+#                Close current window
+
+#        z [jump_random]
+#                Jump to a random position in the current filelist
+
+#        Z [toggle_auto_zoom]
+#                Toggle auto-zoom.
+
+#        [, ] [prev_dir, next_dir]
+#                Jump to the first image of the previous or next sequence of images sharing a directory name  in  the
+#                current filelist.  Use --sort dirname if you would like to ensure that all images in a directory are
+#                grouped together.
+
+#        <, > [orient_3, orient_1]
+#                rotate the image 90 degrees (counter)clockwise.
+
+#                When  --edit is used, this also rotates the image in the underlying file.  Rotation is lossless, but
+#                may create artifacts in some image corners when used with JPEG images.  Rotating in the reverse  di‐
+#                rection  will  make them go away.  See jpegtran(1) for more about lossless JPEG rotation.  Note: feh
+#                assumes that this feature is used to normalize image orientation.  For JPEG images, it will uncondi‐
+#                tionally set the EXIF orientation  tag  to  1  ("0,0  is  top  left")  after  every  rotation.   See
+#                jpegexiforient(1) for details on how to change this flag.
+
+#        _ [flip]
+#                Vertically  flip  image.  When --edit is used, this also flips the image in the underlying file (see
+#                above).
+
+#        | [mirror]
+#                Horizontally flip image.  When --edit is used, this also flips the image in the underlying file (see
+#                above).
+
+#        0 .. 9 [action_0 .. action_9]
+#                Execute the corresponding action (0 = --action, 1 = --action1 etc.)
+
+#        ⟨Return⟩ [action_0]
+#                Run the command defined by --action
+
+#        ⟨Home⟩ [jump_first]
+#                Show first image
+
+#        ⟨End⟩ [jump_last]
+#                Show last image
+
+#        ⟨page up⟩ [jump_fwd]
+#                Go forward ~5% of the filelist
+
+#        ⟨page down⟩ [jump_back]
+#                Go backward ~5% of the filelist
+
+#        + [reload_plus]
+#                Increase reload delay by 1 second
+
+#        - [reload_minus]
+#                Decrease reload delay by 1 second
+
+#        ⟨Delete⟩ [remove]
+#                Remove current file from filelist
+
+#        ⟨Ctrl+Delete⟩ [delete]
+#                Remove current file from filelist and delete it
+
+#        ⟨keypad Left⟩, ⟨Ctrl+Left⟩ [scroll_left]
+#                Scroll to the left
+
+#        ⟨keypad Right⟩, ⟨Ctrl+Right⟩ [scroll_right]
+#                Scroll to the right
+
+#        ⟨keypad up⟩, ⟨Ctrl+Up⟩ [scroll_up]
+#                Scroll up
+
+#        ⟨keypad Down⟩, ⟨Ctrl+Down⟩ [scroll_down]
+#                Scroll down.  Note that the scroll keys work without anti-aliasing for performance reasons; hit  the
+#                render key after scrolling to anti-alias the image.
+
+#        ⟨Alt+Left [scroll_left_page]⟩
+#                Scroll to the left by one page
+
+#        ⟨Alt+Right [scroll_right_page]⟩
+#                Scroll to the right by one page
+
+#        ⟨Alt+Up [scroll_up_page]⟩
+#                Scroll up by one page
+
+#        ⟨Alt+Down [scroll_down_page]⟩
+#                Scroll down by one page
+
+#        R, ⟨keypad begin⟩ [render]
+#                Anti-alias the image.  Opens the currently selected image in thumbnail mode.
+
+#        ⟨keypad +⟩, ⟨Up⟩ [zoom_in]
+#                Zoom in
+
+#        ⟨keypad -⟩, ⟨Down⟩ [zoom_out]
+#                Zoom out
+
+#        *, ⟨keypad *⟩ [zoom_default]
+#                Zoom to 100%
+
+#        /, ⟨keypad /⟩ [zoom_fit]
+#                Zoom to fit the window size
+
+#        ! [zoom_fill]
+#                Zoom to fill the window size like --bg-fill
+
+#    MENU KEYS
+#        The following keys bindings are used for the feh menu:
+
+#        ⟨Escape⟩ [menu_close]
+#                Close the menu
+
+#        ⟨Up⟩ [menu_up]
+#                Highlight previous menu item
+
+#        ⟨Down⟩ [menu_down]
+
+#    MENU KEYS
+#        The following keys bindings are used for the feh menu:
+
+#        ⟨Escape⟩ [menu_close]
+#                Close the menu
+
+#        ⟨Up⟩ [menu_up]
+#                Highlight previous menu item
+
+#        ⟨Down⟩ [menu_down]
+#                Highlight next menu item
+
+#        ⟨Left⟩ [menu_parent]
+#                Highlight parent menu item
+
+#        ⟨Right⟩ [menu_child]
+#                Highlight child menu item
+
+#        ⟨Return⟩, ⟨space⟩ [menu_select]
+#                Select highlighted menu item
+
+# BUTTONS CONFIG SYNTAX
+#        .config/feh/buttons.  This works like the keys config file: the entries are of the form "action [binding]".
+
+#        Each  binding  is a button number.  It may optionally start with modifiers for things like Control, in which
+#        case binding looks like mod-button (for example C-1 for Ctrl + Left button).
+
+#        Note: Do not use the same button for multiple actions.  feh does not  check  for  conflicting  bindings,  so
+#        their  behaviour is undefined.  Either unbind the unwanted action, or bind it to another unused button.  The
+#        order in which you bind / unbind does not matter, though.
+
+#        For the available modifiers, see “KEYS CONFIGURATION SYNTAX”.
+
+#    BUTTONS
+#        In an image window, the following buttons may be used (The strings  in  [square  brackets]  are  the  config
+#        action names).  Additionally, all actions specified in the “KEYS” section can also be bound to a button.
+
+#        unbound [reload]
+#                Reload current image
+
+#        0 ⟨cursor movement while not panning, zooming, or similar⟩
+#                Does not have a default binding.  By binding it to quit, you can turn feh into a simple screensaver.
+
+#        1 ⟨left mouse button⟩ [pan]
+#                pan the current image
+
+#        2 ⟨middle mouse button⟩ [zoom]
+#                Zoom the current image
+
+#        3 ⟨right mouse button⟩ [toggle_menu]
+#                Toggle menu
+
+
+#        4 ⟨mousewheel down⟩ [prev_img]
+#                Show previous image
+
+#        5 ⟨mousewheel up⟩ [next_img]
+#                Show next image
+
+#        Ctrl+1 [blur]
+#                Blur current image
+
+#        Ctrl+2 [rotate]
+#                Rotate current image
+
+#        unbound [zoom_in]
+#                Zoom in
+
+
+#        unbound [zoom_in]
+#                Zoom in
+
+#        unbound [zoom_out]
+#                Zoom out
+
+# MOUSE ACTIONS
+#        Default  Bindings:  When  viewing  an  image,  mouse button 1 pans the image (moves it around) or, when only
+#        clicked, moves to the next image (slideshow mode only).  Quick drags with less than 2px of movement per axis
+#        will be treated as clicks to aid graphics tablet users.  Mouse button 2 zooms (click and drag left->right to
+#        zoom in, right->left to zoom out, click once to restore zoom to 100%) and mouse button 3 opens the menu.
+
+#        Ctrl+Button 1 blurs or sharpens the image (drag left to blur, right to sharpen); Ctrl+Button 2  rotates  the
+#        image around the center point.
+
+#        A note about pan and zoom modes: In pan mode, if you reach a window border but haven't yet panned to the end
+#        of the image, feh will warp your cursor to the opposite border so you can continue panning.
+
+#        When  clicking  the  zoom  button  and  immediately releasing it, the image will be back at 100% zoom.  When
+#        clicking it and moving the mouse while holding the button down, the zoom will be continued at  the  previous
+#        zoom  level.   The zoom will always happen so that the pixel on which you entered the zoom mode remains sta‐
+#        tionary.  So, to enlarge a specific part of an image, click the zoom button on that part.
+
+# SIGNALS
+#        In slideshow and multiwindow mode, feh handles the following signals:
+
+#        SIGUSR1
+#                Slideshow mode: switch to next image; reload current image if the slideshow  consists  of  a  single
+#                file.  Multiwindow mode: reload all images.
+
+#        SIGUSR2
+#                Slideshow mode: switch to previous image; reload current image if the slideshow consists of a single
+#                file.  Multiwindow mode: reload all images.
+
+# USAGE EXAMPLES
+#        Here are some examples of useful option combinations.  See also: ⟨https://feh.finalrewind.org/examples/⟩
+
+#        feh ~/Pictures
+#                Show all images in ~/Pictures
+
+#        feh -r ~/Pictures
+#                Recursively show all images found in ~/Pictures and subdirectories
+
+#        feh -rSfilename --version-sort ~/Pictures
+#                Same  as  above,  but  sort naturally.  By default, feh will show files in the string order of their
+#                names, meaning e.g.  "foo 10.jpg" will come before "foo 2.jpg".  In this case, they are instead  or‐
+#                dered as a human would expect.
+
+#        feh -t -Sfilename -E 128 -y 128 -W 1024 ~/Pictures
+#                Show 128x128 pixel thumbnails, limit window width to 1024 pixels.
+
+#        feh  -t  -Sfilename  -E  128  -y  128  -W  1024  -P -C /usr/share/fonts/truetype/ttf-dejavu/ -e DejaVuSans/8
+#                ~/Pictures
+#                Same as above, but enable thumbnail caching and use a smaller font.
+
+#        feh -irFarial/14 -O index.jpg ~/Pictures
+#                Make an index print of ~/Pictures and all directories below it, using 14 point Arial  to  write  the
+#                image info under each thumbnail.  Save the image as index.jpg and don't display it, just exit.  Note
+#                that this even works without a running X server
+
+#        feh --unloadable -r ~/Pictures
+#                Print all unloadable images in ~/Pictures, recursively
+
+#        feh -f by_width -S width --reverse --list .
+#                Write a list of all images in the directory to by_width, sorted by width (widest images first)
+
+#        feh -w ~/Pictures/holidays
+#                Open each image in ~/Pictures/holidays in its own window
+
+#        feh -FD5 -Sname ~/Pictures/presentation
+#        zoom in, right->left to zoom out, click once to restore zoom to 100%) and mouse button 3 opens the menu.
+
+#        Ctrl+Button 1 blurs or sharpens the image (drag left to blur, right to sharpen); Ctrl+Button 2  rotates  the
+#        image around the center point.
+
+#        A note about pan and zoom modes: In pan mode, if you reach a window border but haven't yet panned to the end
+#        of the image, feh will warp your cursor to the opposite border so you can continue panning.
+
+#        When  clicking  the  zoom  button  and  immediately releasing it, the image will be back at 100% zoom.  When
+#        clicking it and moving the mouse while holding the button down, the zoom will be continued at  the  previous
+#        zoom  level.   The zoom will always happen so that the pixel on which you entered the zoom mode remains sta‐
+#        tionary.  So, to enlarge a specific part of an image, click the zoom button on that part.
+
+# SIGNALS
+#        In slideshow and multiwindow mode, feh handles the following signals:
+
+#        SIGUSR1
+#                Slideshow mode: switch to next image; reload current image if the slideshow  consists  of  a  single
+#                file.  Multiwindow mode: reload all images.
+
+#        SIGUSR2
+#                Slideshow mode: switch to previous image; reload current image if the slideshow consists of a single
+#                file.  Multiwindow mode: reload all images.

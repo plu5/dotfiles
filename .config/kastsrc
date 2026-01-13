@@ -1,0 +1,12 @@
+[Appearance]
+ColorScheme=Breeze Dark
+alwaysShowFeedTitles=true
+showPodcastTitle=true
+showTrayIcon=true
+trayIconType=Colorful
+
+[Playback Settings]
+playbackRates=100,130,200
+
+[UiSettings]
+ColorScheme=Breeze Dark

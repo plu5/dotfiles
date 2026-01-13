@@ -1,0 +1,674 @@
+/*
+configuration {
+	modes: "run,ssh,calc,filebrowser,keys";
+		m:                "-4";
+	lines:            10;
+	show-match:       false;
+	sidebar-mode:     false;
+/*	font: "mono 12";*/
+/*	location: 0;*/
+/*	yoffset: 0;*/
+/*	xoffset: 0;*/
+/*	fixed-num-lines: true;*/
+/*	show-icons: false;*/
+/*	terminal: "rofi-sensible-terminal";*/
+/*	ssh-client: "ssh";*/
+/*	ssh-command: "{terminal} -e {ssh-client} {host} [-p {port}]";*/
+/*	run-command: "{cmd}";*/
+/*	run-list-command: "";*/
+/*	run-shell-command: "{terminal} -e {cmd}";*/
+/*	window-command: "wmctrl -i -R {window}";*/
+/*	window-match-fields: "all";*/
+/*	icon-theme: ;*/
+/*	drun-match-fields: "name,generic,exec,categories,keywords";*/
+/*	drun-categories: ;*/
+/*	drun-show-actions: false;*/
+/*	drun-display-format: "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";*/
+/*	drun-url-launcher: "xdg-open";*/
+/*	disable-history: false;*/
+/*	ignored-prefixes: "";*/
+/*	sort: false;*/
+/*	sorting-method: "normal";*/
+/*	case-sensitive: false;*/
+/*	cycle: true;*/
+/*	sidebar-mode: false;*/
+/*	hover-select: false;*/
+/*	eh: 1;*/
+/*	auto-select: false;*/
+/*	parse-hosts: false;*/
+/*	parse-known-hosts: true;*/
+/*	combi-modes: "window,run";*/
+/*	matching: "normal";*/
+/*	tokenize: true;*/
+/*	m: "-5";*/
+/*	filter: ;*/
+/*	dpi: -1;*/
+/*	threads: 0;*/
+/*	scroll-method: 0;*/
+/*	window-format: "{w}    {c}   {t}";*/
+	click-to-exit: true;
+/*	max-history-size: 25;*/
+/*	combi-hide-mode-prefix: false;*/
+/*	combi-display-format: "{mode} {text}";*/
+/*	matching-negate-char: '-' /* unsupported */;*/
+/*	cache-dir: ;*/
+/*	window-thumbnail: false;*/
+/*	drun-use-desktop-cache: false;*/
+/*	drun-reload-desktop-cache: false;*/
+/*	normalize-match: false;*/
+/*	steal-focus: false;*/
+/*	application-fallback-icon: ;*/
+/*	refilter-timeout-limit: 8192;*/
+/*	xserver-i300-workaround: false;*/
+/*	pid: "/run/user/1000/rofi.pid";*/
+/*	display-window: ;*/
+/*	display-windowcd: ;*/
+/*	display-run: ;*/
+/*	display-ssh: ;*/
+/*	display-drun: ;*/
+/*	display-combi: ;*/
+/*	display-keys: ;*/
+/*	display-filebrowser: ;*/
+/*	kb-primary-paste: "Control+V,Shift+Insert";*/
+/*	kb-secondary-paste: "Control+v,Insert";*/
+/*	kb-clear-line: "Control+w";*/
+/*	kb-move-front: "Control+a";*/
+/*	kb-move-end: "Control+e";*/
+/*	kb-move-word-back: "Alt+b,Control+Left";*/
+/*	kb-move-word-forward: "Alt+f,Control+Right";*/
+/*	kb-move-char-back: "Left,Control+b";*/
+/*	kb-move-char-forward: "Right,Control+f";*/
+/*	kb-remove-word-back: "Control+Alt+h,Control+BackSpace";*/
+/*	kb-remove-word-forward: "Control+Alt+d";*/
+/*	kb-remove-char-forward: "Delete,Control+d";*/
+/*	kb-remove-char-back: "BackSpace,Shift+BackSpace,Control+h";*/
+/*	kb-remove-to-eol: "Control+k";*/
+/*	kb-remove-to-sol: "Control+u";*/
+/*	kb-accept-entry: "Control+j,Control+m,Return,KP_Enter";*/
+/*	kb-accept-custom: "Control+Return";*/
+/*	kb-accept-custom-alt: "Control+Shift+Return";*/
+/*	kb-accept-alt: "Shift+Return";*/
+/*	kb-delete-entry: "Shift+Delete";*/
+/*	kb-mode-next: "Shift+Right,Control+Tab";*/
+/*	kb-mode-previous: "Shift+Left,Control+ISO_Left_Tab";*/
+/*	kb-mode-complete: "Control+l";*/
+/*	kb-row-left: "Control+Page_Up";*/
+/*	kb-row-right: "Control+Page_Down";*/
+/*	kb-row-up: "Up,Control+p";*/
+/*	kb-row-down: "Down,Control+n";*/
+/*	kb-row-tab: "";*/
+/*	kb-element-next: "Tab";*/
+/*	kb-element-prev: "ISO_Left_Tab";*/
+/*	kb-page-prev: "Page_Up";*/
+/*	kb-page-next: "Page_Down";*/
+/*	kb-row-first: "Home,KP_Home";*/
+/*	kb-row-last: "End,KP_End";*/
+/*	kb-row-select: "Control+space";*/
+/*	kb-screenshot: "Alt+S";*/
+/*	kb-ellipsize: "Alt+period";*/
+/*	kb-toggle-case-sensitivity: "grave,dead_grave";*/
+/*	kb-toggle-sort: "Alt+grave";*/
+/*	kb-cancel: "Escape,Control+g,Control+bracketleft";*/
+/*	kb-custom-1: "Alt+1";*/
+/*	kb-custom-2: "Alt+2";*/
+/*	kb-custom-3: "Alt+3";*/
+/*	kb-custom-4: "Alt+4";*/
+/*	kb-custom-5: "Alt+5";*/
+/*	kb-custom-6: "Alt+6";*/
+/*	kb-custom-7: "Alt+7";*/
+/*	kb-custom-8: "Alt+8";*/
+/*	kb-custom-9: "Alt+9";*/
+/*	kb-custom-10: "Alt+0";*/
+/*	kb-custom-11: "Alt+exclam";*/
+/*	kb-custom-12: "Alt+at";*/
+/*	kb-custom-13: "Alt+numbersign";*/
+/*	kb-custom-14: "Alt+dollar";*/
+/*	kb-custom-15: "Alt+percent";*/
+/*	kb-custom-16: "Alt+dead_circumflex";*/
+/*	kb-custom-17: "Alt+ampersand";*/
+/*	kb-custom-18: "Alt+asterisk";*/
+/*	kb-custom-19: "Alt+parenleft";*/
+/*	kb-select-1: "Super+1";*/
+/*	kb-select-2: "Super+2";*/
+/*	kb-select-3: "Super+3";*/
+/*	kb-select-4: "Super+4";*/
+/*	kb-select-5: "Super+5";*/
+/*	kb-select-6: "Super+6";*/
+/*	kb-select-7: "Super+7";*/
+/*	kb-select-8: "Super+8";*/
+/*	kb-select-9: "Super+9";*/
+/*	kb-select-10: "Super+0";*/
+/*	ml-row-left: "ScrollLeft";*/
+/*	ml-row-right: "ScrollRight";*/
+/*	ml-row-up: "ScrollUp";*/
+/*	ml-row-down: "ScrollDown";*/
+/*	me-select-entry: "MousePrimary";*/
+/*	me-accept-entry: "MouseDPrimary";*/
+/*	me-accept-custom: "Control+MouseDPrimary";*/
+  timeout {
+      action: "kb-cancel";
+      delay:  0;
+  }
+  filebrowser {
+      directories-first: true;
+      sorting-method:    "name";
+  }
+}
+/* @theme "solarized"*/
+
+/*******************************************************************************
+ * ROFI Color theme
+ * User: Avasz
+ * Copyleft: Avasz <avasz@protonmail.com>
+ *******************************************************************************/
+
+
+* {
+spacing: 0;
+margin: 0;
+padding: 0;
+// ^ aucun effet
+	background-color:           #0F1212;
+	text-color:                 #d3d7cf;
+	selbg:                      #e3e3e3;
+	actbg:                      #e3e3e3;
+	urgbg:                      #e53935;
+	winbg:						#0F1212;
+
+	selected-normal-foreground: @winbg;
+	normal-foreground:          @text-color;
+	selected-normal-background: @actbg;
+	normal-background:          @background-color;
+
+	selected-urgent-foreground: @background-color;
+	urgent-foreground:          @text-color;
+	selected-urgent-background: @urgbg;
+	urgent-background:          @background-color;
+
+	selected-active-foreground: @winbg;
+	active-foreground:          @winbg;
+	selected-active-background: @actbg;
+	active-background:          @selbg;
+	separator-style:            "none";
+	margin:                     0;
+}
+
+#window {
+    background-color: 			@background-color;
+	children: 					[mainbox];
+}
+
+#mainbox {
+    border:  					0;
+	orientation:				vertical;
+	children: 					[ entry,message,listview ];/*mode-switcher*/
+}
+
+entry {
+	expand: 					false;
+	text-color:					@normal-foreground;
+    padding: 					10px 0px 10px 0px ; 				//padding between two lines
+	border: 					0 0 0 0;
+	border-color: 				grey;
+	margin:						30px 30px 0px 30px;
+	cursor-color: rgb(220, 20,60);
+	cursor-width:8px;
+}
+
+#sidebar {
+	expand: false;
+}
+
+#textbox {  													// mesg box
+	horizontal-align: 			0;
+	background-color: 			silver;
+    padding: 					10px 20px 10px 20px ; 				
+	text-color:                 #000;
+}
+
+#listview {
+    border:       				0px 0px 0px 0px;
+	padding:                    20 30 70 30;
+}
+
+
+#mode-switcher {
+    /* border:       				1px 0px 0px 0px; */
+   	/* border-color: 				grey; */
+	/* padding:                    	0 30 10 30; */
+	margin:						10px 30px 30px 30px;
+}
+
+button { 
+	padding: 8px; 
+}
+
+#button.selected {
+    background-color: 			@selected-normal-background;
+    text-color:       			@selected-normal-foreground;
+}
+/*
+#element {
+    border:  					0;
+    padding: 					10px 20px 10px 20px ; 				
+}
+
+#element.normal.normal {
+    background-color: @normal-background;
+    text-color:       @normal-foreground;
+}
+
+#element.normal.urgent {
+    background-color: @urgent-background;
+    text-color:       @urgent-foreground;
+}
+
+#element.normal.active {
+    background-color: @active-background;
+    text-color:       @active-foreground;
+}
+
+#element.selected.normal {
+    background-color: @selected-normal-background;
+    text-color:       @selected-normal-foreground;
+}
+
+#element.selected.urgent {
+    background-color: @selected-urgent-background;
+    text-color:       @selected-urgent-foreground;
+}
+
+#element.selected.active {
+    background-color: @selected-active-background;
+    text-color:       @selected-active-foreground;
+}
+
+#element.alternate.normal {
+    background-color: @alternate-normal-background;
+    text-color:       @alternate-normal-foreground;
+}
+
+#element.alternate.urgent {
+    background-color: @alternate-urgent-background;
+    text-color:       @alternate-urgent-foreground;
+}
+
+#element.alternate.active {
+    background-color: @alternate-active-background;
+    text-color:       @alternate-active-foreground;
+}
+*/
+*/
+//@theme "solarized"
+
+configuration {
+run,drun,ssh,dmenu,keys,combi,filebrowser {
+fallback-icon: "org.xfce.about";
+}
+cycle: false;
+normalize-match: true; // disable match highlighting
+// rofi ne sauvegarde pas les commandes lancés dans l'historique si on n'a pas run en premier, mais ça marche si on tape !r avant la commande
+// pour supprimer des trucs de l'historique du run : S-delete (ça marche même dans combi)
+//modes: "calc,run,ssh,filebrowser,keys,combi";
+modes: "window,run,ssh,filebrowser,keys,combi";
+// !d !r !w !f
+combi-modes: "drun,window,run,filebrowser";
+//display-combi: "life or death";
+display-combi: "";
+display-combi: "+";
+/* "hi";*/
+	kb-cancel: "Escape,Control+g,Control+bracketleft,Super+space,super+alt+space,super+x,hyper+slash,control+hyper+question";
+        kb-secondary-copy: "Alt+w,Control+c,Insert";
+        kb-secondary-paste: "Control+y,Control+v";
+        // et C-u pour supprimer la saisie. alors pour "compléter" une option, selectionne, C-c, C-u, C-y
+        //  bottom
+        // location: 6;
+        // top
+        location: 1;
+        // unbind tab
+        kb-element-next: "";
+        kb-ellipsize: "Control+period"; // defaut
+        // tab completion !!!
+        kb-row-select: "Tab";
+        // entry history
+        kb-entry-history-up: "Control+Down";
+        kb-entry-history-down: "Control+Up";
+        // delete entry from history or in window mode close window
+        kb-delete-entry: "Shift+Delete,super+w";
+        // shift enter
+        terminal: "urxvt";
+        // on peut les mettre comme un argument dans mon profi script plutôt qu'ici
+        // run-shell-command: "bash -c '{terminal} -e $SHELL --rcfile <(echo \"{cmd}\")'";
+        // run-shell-command: "bash -c 'IFS= read -r cmd <<< {cmd}; {terminal} -e \"$SHELL\" --rcfile <(echo \"$cmd\")'";
+        // run-shell-command: 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; out=$($out); echo -n \"$out\" | xclip -selection clipboard"';
+        //run-shell-command: "{terminal} -e bash -c \"{cmd}; bash\"";
+//        drun-display-format: "{name}"$'\n'"<i>({generic})</i>";
+        drun-display-format: "{name}\n<i>({generic})</i>";
+        combi-display-format: "{text}";
+        window-format: "{t:34}\n[<span color=\"yellow\">w{w:-10}</span>] {c:-10} <i>({n:-10})</i>";
+        //"{t:0}\n{w} {c} <i>{n}</i>";
+        eh: 2;
+        filebrowser {
+        sorting-method: "mtime";
+        show-hidden: true;
+        // note to self set xdg to open images in feh
+        command: "xdg-open"; // defaut
+        }
+              inputchange {
+          action: "kb-row-first";
+      }
+}
+
+* {
+fg: #aaa;
+bg: black;
+selected-fg: #aaa;
+selected-bg: #222;
+active-fg: white;
+active-bg: gray;
+alternate-fg: #aaa;
+alternate-bg: black;
+border: #333;
+//border: #8b7500;
+accent-fg: red;
+}
+
+element {
+children: [element-index, element-icon, element-text];
+max-width: 10px; // marche pas
+}
+element-index {
+color: #ffcc00;
+font: "MiscTamsyn 8";
+// margin: 11px 0 0 0;
+//vertical-align: 0.5;
+//margin: 0 0 5px 0;
+// ce n'est pas vraiment centré avec vertical align alors autant l'avoir au coin
+}
+entry {
+// placeholder: "life or death";
+placeholder: "     le néant.";
+placeholder: "     je préférerais mourir.";
+placeholder: "     le néant. je préférerais mourir. je sais bien que ce ne serait pas moi.";
+placeholder: "  le néant, nous savons bien qu'il n'est pas en nous. il existe en lui-même, par lui-même, mais il demande d'être exprimé.";
+// 2025-12-02 17:22 idée : dans rofip avec theme option ptet qu'on pourrait spécifier un placeholder différent tiré d'une liste de belles citations françaises
+placeholder-color: rgb(220,20,60);
+/* block cursor doesn't work despite being taken from the docs */
+  cursor-color: rgb(220,20,60);
+  cursor-width: 8px;
+}
+window, element-text, mainbox {
+background-color: @bg;
+text-color: @fg;
+border: 0;
+}
+prompt, entry, textbox {
+//text-color: @fg;
+// ça ne marche pas
+text-color: rgb(220,20,60);
+color: rgb(220,20,60);
+}
+// num-rows
+num-filtered-rows {
+text-color: @fg;
+}
+// num-rows {
+// text-color: red;
+// location: 1;
+// }
+
+window {
+    background-color: @bg;
+    border:           1;
+    border-color: @border;
+    //padding:         40;
+    font: "MiscTamsyn 17";
+    //"MiscTamsyn 14";
+    //"mono 10";
+    // width: 500px;
+    width: 100%;
+}
+mainbox {
+    border:  0;
+    padding: 0;
+}
+message {
+    border:       0;
+    padding:      1px ;
+}
+textbox { // c'est le texte de calculator résultat
+    // text-color: @fg;
+    // ça ne marche pas
+    text-color: rgb(100,200,100);
+}
+listview {
+    fixed-height: 0;
+    border: 1 0 0;
+    border-color: @border;
+    spacing:      2px ;
+    scrollbar:    false;
+    padding:      2px 0px 0px ;
+    	// lines: 10;
+        lines: 1;
+	// columns: 1;
+        // columns: 4;
+}
+element {
+    border:  0;
+    padding: 1px ;
+}
+element-text {
+    background-color: inherit;
+    text-color:       inherit;
+}
+element.normal.normal {
+    background-color: @bg;
+    text-color:       @fg;
+}
+element.normal.active {
+    background-color: @active-bg;
+    text-color:       @active-fg;
+}
+element.selected.normal {
+    background-color: @selected-bg;
+    text-color:       @selected-fg;
+}
+element.alternate.normal {
+    background-color: @bg;
+    text-color:       @alternate-fg;
+}
+scrollbar {
+    width:        4px ;
+    border:       0;
+    handle-width: 8px ;
+    padding:      0;
+}
+mode-switcher {
+    border:       0;
+    border-color: black;
+}
+button.selected {
+    background-color: @selected-bg;
+    text-color:       @selected-fg;
+}
+inputbar {
+    spacing:    0;
+//     text-color: @fg;
+// ça ne marche pas
+        //text-color: rgb(220,20,60);
+    padding:    1px ;
+}
+case-indicator {
+    spacing:    0;
+    text-color: @fg;
+}
+entry {
+    spacing:    0;
+    //text-color: @fg;
+    //text-color: rgb(220,20,60);
+    //text-color: #ffffff;
+    //text-color: #ebff00;
+    //text-color: #00ff00;
+    text-color: #00ffff;
+    text-outline: true;
+    text-outline-width: 1.5;
+}
+prompt { // c'est le truc devant ce qu'on ecris, le "combi:"
+    spacing:    0;
+    text-color: @fg;
+    //text-color: rgb(220,20,60);
+}
+textbox-prompt-colon {
+    expand:     false;
+    //str:        ":";
+    str:        "$";
+    margin:     0px 0.3em 0em 0em ;
+    text-color: @fg;
+}
+
+// ----------
+
+listview {
+dynamic: true;
+// require-input: true;
+layout: vertical;
+//flow: vertical;
+flow: horizontal; // ? aucun différence
+fixed-columns: false;
+spacing: 0;
+//columns: 5;
+}
+
+window {
+//children: [inputbar, message, listview];
+children: [inputbar, message, truc];
+// aucun effet
+margin: 0;
+spacing: 0;
+padding: 0;
+}
+truc {
+children: [nombres, listview];
+layout: horizontal; // marche pas
+orientation: horizontal; // marche
+// acun effet
+padding: 0;
+margin: 0;
+spacing: 0;
+}
+nombres {
+children: [num-filtered-rows, num-rows];
+//orientation: horizontal;
+expand: false;
+margin: 0 5px 0 0;
+spacing: 0;
+padding: 0;
+// je n'arrive pas à enlever l'espace vertical entre les nombres même sans le 5px
+}
+inputbar {
+//children: [overlay, prompt, case-indicator, entry];
+children: [overlay, case-indicator, entry, prompt];
+}
+listview {
+//margin: 8px 0 0 0;
+// marche pas
+//children: [num-filtered-rows, num-rows];
+// marche pas
+font: "MiscTamsyn 14";
+// marche pas
+max-width: 10px;
+eh: 2; // march pas
+element-height: 2; // marche pas
+// aucun effet
+    line-height: 2;
+    line-height: 2em;
+    wrap: true;
+    fixed-num-lines: 2;
+}
+element {
+margin: 2px;
+// marche pas non plus
+font: "MiscTamsyn 10";
+// marche pas
+max-width: 10px;
+height: 100%; // marche pas
+height: 2em; // marche pas
+vertical-align: 0.5;
+}
+element-text {
+// marche
+font: "MiscTamsyn 12";
+// marche pas
+max-width: 10px;
+height: 2em; // marche pas
+height: 100%; // marche pas
+    // aucun effet
+    line-height: 2;
+    line-height: 2em;
+    wrap: true;
+    fixed-num-lines: 2;
+    // distance de l'icône
+    margin: 0 0 0 2px;
+    vertical-align: 0.5; // ça aide. si on a seulement 1 ligne ça la centre aussi
+}
+listview {
+// dynamic width instead of fixed columns. but it's a problem if things are too wide like my notifications copy script and sometimes undesireably aligns right
+layout: horizontal;
+lines: 10; // in horizontal layout this is max items displaying horizontally
+dynamic: false;
+vertical-align: 0.5;
+// fixed-columns: true; // ne fait aucun différence en layout horizontal
+spacing: 0;
+padding: 0;
+margin: 0;
+}
+textbox { // ne marche pas
+hide-cursor-on-empty: true;
+blink: false;
+}
+inputbar { // ne marche pas
+hide-cursor-on-empty: true;
+blink: false;
+}
+entry { // marche
+// hide-cursor-on-empty: true;
+blink: false;
+placeholder: "  le néant, nous savons bien qu'il n'est pas en nous. il existe en lui-même, par lui-même, mais il demande d'être exprimé.";
+placeholder:"";
+placeholder:"\t\t\t\t\t\t       j'aimerais mourir";
+placeholder:"\t\t\t\t\t\t     je préférerais mourir";
+}
+//element selected { // ne marche pas
+//element selected.active { // ne marche pas
+//text-color: #ffffff;
+//}
+// "only the entrybox and scrollbar have states"
+element-icon { // aucun effet
+margin: 0;
+spacing: 0;
+padding: 0;
+vertical-align: 0.5;
+// ça, par contre :
+size: 0.8em;
+// ça change la taille de l'icône mais il y a toujours des marges autour il me semble
+}
+element {
+// ah, c'est ça qui le fait (les marges que j'ai vu autour de l'icône)
+spacing: 0 0 0 2px;
+}
+element selected { // aucun effet. j'ai essayé aussi element.selected
+text-color: #ffffff;
+color: #ffffff;
+highlight: bold #FAA;
+enabled: false;
+}
+#element.selected.normal {
+    //background-color: #fff;
+    //background-color: #330022;
+    background-color: #330033;
+    text-color:       #aa7799;
+    // aucun effet
+    line-height: 2px;
+    wrap: true;
+    fixed-num-lines: 2;
+}

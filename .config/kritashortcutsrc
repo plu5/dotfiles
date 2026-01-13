@@ -1,0 +1,26 @@
+[Shortcuts]
+KisToolCrop=none
+KisToolSelectOutline=A
+KritaShape/KisToolBrush=B; S
+KritaShape/KisToolMultiBrush=none
+PanTool=Ctrl+P
+Select Behind Blending Mode=none
+SvgTextTool=F8
+activateNextLayer=none
+activatePreviousLayer=none
+duplicatelayer=, E
+edit_redo=Ctrl+Shift+Z; Shift+C
+edit_undo=Ctrl+Z; C
+file_quit=none
+merge_layer=, K
+next_frame=Ctrl+Right
+pathsegment-curve=none
+previous_frame=Ctrl+Left
+previous_preset=/; Z
+selectopaque_add=Alt+Shift+Q
+toggle_layer_alpha_lock=Ctrl+Alt+Shift+Down
+toggle_layer_soloing=Ctrl+1
+toggle_layer_visibility=Ctrl+Q
+view_show_canvas_only=none
+workspaces=Ctrl+Shift+Tab
+zoom_to_100pct=Ctrl+0, Ctrl+0, Ctrl+0, Ctrl+0

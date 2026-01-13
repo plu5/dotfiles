@@ -1,0 +1,43 @@
+[
+    {
+        "input_combination": [
+            {
+                "type": 1,
+                "code": 332,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            }
+        ],
+        "target_uinput": "keyboard + mouse",
+        "output_symbol": "if_tap(if_tap(key(BTN_RIGHT), None), key_down(a).wait(800).key_up(a).hold(t))",
+        "mapping_type": "key_macro"
+    },
+    {
+        "input_combination": [
+            {
+                "type": 1,
+                "code": 331,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            }
+        ],
+        "target_uinput": "keyboard + mouse",
+        "output_symbol": "",
+        "mapping_type": "key_macro"
+    },
+    {
+        "input_combination": [
+            {
+                "type": 1,
+                "code": 331,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            },
+            {
+                "type": 1,
+                "code": 332,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            }
+        ],
+        "target_uinput": "keyboard",
+        "output_symbol": "if_tap(if_tap(modify(Control_R, key(z)), modify(Control_R, key(z))), hold(Control_R), 100)",
+        "mapping_type": "key_macro"
+    }
+]

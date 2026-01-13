@@ -1,0 +1,31 @@
+[
+    {
+        "input_combination": [
+            {
+                "type": 1,
+                "code": 331,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            },
+            {
+                "type": 1,
+                "code": 332,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            }
+        ],
+        "target_uinput": "keyboard",
+        "output_symbol": "Shift_L",
+        "mapping_type": "key_macro"
+    },
+    {
+        "input_combination": [
+            {
+                "type": 1,
+                "code": 331,
+                "origin_hash": "19976143f33d0a61586c6cb169664e17"
+            }
+        ],
+        "target_uinput": "keyboard",
+        "output_symbol": "if_tap(if_tap(hold_keys(Control_R, Shift_R, z), hold_keys(Control_R, z)), hold_keys(Control_R, z))",
+        "mapping_type": "key_macro"
+    }
+]

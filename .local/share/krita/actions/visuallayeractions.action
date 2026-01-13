@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionCollection version="2" name="visuallayeractions">
+    <Actions category="Scripts">
+        <text>visuallayeractions</text>
+
+        <Action name="visuallayeractions_uplayer">
+        <icon></icon>
+        <text>Visual activate next layer</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>1</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_downlayer">
+        <icon></icon>
+        <text>Visual activate previous layer</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>q</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_merge">
+        <icon></icon>
+        <text>Visual merge layer</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+e</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_duplicate">
+        <icon></icon>
+        <text>Visual duplicate layer</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+j</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_inheritalpha">
+        <icon></icon>
+        <text>Visual toggle layer inherit alpha</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+shift+alt+2</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_alphalock">
+        <icon></icon>
+        <text>Visual toggle layer alpha lock</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+shift+alt+1</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_properties">
+        <icon></icon>
+        <text>Visual layer properties</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+shift+alt+q</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_moveup">
+        <icon></icon>
+        <text>Visual move layer up</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>shift+1</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+
+        <Action name="visuallayeractions_movedown">
+        <icon></icon>
+        <text>Visual move layer down</text>
+        <whatsThis>Visual layer actions</whatsThis>
+        <toolTip>Visual layer actions</toolTip>
+        <iconText>VL</iconText>
+        <activationFlags>00000</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>shift+q</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+    </Actions>
+</ActionCollection>
