@@ -1,0 +1,14 @@
+#!/bin/bash
+# basé sur la solution de contournement de yutkat https://github.com/dunst-project/dunst/issues/669
+
+# summary must be specified. et il faut changer le appname à quelque chose sur laquelle on n'a pas un script dans dunstrc pour garder contre une boucle infinie
+
+# notify-send -a dontreact "env: $(printenv)"
+text="${DUNST_SUMMARY}${DUNST_BDOY}"
+ACTION=$(notify-send --replace-id="$DUNST_ID" -a donotreactwithascript -u "$DUNST_URGENCY" "$text" --action="default,Copy")
+
+case "$ACTION" in
+    "0")
+        echo -n "$text" | xclip -selection clipboard
+        ;;
+esac

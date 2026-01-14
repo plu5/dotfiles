@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+truc="$1"
+vol="$2"
+now=0
+
+case $truc in
+list)
+    ps aux | grep "$0" | grep -v "grep" | grep -v "$0 list"
+    exit
+    ;;
+killall)
+    PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v killall | awk '{print $2}')
+    if [ -z "$PIDS" ]; then
+        echo "volume: aucun processus à tuer."
+    else
+        echo "volume: processus à tuer : $PIDS"
+        kill $PIDS
+        echo "volume: processus tués."
+    fi
+    exit
+    ;;
+esac
+
+if [[ ! "$vol" =~ ^[0-9]+[%]$ ]]; then
+    vol="100%";
+    echo "volume: le volume n'a pas été spécifié dans le format attendu (nombre%), utilisation de 100% par défaut";
+fi
+
+setvol() {
+    local regex=$1
+    local volume=$2
+    local trouve="false"
+    # if [[ $lastcall -lt $EPOCHSECONDS ]]; then
+    #     listcache=$(pactl list sink-inputs)
+    #     lastcall=$EPOCHSECONDS
+    #     echo lastcall $lastcall
+    #     echo "$listcache" | grep -B27 "media.name = $regex"
+    # fi
+    # for id in $(echo "$listcache" | grep -B27 "media.name = $regex" | grep 'Sink Input #' | awk '{print $3}'); do
+    for id in $(pactl list sink-inputs | grep -B27 "media.name = $regex" | grep 'Sink Input #' | awk '{print $3}'); do
+        trouve="true"
+        echo "volume: mise de $id à $volume"
+        pactl set-sink-input-volume "${id:1}" "$vol";
+    done
+    if [ $trouve = "false" ]; then
+        echo "volume: aucun flux correspondant à '$regex' n'a été trouvé. veuillez vérifiez la sortie de "'`pactl list sink-inputs | grep media.name`';
+    fi
+}
+
+boucledesurveillance() {
+    local regex=$1
+    local volume=$2
+    echo "boucle de surveillance"
+    pactl subscribe | while read -r event; do
+        echo "$EPOCHSECONDS $event"
+        if echo "$event" | grep -q "'change' on sink-input"; then
+            time=$(printf "%.1f" $EPOCHREALTIME)
+            echo "@@ $now <? $time"
+            if awk "BEGIN {exit !($now < $time)}"; then
+                setvol "$regex" "$vol"
+                now=$(printf "%.1f" $EPOCHREALTIME)
+            fi
+        fi
+    done
+}
+
+case $truc in
+    Stream) # ça affecte keygen music par exemple
+        setvol ".*Stream" "$vol"
+        ;;
+    bili)
+        regex=".*哔哩哔哩.*"
+        setvol "$regex" "$vol"
+        boucledesurveillance "$regex" "$vol"
+        ;;
+    yt)
+        regex=".*YouTube.*"
+        setvol "$regex" "$vol"
+        boucledesurveillance "$regex" "$vol"
+        ;;
+    *)
+        setvol "$truc" "$vol"
+        if [ $3 = 'b' ]; then
+            boucledesurveillance "$truc" "$vol"
+        fi
+        ;;
+esac

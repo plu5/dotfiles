@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -f
+# e.g. `t de text` utile pour le dictionnaire si tu envoies un seul mot.
+# mais si tu veux traduire en de d'une autre langue, utilise `t -t de text` au lieu de ça
+# d'ailleurs pas toutes les langues ont une dictionnaire, par exemple le latin et le chinois non malheureusement
+if [ "$1" = ".de" ]; then
+    trans -hl de -t de -j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y ${@:2}
+elif [ "$1" = ".en" ]; then
+    trans -hl en -t en -s en -j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y ${@:2}
+else
+    trans -hl fr -t fr -j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y $@
+fi
+set +f

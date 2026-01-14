@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+rofi -show combi -run-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; echo \"$out :: $(xdotool get_desktop)\" > /tmp/profidesireddesktop; if [[ \"$out\" =~ \"|\" ]]; then echo \"1\"; out=$(bash -c \"$out\"); else echo \"2\"; out=$($out); fi; [ -n \"$out\" ] && notify-send \"$out\";"' -run-shell-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; bash -c \"{terminal} -e $SHELL --rcfile <(echo \\\"$out\\\")\""'
+
+# rofi -show combi -run-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: $out; out=$($out); [ -n \"$out\" ] && notify-send \"$out\""' -run-shell-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; bash -c \"{terminal} -e $SHELL --rcfile <(echo \\\"$out\\\")\""'
+
+# `python -c 'help(str)' | grep contains` fonctionnel
+# rofi -show combi -run-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; out=$(bash -c \"$out\"); [ -n \"$out\" ] && notify-send \"$out\""' -run-shell-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; bash -c \"{terminal} -e $SHELL --rcfile <(echo \\\"$out\\\")\""'
+
+# -run-shell-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; out=$($out); [ -n \"$out\" ] && notify-send \"$out\""
+
+# rofi -show combi -selected-row 1 -run-command 'bash -c "out=$(\{cmd\}); [ -n \"$out\" ] && notify-send \"$out\""'

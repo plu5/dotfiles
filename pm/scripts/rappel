@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+helptext() {
+    echo "Usage: rappel [délai] \"[message]\"
+Exemple: rappel 5h 10m \"Boire de l'eau\"
+Le délai est comme pour sleep ; soit le nombre de secondes soit spécifiez l'unité avec s/m/h/d. Avec plusieurs arguments séparés par un espace, il prend la somme de ces valeurs."
+}
+
+if [[ $# -lt 2 ]]; then
+    helptext
+    exit 1
+fi
+
+delai="$1"
+shift
+message="$*"
+
+# Vérification basique du format du délai
+if [[ ! "$delai" =~ ^[0-9]+[smhd]$ ]]; then
+    echo "rappel: Format invalide"
+    exit 1
+fi
+
+# Choisis le son à jouer (tu peux changer le fichier ici)
+SON="/usr/share/sounds/freedesktop/stereo/complete.oga"
+
+(
+    sleep "$delai"
+    notify-send -u critical "Rappel" "$message"
+    # jouer le son
+    if command -v paplay >/dev/null 2>&1; then
+        paplay "$SON"
+    elif command -v aplay >/dev/null 2>&1; then
+        aplay "$SON"
+    fi
+) & disown

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+FAVORISFICHIER="$HOME/.fehfavoris"
+if [ ! -f "$FAVORISFICHIER" ]; then
+    touch "$FAVORISFICHIER"
+fi
+
+if [ -z "$1" ]; then
+    options=$(cat "$FAVORISFICHIER")
+    if [ -z "$options" ]; then
+        echo "Pas de favoris."
+        exit
+    fi
+    res=$(echo -en "$options" | rofi -i -no-cycle -dmenu -kb-accept-alt "" -kb-custom-1 "Shift+Return" -p "favoris")
+    ret=$?
+    if [ -e "$res" ]; then
+        if [ $ret == 10 ]; then
+            sed -i "\|$res|d" "$FAVORISFICHIER"
+        else
+            pfeh --start-at "$res"
+        fi
+    fi
+    exit
+fi
+
+# Convertit en chemin absolu
+CHEMIN=$(realpath "$1" 2>/dev/null)
+if [ ! -e "$CHEMIN" ]; then
+    echo "Erreur : le chemin n'existe pas."
+    exit 1
+fi
+# Vérifie les doublons
+if grep -Fxq "$CHEMIN" "$FAVORISFICHIER"; then
+    echo "Déjà dans les favoris."
+else
+    echo "$CHEMIN" >> "$FAVORISFICHIER"
+    echo "Ajouté aux favoris."
+fi

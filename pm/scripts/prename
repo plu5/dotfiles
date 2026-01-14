@@ -1,0 +1,18 @@
+#!/bin/bash
+fichier="$1"
+if [ -z "$fichier" ] || [ ! -e "$fichier" ]; then
+    echo "prename: fichier '$fichier' n'existe pas"
+    exit 1
+fi
+b=$(stat -c %w "$fichier")
+options="$fichier"
+[ "$b" != "-" ] && options="${options}\n${fichier%/*}/$(date -d "$b" +%y%m%d%H%M)${fichier##*/}"
+res=$(echo -en "$options" | rofi -i -no-cycle -dmenu -p "rename")
+[ -z "$res" ] && exit 0  # quitté sans rien choisir
+if [ -e "$res" ]; then
+    echo "prename: fichier '$fichier' existe déjà"
+    exit 1
+else
+    echo "prename: mv \"$fichier\" \"$res\""
+    mv "$fichier" "$res"
+fi

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+sonpause="/home/pm/Downloads/pronunciation_fr_une_pause_pipi.mp3"
+sonunpause="/home/pm/Downloads/pronunciation_fr_alors,_on_continue__.mp3"
+
+case "$1" in
+    list)
+        ps aux | grep "$0" | grep -v "grep" | grep -v "$0 list"
+        exit
+    ;;
+    k|kill)
+        PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v k | grep -v kill | awk '{print $2}')
+        if [ -z "$PIDS" ]; then
+            echo "pausepp: aucun processus à tuer."
+        else
+            echo "pausepp: processus à tuer : $PIDS"
+            kill $PIDS
+            echo "pausepp: processus tués."
+        fi
+        exit
+        ;;
+esac
+
+joue() {
+    if command -v paplay >/dev/null 2>&1; then
+        paplay "$1"
+    elif command -v aplay >/dev/null 2>&1; then
+        aplay "$1"
+    fi
+}
+
+(
+    while true; do
+        sleep 25m
+        joue "$sonpause"
+        sleep 5m
+        joue "$sonunpause"
+    done
+) & disown

@@ -1,0 +1,6 @@
+#!/bin/sh
+cat >> ~/lpr_captured.txt
+
+# fais :
+# export PATH="$HOME/pm/scripts:$PATH"
+# dans la session pour intercepter des appels à lpr

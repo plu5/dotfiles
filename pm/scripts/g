@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# echo "$*" > /tmp/grammalecteinput
+# grammalecte-cli -wss -roff "apostrophe_typographique" -f /tmp/grammalecteinput
+# languagetool -l fr -d UPPERCASE_SENTENCE_START,POINT /tmp/grammalecteinput
+# output=$(languagetool -l fr -d UPPERCASE_SENTENCE_START /tmp/grammalecteinput)
+# echo "${output##*/tmp/grammalecteinput...}"
+
+set -f
+# en intermédiaire, car des fois l'allemand est trop loin du français
+if [ "$1" = ".en" ]; then
+t -show-languages n $(set -f; trans -hl fr -t en -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
+elif [ "$1" = ".zh" ]; then
+t -show-languages n $(set -f; trans -hl fr -t zh -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
+elif [ "$1" = ".la" ]; then
+t -show-languages n $(set -f; trans -hl fr -t la -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
+else
+t -show-languages n $(set -f; trans -hl fr -t de -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "$@")
+fi
+
+set +f

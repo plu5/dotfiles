@@ -1,0 +1,53 @@
+#!/bin/bash
+FICHIER=~/sommeil.log
+LOCKAPP=xtrlock
+NOM="${0##*/}"
+now=0
+echo -n "" > "$FICHIER"
+jobpid=
+cleanup() {
+    if [ ! -z $jobpid ]; then
+        kill $jobpid
+        jobpid=
+    fi
+}
+quit() {
+    cleanup
+    emacsclient --eval '(with-current-buffer (file-name-nondirectory p-main-file) (insert-file-contents "~/sommeil.log"))'
+    exit
+}
+maybeabandon() {
+    pgrep "$LOCKAPP" >/dev/null 2>&1
+    if [[ ! "$?" = 0 ]]; then
+        echo "$NOM: Aucun processus $LOCKAPP, abandon"
+        quit
+    fi
+}
+maybeeteindre() {
+    sleep 5
+    xset dpms force off
+}
+xtrlock &
+xinput test-xi2 --root |
+    while read -r line; do
+        # echo "$line"  # DEBUG
+        case "$line" in
+            *\(KeyRelease\))
+                if [[ $now < $(($EPOCHSECONDS - 50)) ]]; then
+                    echo -n "$(date '+%H:%M') " >> "$FICHIER"
+                    now=$EPOCHSECONDS
+                fi
+                cleanup
+                maybeeteindre &
+                jobpid=$!
+                ;;
+            *\(ButtonRelease\))
+                pkill "$LOCKAPP"
+                echo "$NOM: keyboard interrupt"
+                quit
+                ;;
+            EVENT*)
+                maybeabandon
+                ;;
+        esac
+    done

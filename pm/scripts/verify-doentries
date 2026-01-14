@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# 2025-12-05 04:01
+
+# pour vérifier combien il y en a sans doublons :
+# ls -Uba1 | grep -v conflicted | grep -c .doentry
+
+ignore=("1A71DD04CF8141EBBC6DB74819B9A127 botched (Zhu Q's conflicted copy 2020-12-16).doentry" # corrupted
+        "56399F901C154422A5287F7D0C16205D.doentry" # corriger ça ? [2019]
+        "9FD95EB57DD3419D8388A1F8C1B02560.doentry" # corriger ? [2017]
+       )
+
+COUNTER=1
+for xmlfile in *.doentry; do
+    for ign in "${ignore[@]}"; do
+        if [[ "$xmlfile" == "$ign" ]]; then
+            echo "$COUNTER Ignoré : $xmlfile"
+            let COUNTER++
+            continue 2
+        fi
+    done
+    echo "$COUNTER Traitement : $xmlfile";
+    xmllint --format "$xmlfile" > /dev/null;
+    if [ $? != 0 ]; then
+        break;
+    fi;
+    let COUNTER++
+done

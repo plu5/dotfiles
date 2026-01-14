@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+NOM="${0##*/}"
+tokyopid=
+obscurpid=
+if [ -f /tmp/tokyopid ]; then
+    tokyopid=$(cat /tmp/tokyopid)
+fi
+if [ -f /tmp/obscurpid ]; then
+    obscurpid=$(cat /tmp/obscurpid)
+fi
+case "$1" in
+    rofi)
+        res=$(echo -en "start\nstop\nstartobscur\nstopobscur" | rofi -i -cycle -dmenu -p "soncontrol")
+        $0 $res
+        ;;
+    start)
+        [ ! -z $tokyopid ] && kill $tokyopid
+        mpv "/media/Windows/Users/pm/Music/Tokyo's Most Dangerous Metropolitan Expressway in Heavy Rain [zFio5Tbqy8Y].opus" --no-video --loop --volume=70 --save-position-on-quit --load-scripts=no &
+        tokyopid=$!
+        echo $tokyopid > /tmp/tokyopid
+        ;;
+    stop)
+        if [ ! -z $tokyopid ]; then
+            kill $tokyopid
+            tokyopid=
+            echo $tokyopid > /tmp/tokyopid
+        fi
+        ;;
+    startobscur)
+        [ ! -z $obscurpid ] && kill $obscurpid
+        mpv "/media/Windows/Users/pm/Music/clair obscur [LAQZfeETFbg].m4a" --no-video --loop --volume=70 --save-position-on-quit --load-scripts=no &
+        obscurpid=$!
+        echo $obscurpid > /tmp/obscurpid
+        ;;
+    stopobscur)
+        if [ ! -z $obscurpid ]; then
+            kill $obscurpid
+            obscurpid=
+            echo $obscurpid > /tmp/obscurpid
+        fi
+        ;;
+    list)
+        ps aux | grep "$0" | grep -v "grep" | grep -v "$0 list"
+        exit
+        ;;
+    k|kill)
+        PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v k | grep -v kill | awk '{print $2}')
+        if [ -z "$PIDS" ]; then
+            echo "$NOM: aucun processus à tuer."
+        else
+            echo "$NOM: processus à tuer : $PIDS"
+            kill $PIDS
+            echo "$NOM: processus tués."
+        fi
+        exit
+        ;;
+esac

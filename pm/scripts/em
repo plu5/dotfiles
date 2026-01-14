@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+if [[ -z "$1" ]]; then
+    emacsclient -t
+else
+    if [[ "$1" == /* ]]; then
+        emacsclient -t /sudo::"$1"
+    else
+        emacsclient -t /sudo::"${PWD}/$1"
+    fi
+fi

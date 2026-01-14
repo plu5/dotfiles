@@ -1,0 +1,19 @@
+#!/bin/bash
+lien="$1"
+destnom="$2"
+dt=$(date +%y%m%d%H%M)
+destdossier=~/pm/r/illustrations/
+destinationfinale="$destdossier""$dt""$destnom"
+if [ -e $destinationfinale ]; then
+    echo "pgetimg: dest '$destinationfinale' existe déjà"
+    exit 1
+elif [ ! -z $lien ]; then
+    wget "$lien" -O "$destinationfinale"
+    if [ $? = 0 ]; then
+        echo "pgetimg: le téléchargement vers '$destinationfinale' a réussi. exécution de touch sur le fichier..."
+        touch "$destinationfinale"
+    fi
+else
+    echo "pgetimg: il manque des arguments"
+    echo "syntaxe : pgetimg <lien> <destnom>"
+fi

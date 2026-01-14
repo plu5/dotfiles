@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# eval $(xdotool getmouselocation --shell)
+# xdotool mousemove 990 5 click --delay 500 1
+# xdotool mousemove $X $Y
+
+# plover -s plover_send_command toggle
+
+# source /media/Windows/Users/pm/dev/reps/plover/.tox/dev/bin/activate
+# exec plover_send_command toggle
+/media/Windows/Users/pm/dev/reps/plover/.tox/dev/bin/plover_send_command toggle
+# sleep 0.1; tmp=$(xdotool getactivewindow); if xdotool search --name Plover; then xdotool windowactivate --sync $(xdotool search --name Plover | head -n 1) key ctrl+period && xdotool windowactivate $tmp; fi

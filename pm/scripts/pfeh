@@ -1,0 +1,2 @@
+#!/bin/bash
+feh --action 'notify-send "$(prename "%f")"' --action9 'notify-send "$(file "%f")"' --action8 'notify-send "$(stat "%f")"' --action7 'echo -n "%f" | xclip -selection clipboard' --action1 'fehfavoris' --action2 'fehfavoris "%f"' --scale-down --sort mtime -r /home/pm/pm/r "$@"
