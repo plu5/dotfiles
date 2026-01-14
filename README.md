@@ -72,20 +72,21 @@ in [./pm/scripts](pm/scripts)
     wanted to have a simple button, not to use the outline which inserts and then deletes text which is destructive in something like emacs buffers. tried to use xdotool for it but the application ignores commands sent to it when it is not focused so i was focusing it temporarily like i do for `pause`. and `plover -s plover_send_command toggle` is far too slow. `plover_send_command`, if you clone the plover repo, can work separately and send the command to any running instance, and it's fast.
 
 ## Would like to implement
-- **krita: streamline save new file**
+- **krita: streamline save new file**  
   streamline saving files in krita instead of having to use the dialog, likely a plugin can do this. ideally i press a hotkey and it would save to a defined folder with current timestamp, with maybe ability to later rename via launching something like a rofi interface like my prename script. unsaved file C-s save to a new project in defined directory with current timestamp. if i opened an image (not kra) and press C-s, don't save to the image save to a new project with current timestamp.
-- **krita: hide/show easily**
+- **krita: hide/show easily**  
   krita shortcut toggle hide/show panels (without interface cachée)
-- **krita: try using interface cachée anyway**
+- **krita: try using interface cachée anyway**  
   krita shortcut toggle interface cachée
-- **bspwm: minimising**
+- **bspwm: minimising**  
   bspwm "minimising" windows («changer ces fenêtres en mode floating, petite taille, arrangeés quelque part comme au côté gauche de l'écran, comme ça on voit toujours qu'elles sont là, juste "minimisées", et les faire revenir -- on pourrait avoir 2 raccourcis, un pour restaurer la fenêtre activée, un pour restaurer toutes (comme ça pas besoin de les activer) [idéalement seulement pour celles dans l'espace de travail actuel], et ce que restaurer va faire est les remettre en mode tiled.»)
-- **emacs: toggleable files in folder sidebar**
+- **emacs: toggleable files in folder sidebar**  
   emacs toggleable sidebar like imenu-list which I have on C-tab to put on C-S-tab to show files and subfolders in pwd.
-- emacs markdown-mode C-RET to when you are in a list item indent the new line so as to be still inside the list item
-- **emacs: markdown-mode: fold list items**
+- **emacs: markdown-mode C-RET**  
+  to when you are in a list item indent the new line so as to be still inside the list item
+- **emacs: markdown-mode: fold list items**  
   emacs markdown-mode ability to fold list items like you can in org-mode, see [this effort by Tobias](https://emacs.stackexchange.com/questions/64729/how-to-fold-nested-list-items-in-markdown-mode)
-- **emacs: org-mode: align text under list item**
+- **emacs: org-mode: align text under list item**  
   advice for org-return that if we're on a list item and the line begins with `"*something:* "` indent a bit extra to align the new line after that.
   ```
   - *something:* item 1,
