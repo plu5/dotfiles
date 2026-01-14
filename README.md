@@ -1,3 +1,4 @@
+# plu5's general configuration files and shell scripts
 ## Environment
 X, bspwm
 
