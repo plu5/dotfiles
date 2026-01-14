@@ -72,6 +72,8 @@ in [./pm/scripts](pm/scripts)
     wanted to have a simple button, not to use the outline which inserts and then deletes text which is destructive in something like emacs buffers. tried to use xdotool for it but the application ignores commands sent to it when it is not focused so i was focusing it temporarily like i do for `pause`. and `plover -s plover_send_command toggle` is far too slow. `plover_send_command`, if you clone the plover repo, can work separately and send the command to any running instance, and it's fast.
 
 ## Would like to implement
+- **general: increase portability**  
+  reduce hard-coded paths, or at least have a centralised source of truth for them.
 - **krita: streamline save new file**  
   streamline saving files in krita instead of having to use the dialog, likely a plugin can do this. ideally i press a hotkey and it would save to a defined folder with current timestamp, with maybe ability to later rename via launching something like a rofi interface like my prename script. unsaved file C-s save to a new project in defined directory with current timestamp. if i opened an image (not kra) and press C-s, don't save to the image save to a new project with current timestamp.
 - **krita: hide/show easily**  
