@@ -1,25 +1,34 @@
 #! /bin/sh
-# cf log 2025-11-22
+# BSPWM External Rules
+# Created : 2025-11-22
+#
+# External rules to use with bspwm. When set as the external rules command,
+# this gets launched every time it needs to put a new node into the tree.
+# Echo and exit to advice bspwm how to place the new node.
+#
+# For installation, add the following command to ~/.config/bspwm/bspwmrc:
+# bspc config external_rules_command $HOME/.config/bspwm/external_rules.sh
 
 window_id=$1
 window_class=$2
 window_instance=$3
 consequences=$4
-if  [[ "$window_class" = "firefox" ]] then sleep 0.7; fi
+# sleep first because window titles for pages loaded take some time to update
+if  [[ "$window_class" = "firefox" ]] then sleep 1; fi
 window_title="$(xwininfo -id "$window_id" | sed -nE 's/^xwininfo.{1,}"(.*)"$/\1/p')"
 
 if  [[ "$window_class" = "firefox" ]]
 then
     case "$window_title" in
-        'ChatGPT — Mozilla Firefox')
+        *'T — Mozilla Firefox')
             echo "desktop=4"
             exit
             ;;
-        'google translate - Recherche Google — Mozilla Firefox')
+        *'Recherche Google — Mozilla Firefox')
             echo "desktop=3"
             exit
             ;;
-        *' WordReference.com — Mozilla Firefox')
+        *'WordReference.com — Mozilla Firefox')
             echo "desktop=3"
             exit
             ;;
