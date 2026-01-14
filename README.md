@@ -128,7 +128,8 @@ in [./pm/scripts](pm/scripts)
 - plover (sténo)
 - blender
 - godot
-- gwenview (images. je préfère feh la plupart de temps mais avec gwenview et kimageformats on peut visionner des fichiers krita)
+- gwenview (images. je préfère feh la plupart de temps mais avec gwenview et kimageformats on peut visionner des fichiers krita)  
+  agaçant que ça ne laisse pas dézoomer, seulement zoomer. un contournement est de faire en sorte que la fenêtre soit plus petite (par ouvrir des terminaux autour par exemple) puis appuyer sur le bouton "fit".
 - peek (enregistrer des gifs facilement)  
   v useful to be able to share what you're working on, explain, or demonstrates something. it goes on top of what it's recording, kind of like licecap, so it needs to be floating `bspc rule -a 'Peek' state=floating`. restores last used position, and to position it precisely i use a command like `wmctrl -r Peek -e 0,635,339,657,377`
 - input remapper 2 (pour avoir plusieurs fonctions avec les 2 boutons de mon stylo wacom)
