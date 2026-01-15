@@ -28,4 +28,4 @@ fi
 
 # pm additions
 # exec /usr/bin/openbox-session
-exec /usr/bin/bspwm
+exec /usr/bin/bspwm 1> ~/.bspwm.out 2> ~/.bspwm.err
