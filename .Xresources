@@ -47,32 +47,12 @@ URxvt.letterSpace:         -1
 ! URxvt.boldFont: xft:Ubuntu Mono:style=Bold:pixelsize=17  
 URxvt.saveLines: 65535
 
-
-URxvt*color0:              #101218
-URxvt*color1:              #ee829f
-URxvt*color2:              #a5ffe1
-URxvt*color3:              #ffefcc
-URxvt*color4:              #97bbf7
-URxvt*color5:              #c0b7f9
-URxvt*color6:              #97e0ff
-URxvt*color7:              #d1d4e0
-URxvt*color8:              #7780a1
-URxvt*color9:              #ee829f
-URxvt*color10:             #a5ffe1
-URxvt*color11:             #ffefcc
-URxvt*color12:             #97bbf7
-URxvt*color13:             #c0b7f9
-URxvt*color14:             #97e0ff
-URxvt*color15:             #ffffff
-URxvt*color16:             #f99170
-URxvt*color17:             #fcc09e
-URxvt*color18:             #1f222d
-URxvt*color19:             #252936
-URxvt*color20:             #C0C5CE
-URxvt*color21:             #C9CCDB
-URxvt*background:          #101218
-URxvt*foreground:          #E6EFF7
-URxvt*cursorColor:         #E6EFF7
+! test de coleurs difficiles de rendre lisible :
+! dircolors | tr ':' '\n' | awk -F= '{print "\033[" $2 "m" $1 "\033[0m"}' | head -n 17 | tail -n +12
+! (set-user-ID, set-group-ID, file with capability, sticky directory, other-writable directory, sticky and other-writable directory)
+! color0-21, cursorColor par défaut
+URxvt*background: black
+URxvt*foreground: white
 
 URxvt.internalBorder:      0
 URxvt.externalBorder:      0
@@ -85,5 +65,4 @@ URxvt.scrollTtyKeypress: True
 
 ! ne marche pas
 URxvt.iconFile: /usr/share/icons/breeze/apps/16/utilities-terminal.svg
-! URxvt.iconFile: /usr/share/icons/Humanity/scalable/apps/autokey-status.svg
 URxvt.print-pipe: cat | pipe-to-emacs piped-mode
