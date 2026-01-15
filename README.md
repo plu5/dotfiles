@@ -115,7 +115,8 @@ in [./pm/scripts](pm/scripts)
 
 ## Logiciels les plus utilisés
 - emacs (super-S-e. éditeur)
-- urxvt (super-ret. terminal)
+- urxvt (super-ret. terminal)  
+  i have problems with it like some unicode characters breaking on certain font sizes, 1/3 sessions failing to save history on quit (had to begrudgingly add `PROMPT_COMMAND='history -a'` in bashrc to work around it), and reloading configuration once killed my entire X session somehow (i'm now scared every time I run xrdb)
 - ranger (super-e. file browser)
 - mpv (vidéo et audio)
 - feh (images)
