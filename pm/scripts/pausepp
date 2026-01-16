@@ -8,7 +8,7 @@ has_paplay=$(command -v paplay >/dev/null 2>&1 && echo true)
 has_emacs=$(command -v emacsclient >/dev/null 2>&1 && echo true)
 
 kill_other_instances() {
-    PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v k | grep -v kill | awk '{print $2}')
+    PIDS=$(pid=$BASHPID; pgrep -af "$0" | grep -v $pid | grep -v $$ | awk '{print $1}')
     if [ -z "$PIDS" ]; then
         [ "$1" = "interactive" ] && echo "$NOM: aucun processus à tuer."
     else
