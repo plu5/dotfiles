@@ -4,6 +4,8 @@ sonpause="/home/pm/Downloads/pronunciation_fr_une_pause_pipi.mp3"
 sonunpause="/home/pm/Downloads/pronunciation_fr_alors,_on_continue__.mp3"
 NOM="${0##*/}"
 
+has_paplay=$(command -v paplay >/dev/null 2>&1 && echo true)
+
 kill_other_instances() {
     PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v k | grep -v kill | awk '{print $2}')
     if [ -z "$PIDS" ]; then
@@ -29,11 +31,7 @@ case "$1" in
 esac
 
 joue() {
-    if command -v paplay >/dev/null 2>&1; then
-        paplay "$1"
-    elif command -v aplay >/dev/null 2>&1; then
-        aplay "$1"
-    fi
+    [ $has_paplay = true ] && paplay "$1"
 }
 
 (
