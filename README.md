@@ -111,7 +111,7 @@ in [./pm/scripts](pm/scripts)
 - **time spent in application tracker**  
   something, maybe via `profi`, that kind of like steam keeps track of total time spent in x application? maybe a waste of time because who cares, but it would be maybe cool, or maybe mind pollution and better not incentivise existentialism.
 - **easier to use interface for soncontrol**  
-  less keystrokes
+  less keystrokes. something like [transient](https://github.com/magit/transient) would be nice, but i need it to be standalone. i guess rofi is not the right choice for this and instead need to invoke a small c++ executable or bash/python script that will take the next key pressed
 
 ## Logiciels les plus utilisés
 - emacs (super-S-e. éditeur)
