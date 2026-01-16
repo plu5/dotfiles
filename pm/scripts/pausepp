@@ -5,6 +5,7 @@ sonunpause="/home/pm/Downloads/pronunciation_fr_alors,_on_continue__.mp3"
 NOM="${0##*/}"
 
 has_paplay=$(command -v paplay >/dev/null 2>&1 && echo true)
+has_emacs=$(command -v emacsclient >/dev/null 2>&1 && echo true)
 
 kill_other_instances() {
     PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v k | grep -v kill | awk '{print $2}')
@@ -34,11 +35,28 @@ joue() {
     [ $has_paplay = true ] && paplay "$1"
 }
 
+message() {
+    msg="$NOM: $1"
+    echo "$msg"
+    [ $has_emacs = true ] && emacsclient --eval "(message \"$msg\")" >/dev/null 2>&1
+}
+
+do_pause() {
+    joue "$sonpause"
+    message pause
+}
+
+do_continue() {
+    joue "$sonunpause"
+    message continue
+}
+
+# main loop
 (
     while true; do
         sleep 25m
-        joue "$sonpause"
+        do_pause
         sleep 5m
-        joue "$sonunpause"
+        do_continue
     done
 ) & disown
