@@ -102,8 +102,6 @@ in [./pm/scripts](pm/scripts)
   maybe add another arrow symbol other than →, like ➤ or ➔, because → is barely readable in github readmes, but maybe not all clients would be able to display that. maybe should use just >... -> does not look good either. given that github supports html markup in the markdown it's weird that we can use <> willy nilly
 - **pausepp count**  
   log number of pauses, i'm guessing to a log file kind of like sommeil. maybe each time a pause happens run an emacs function that increments a number in my year note. i would like to also see it in the echo area when a pause happens because sometimes i use noisecancelling disconnected from pc and thus have no audio.
-- **pausepp restart**  
-  needs a restart option (kill existing and start new) for when you get distracted
 - **org-goto equivalent for any buffer with imenu**  
   i know there is helm-imenu but i hesitate to have to have the whole of helm as a dependency just for that.
 - **consolidate doentry and markdown**  
