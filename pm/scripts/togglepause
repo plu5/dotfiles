@@ -6,6 +6,7 @@ elif xdotool search --name mpv; then
 else
     tmp=$(xdotool getactivewindow);
     if xdotool search --name stop; then
+        soncontrol stopobscur;
         xdotool windowactivate --sync $(xdotool search --name stop) key q && xdotool windowactivate $tmp;
     elif xdotool search --name bilibili; then
         xdotool windowactivate --sync $(xdotool search --name bilibili) key ctrl key space && xdotool windowactivate $tmp;
