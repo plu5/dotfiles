@@ -28,12 +28,15 @@ alias lshorodatage='shopt -s dotglob && stat * --format "%.16w %.16y %n" | sort 
 # seulement date de modification, trié par ce dernier
 alias lshorodatagem='shopt -s dotglob && stat * --format "%.16y %n" | sort -n'
 # lshorodatage avec date de création ntfs
-alias lshorodatagen='for f in *; do echo $(ntfsbirth "$f") $(date -r "$f" "+%F %T") $f; done | sort -n'
+alias lshorodatagen='for f in *; do echo $(ntfsbirth "$f" "%F %H:%M") $(date -r "$f" "+%F %H:%M") $f; done | sort -n'
 
 # >:-(
 PROMPT_COMMAND='history -a'
 
 # afficher birthtime d'un fichier ntfs avec `ntfsbirth 'path'`
 ntfsbirth() {
-    getfattr --only-values -n system.ntfs_crtime_be --absolute-names "$1" | perl -MPOSIX -0777 -ne '$t = unpack("Q>"); print strftime("%Y-%m-%d %H:%M:%S\n", localtime($t/10000000-11644473600))'
+    [ -z "$1" ] && echo "usage: ntfsbirth <file> [date-format]" && return
+    format="%Y-%m-%d %H:%M:%S"
+    [ ! -z "$2" ] && format="$2"
+    getfattr --only-values -n system.ntfs_crtime_be --absolute-names "$1" | perl -MPOSIX -0777 -ne "\$t = unpack(\"Q>\"); print strftime(\"$format\n\", localtime(\$t/10000000-11644473600))"
 }
