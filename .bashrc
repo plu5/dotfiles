@@ -22,7 +22,13 @@ alias connecthotspot='sudo systemctl start usbmuxd'
 alias archupgrade='sudo pacman -Syyu 2>&1 | tee ~/OneDrive/Documents/archupgrade.txt'
 alias restartmouse='sudo modprobe -r psmouse && sudo modprobe psmouse'
 alias doentrycount='ls "/media/pnotes/Day One/Journal.dayone/entries/" | grep -c "^[A-Z0-9]*\.doentry$"'
+
+# ls avec date de modification et création, trié par ce dernier
 alias lshorodatage='shopt -s dotglob && stat * --format "%.16w %.16y %n" | sort -n'
+# seulement date de modification, trié par ce dernier
+alias lshorodatagem='shopt -s dotglob && stat * --format "%.16y %n" | sort -n'
+# lshorodatage avec date de création ntfs
+alias lshorodatagen='for f in *; do echo $(ntfsbirth "$f") $(date -r "$f" "+%F %T") $f; done | sort -n'
 
 # >:-(
 PROMPT_COMMAND='history -a'
