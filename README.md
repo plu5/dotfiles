@@ -122,7 +122,30 @@ in [./pm/scripts](pm/scripts)
 - warpd (hyper--. émulation de la souris avec le clavier)
 - krita (éditeur des images rapide à lancer, bien plus rapide que gimp. je le lance parfois même juste pour coller une image que je veux avoir à côté pour référence car ça lance vite avec `krita --nosplash --template /usr/share/krita/templates/texture/.source/Texture1024x10248bitsrgb.kra`)
 - firefox
+  <br>extensions:
+  + [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
+  + dark reader
+  + firefox color (just to make it black)
+  + keygen music play button
+  + notifier for github
+  + reddit enhancement suite
+  + resurrect pages
+  + sponsorblock for youtube
+  + steamdb
+  + treestyletab
+  + ublock origin
+    <br>([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1))
+  + violentmonkey
+    <br>userscripts:
+    - [forvo login wall blocker](https://gist.github.com/plu5/c6d54d88b1c0b252b00c081b8cb67db6)
+    - [bilibili login wall blocker](https://gist.github.com/plu5/acac697b0bc172d4905179f284bffdf1)
+    - [pint login wall blocker](https://gist.github.com/plu5/fd7f2d261b44539402d539cd044e8d4a)
 - chromium
+  <br>extensions:
+  + ublock origin
+  + video speed controller
+  + proxy switchyomega
+    <br>(on a separate profile)
 - thunderbird (mais je ne l'aime pas trop)
 - anki
 - foliate (epub)
