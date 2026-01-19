@@ -3,14 +3,8 @@ if xdotool search --name Parliamentlive.tv; then
     xdotool search --name Parliamentlive.tv key space;
 elif xdotool search --name mpv; then
     xdotool search --name mpv key space;
-else
+elif xdotool search --name _bilibili; then
     tmp=$(xdotool getactivewindow);
-    if xdotool search --name stop; then
-        soncontrol stopobscur;
-        xdotool windowactivate --sync $(xdotool search --name stop) key q && xdotool windowactivate $tmp;
-    elif xdotool search --name bilibili; then
-        xdotool windowactivate --sync $(xdotool search --name bilibili) key ctrl key space && xdotool windowactivate $tmp;
-    elif xdotool search --name keepPlaying; then
-        xdotool windowactivate --sync $(xdotool search --name keepPlaying) key ctrl key space && xdotool windowactivate $tmp;
-    fi;
+    soncontrol stopobscur;
+    xdotool windowactivate --sync $(xdotool search --name _bilibili) key space && xdotool windowactivate $tmp;
 fi
