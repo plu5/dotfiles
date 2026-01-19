@@ -29,6 +29,8 @@ alias lshorodatage='shopt -s dotglob && stat * --format "%.16w %.16y %n" | sort 
 alias lshorodatagem='shopt -s dotglob && stat * --format "%.16y %n" | sort -n'
 # lshorodatage avec date de création ntfs
 alias lshorodatagen='for f in *; do echo $(ntfsbirth "$f" "%F %H:%M") $(date -r "$f" "+%F %H:%M") $f; done | sort -n'
+# version recursive
+alias rlshorodatagen='find . | while read f; do echo $(ntfsbirth "$f" "%F %H:%M") $(date -r "$f" "+%F %H:%M") $f; done | sort -n'
 
 # >:-(
 PROMPT_COMMAND='history -a'
