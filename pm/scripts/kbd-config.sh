@@ -1,7 +1,7 @@
 #!/bin/sh
 
 for i in $(seq 10); do
-    if lsusb | grep -q SONIX; then
+    if lsusb | grep -q -e 'SONIX\|Huntsman'; then
         sleep 3
         break
     fi

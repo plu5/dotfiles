@@ -4,6 +4,7 @@ X, bspwm
 
 ## Subdirectories in this repository that contain their own README
 - [bspwm .config](.config/bspwm)
+- [systemd/user .config](.config/systemd/user)
 - [Kvantum .config](.config/Kvantum)
 - [gtk-3.0 .config](.config/gtk-3.0)
 - [mpv .config](.config/mpv)
