@@ -72,6 +72,8 @@ in [./pm/scripts](pm/scripts)
     pausing/unpausing videos i have in the background. for some you can send a key with xdotool to a window in the background, for others they have to be focused first. but even those you can send the key to, if there are multiple windows, it may send the key to the wrong window, it seems to be sent to the last focused. so as annoying as it is it's more reliable to focus first and then restore focus to previous.
 28. [**toggleplover**](pm/scripts/toggleplover) : 2026-01-06 22:39:33  
     wanted to have a simple button, not to use the outline which inserts and then deletes text which is destructive in something like emacs buffers. tried to use xdotool for it but the application ignores commands sent to it when it is not focused so i was focusing it temporarily like i do for `pause`. and `plover -s plover_send_command toggle` is far too slow. `plover_send_command`, if you clone the plover repo, can work separately and send the command to any running instance, and it's fast.
+29. [**okularf**](pm/scripts/okularf) : 2026-01-22 01:29
+    <br>used in desktop file exec for okular. opens okular with most recent document. courtesy of [kalwardinX](https://www.reddit.com/r/kde/comments/lucqqw/-/i0pfmls/).
 
 ## TODO
 - **add screenshots**  

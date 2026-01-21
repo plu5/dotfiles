@@ -188,8 +188,7 @@ Comment[uk]=Універсальний переглядач документів
 Comment[vi]=Trình xem tài liệu vạn năng
 Comment[zh_CN]=通用文档查看器
 Comment[zh_TW]=通用文件檢視器
-Exec=okular %U
-# "$(cat .local/share/okular/docdata/"$(ls -ct .local/share/okular/docdata | head -n1)" | grep 'documentInfo url' | cut -d\" -f2)"
+Exec=okularf %U
 Icon=okular
 Type=Application
 X-DocPath=okular/index.html
