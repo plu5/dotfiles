@@ -1,4 +1,11 @@
 # plu5's general configuration files and shell scripts
+```
+    X
+  /   \
+/_______\
+|   _   |  welcome to
+|  | |  |  my humble home
+```
 ## Environment
 X, bspwm
 
@@ -171,3 +178,6 @@ in [./pm/scripts](pm/scripts)
 - dunst
 - magnus (magnification. je ne l'aime pas trop)
 - xdotool
+
+## Acknowledgements
+- [yasnippet docs](https://joaotavora.github.io/yasnippet/snippet-development.html) for the "welcome to my humble home"
