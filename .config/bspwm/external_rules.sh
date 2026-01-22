@@ -47,8 +47,8 @@ if [[ -f "/tmp/profidesireddesktop" ]]; then
         ((desktop++))
         [[ "$desktop" == "10" ]] && desktop=0
         program=$(echo "$d" | grep -oP '(?<=/)[^/ ]+(?=\s|$)|^(\w+)' | head -n 1)
-        class=$(echo "$window_class" | awk '{print tolower($0)}')
-        # notify-send "$d // $program // $class"  # debug
+        class=$(echo "$window_class" | awk -F "." '{print tolower($NF)}')
+        # notify-send "$d // $program // $class // $window_class"  # debug
         if [[ "$class" == "$program" ]]; then
             echo "desktop=$desktop"
             exit
