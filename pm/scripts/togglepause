@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 if xdotool search --name Parliamentlive.tv; then
-    xdotool search --name Parliamentlive.tv key space;
+    xdotool search --name Parliamentlive.tv key --clearmodifiers space;
 elif xdotool search --name mpv; then
-    xdotool search --name mpv key space;
+    xdotool search --name mpv key --clearmodifiers space;
 elif xdotool search --name _bilibili; then
     tmp=$(xdotool getactivewindow);
     soncontrol stopobscur;
-    xdotool windowactivate --sync $(xdotool search --name _bilibili) key space && xdotool windowactivate $tmp;
+    xdotool windowactivate --sync $(xdotool search --name _bilibili) key --clearmodifiers space && xdotool windowactivate $tmp;
 fi
