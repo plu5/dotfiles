@@ -81,6 +81,9 @@ in [./pm/scripts](pm/scripts)
     wanted to have a simple button, not to use the outline which inserts and then deletes text which is destructive in something like emacs buffers. tried to use xdotool for it but the application ignores commands sent to it when it is not focused so i was focusing it temporarily like i do for `pause`. and `plover -s plover_send_command toggle` is far too slow. `plover_send_command`, if you clone the plover repo, can work separately and send the command to any running instance, and it's fast.
 29. [**okularf**](pm/scripts/okularf) : 2026-01-22 01:29
     <br>used in desktop file exec for okular. opens okular with most recent document. courtesy of [kalwardinX](https://www.reddit.com/r/kde/comments/lucqqw/-/i0pfmls/).
+30. [**metaf.py**](pm/scripts/metaf.py) : 2026-01-23 19:32
+    <br>creates a json file with a list of files under a path (recursive) and their dates of creation and modification.
+    <br>would like to add saving also size and checksum.
 
 ## TODO
 - **add screenshots**  
