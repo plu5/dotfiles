@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""Recurses files under a given path saving information (metadata)
+about each file to a json structure.
+"""
 import os
 import json
 import time
@@ -8,6 +11,7 @@ import subprocess
 from datetime import datetime
 
 PROG = 'metaf'
+DEFAULTSAVENAME = 'metaf.json'
 DATEFORMAT = '%F %T'
 
 
@@ -34,6 +38,9 @@ def get_ntfs3g_file_creation_epoch(path):
 
 def get_file_creation_epoch(path):
     # type (str) -> float
+    """Try to get the right file creation epoch time
+    for the operating system and filesystem
+    """
     # Mark Amery https://stackoverflow.com/a/39501288/18396947
     if platform.system() == 'Windows':
         return os.path.getctime(path)
@@ -53,10 +60,10 @@ def readable_date_from_epoch(epoch):
     return datetime.fromtimestamp(epoch).strftime(DATEFORMAT)
 
 
-def get_file_information_dict(path):
+def get_file_information(path):
     # type: (str) -> dict
-    c_epoch = get_file_creation_epoch(p)
-    m_epoch = get_file_modification_epoch(p)
+    c_epoch = get_file_creation_epoch(path)
+    m_epoch = get_file_modification_epoch(path)
     return {
         'creation': readable_date_from_epoch(c_epoch),
         'creation_epoch': c_epoch,
@@ -65,36 +72,61 @@ def get_file_information_dict(path):
     }
 
 
-parser = argparse.ArgumentParser(prog=PROG)
-parser.add_argument('path')
-parser.add_argument('-s', '--save')
-args = parser.parse_args()
-parent_path = args.path
-save_path = args.save
+def get_files_information_recursively(parent_path):
+    # type: (str) -> dict
+    files_info_dict = {}
+    for root, _, files in os.walk(parent_path):
+        for f in files:
+            p = os.path.join(root, f)
+            rel_p = p.removeprefix(parent_path + '/')
+            files_info_dict[rel_p] = get_file_information(p)
+    return files_info_dict
 
-# TEMP DEBUG
-# parent_path = '.'
 
-if not os.path.exists(parent_path):
-    print(f'{PROG}: requires a valid path, '
-          '\'{parent_path}\' doesn\'t seem to be')
-    exit()
+def parse_args():
+    parser = argparse.ArgumentParser(prog=PROG)
+    parser.add_argument('path')
+    parser.add_argument(
+        '-s', '--save', action='store_true',
+        help='Save output to file instead of printing to stdout. '
+        f'Will save to PATH/{DEFAULTSAVENAME} unless a different path '
+        'is provided with the -t/--save-to option.')
+    parser.add_argument(
+        '-t', '--save-to',
+        help='Path to save output to. '
+        'Ignored if -s/--save is not provided.')
+    parser.add_argument(
+        '-f', '--overwrite', action='store_true',
+        help='Overwrite save file if it already exists. '
+        'Ignored if -s/--save is not provided.')
+    return parser.parse_args()
 
-files_info_dict = {}
-for root, _, files in os.walk(parent_path):
-    for f in files:
-        p = os.path.join(root, f)
-        rel_p = p.removeprefix(parent_path + '/')
-        files_info_dict[rel_p] = get_file_information_dict(p)
 
-now = time.time()
-out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
-       'files': files_info_dict}
-dump = json.dumps(out, indent=2)
-print(dump)  # temp
+def main():
+    # type: () -> None
+    args = parse_args()
+    parent_path = args.path
 
-# if save_path:
-#     if os.path.exists(save_path):
+    # parent_path = '.'  # debug
 
-# else:
-#     print()
+    if not os.path.exists(parent_path):
+        print(f'{PROG}: requires a valid path, '
+              '\'{parent_path}\' doesn\'t seem to be')
+        exit()
+
+    now = time.time()
+    out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
+           'files': get_files_information_recursively(parent_path)}
+    dump = json.dumps(out, indent=2)
+
+    if args.save:
+        save_to = args.save_to or os.path.join(parent_path, DEFAULTSAVENAME)
+        open_as = 'w' if args.overwrite else 'x'
+        with open(save_to, open_as) as f:
+            f.write(dump)
+    else:
+        print(dump)
+
+
+if __name__ == '__main__':
+    main()
