@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+okular "$(cat $HOME/.local/share/okular/docdata/"$(ls -ct $HOME/.local/share/okular/docdata | head -n1)" | grep 'documentInfo url' | cut -d\" -f2)" $@
