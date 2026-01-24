@@ -20,6 +20,9 @@ X, bspwm
 - [krita .local/share](.local/share/krita)  
   (also contains [an explanation](.local/share/krita/README.md#libpng-patch) as to the purpose of `libpng.patch`)
 
+## Config contained in separate repositories
+- [emacs](https://github.com/plu5/emacsd)
+
 ## Scripts
 in [./pm/scripts](pm/scripts)
 
