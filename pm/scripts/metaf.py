@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Recurses files under a given path saving information (metadata)
 about each file to a json structure.
+
+Example usage:
+metaf.py . -s
 """
 import os
 import json
@@ -13,6 +16,12 @@ from datetime import datetime
 PROG = 'metaf'
 DEFAULTSAVENAME = 'metaf.json'
 DATEFORMAT = '%F %T'
+
+
+def msg(text):
+    # type: (str) -> None
+    """Utility for logs/errors, could be replaced with proper logging"""
+    print(f'{PROG}: {text}')
 
 
 def get_file_modification_epoch(path):
@@ -79,7 +88,11 @@ def get_files_information_recursively(parent_path):
         for f in files:
             p = os.path.join(root, f)
             rel_p = p.removeprefix(parent_path + '/')
-            files_info_dict[rel_p] = get_file_information(p)
+            try:
+                files_info_dict[rel_p] = get_file_information(p)
+            except FileNotFoundError as e:
+                msg(f'{p} not found - broken symlink? Exception: {e}')
+                msg('Skipping.')
     return files_info_dict
 
 
@@ -110,8 +123,7 @@ def main():
     # parent_path = '.'  # debug
 
     if not os.path.exists(parent_path):
-        print(f'{PROG}: requires a valid path, '
-              '\'{parent_path}\' doesn\'t seem to be')
+        msg(f'requires a valid path, \'{parent_path}\' doesn\'t seem to be')
         exit()
 
     now = time.time()
