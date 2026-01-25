@@ -2,6 +2,9 @@
 """Script to run Plover from source without tox,
 and send commands to a running instance.
 
+Script dependencies:
+psutil
+
 Plover dependencies:
 1. Minimal:
 appdirs, hid, pkginfo, plover-stroke, Pygments, pyserial, packaging,
@@ -16,6 +19,9 @@ python-xlib, evdev, psutil
 plyer
 6. MacOS-only:
 appnope, pyobjc-core, pyobjc-framework-Cocoa, pyobjc-framework-Quartz
+
+Created: 2026-01-06 22:39 as a bash script
+         2026-01-24 03:00 became a python script
 """
 import os
 import sys
