@@ -87,26 +87,24 @@ def get_file_type(path):
 def get_file_information(path, fmt):
     # type: (str) -> dict
     res = {}
-    c = m = None
-    if 'c' in fmt.lower():
-        c = get_file_creation_epoch(path)
-    if 'm' in fmt.lower():
-        m = get_file_modification_epoch(path)
+
+    c = get_file_creation_epoch(path) if 'c' in fmt.lower() else None
+    m = get_file_modification_epoch(path) if 'm' in fmt.lower() else None
+
+    dispatch = {
+        'c': lambda: c,
+        'm': lambda: m,
+        'C': lambda: readable_date_from_epoch(c),
+        'M': lambda: readable_date_from_epoch(m),
+        't': lambda: get_file_type(path),
+    }
+
     for char in fmt:
-        data = None
-        if char == 'C':
-            data = readable_date_from_epoch(c)
-        elif char == 'M':
-            data = readable_date_from_epoch(m)
-        elif char == 'c':
-            data = c
-        elif char == 'm':
-            data = m
-        elif char == 't':
-            data = get_file_type(path)
         opt = FORMATOPTIONS.get(char)
-        if opt:
-            res[opt] = data
+        if not opt or char not in dispatch:
+            continue
+        res[opt] = dispatch[char]()
+
     return res
 
 
