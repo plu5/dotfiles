@@ -2,6 +2,16 @@
 """Script to run Plover from source without tox,
 and send commands to a running instance.
 
+Instructions:
+1. Modify `PLOVER_PATH` to be the path to your local Plover repository
+2. Modify `PLUGINS` to be a list of paths to repositories of plugisn you wish
+   to load
+3. Run this script to launch or toggle Plover, passing any arguments you wish
+   to pass to Plover or Plover run command. e.g. `toggleplover focus`
+4. To install plugins just add their paths to `PLUGINS`, don't use
+   `plover --script plover_plugins install` as it uses pip to install them and
+   this will not work without tox or venv.
+
 Script dependencies:
 psutil
 
@@ -28,8 +38,14 @@ import sys
 import psutil
 
 PLOVER_PATH = '/media/Windows/Users/pm/dev/reps/plover'
+PLUGINS = [
+    '/media/Windows/Users/pm/dev/reps/pyhuntsman/plover-huntsman-plugin',
+]
+
 ARGS_TO_MAIN_PLOVER = ['--version', '-s', '--script', '-g', '--gui']
 
+for path in PLUGINS:
+    sys.path.insert(0, path)
 sys.path.insert(0, PLOVER_PATH)
 
 
