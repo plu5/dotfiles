@@ -167,6 +167,15 @@ def main():
         msg(f'requires a valid path, \'{parent_path}\' doesn\'t seem to be')
         exit()
 
+    # Fail fast if save file already exists and overwrite is False
+    if args.save and not args.overwrite:
+        save_to = args.save_to or os.path.join(parent_path, DEFAULTSAVENAME)
+        if os.path.exists(save_to):
+            msg(f'Save file \'{save_to}\' already exists. '
+                'Run with -o/--overwrite if you wish to overwrite it. '
+                'Run with -t/--save-to to specify a different save file.')
+            exit()
+
     now = time.time()
     out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
            'files': get_files_information_recursively(
