@@ -81,10 +81,15 @@ def get_file_information(path):
     }
 
 
-def get_files_information_recursively(parent_path):
+def get_files_information_recursively(parent_path, include_subdirs=False):
     # type: (str) -> dict
     files_info_dict = {}
-    for root, _, files in os.walk(parent_path):
+    for root, subdirs, files in os.walk(parent_path):
+        if include_subdirs:
+            for f in subdirs:
+                p = os.path.join(root, f)
+                rel_p = p.removeprefix(parent_path + '/')
+                files_info_dict[rel_p] = get_file_information(p)
         for f in files:
             p = os.path.join(root, f)
             rel_p = p.removeprefix(parent_path + '/')
@@ -99,6 +104,9 @@ def get_files_information_recursively(parent_path):
 def parse_args():
     parser = argparse.ArgumentParser(prog=PROG)
     parser.add_argument('path')
+    parser.add_argument(
+        '-a', '--all', action='store_true',
+        help='Include metadata for directories too.')
     parser.add_argument(
         '-s', '--save', action='store_true',
         help='Save output to file instead of printing to stdout. '
@@ -128,7 +136,8 @@ def main():
 
     now = time.time()
     out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
-           'files': get_files_information_recursively(parent_path)}
+           'files': get_files_information_recursively(
+               parent_path, args.all)}
     dump = json.dumps(out, indent=2)
 
     if args.save:
