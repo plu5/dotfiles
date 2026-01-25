@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+"""Script to run Plover from source without tox,
+and send commands to a running instance.
+
+Plover dependencies:
+1. Minimal:
+appdirs, hid, pkginfo, plover-stroke, Pygments, pyserial, packaging,
+setuptools, wcwidth
+2. GUI:
+PySide6-Essentials
+3. Plugins:
+readme-renderer[md], requests-cache, requests-futures, rtf_tokenize
+4. Linux-only:
+python-xlib, evdev, psutil
+5. Windows-only:
+plyer
+6. MacOS-only:
+appnope, pyobjc-core, pyobjc-framework-Cocoa, pyobjc-framework-Quartz
+"""
 import os
 import sys
 import psutil
@@ -27,8 +45,13 @@ else:
     from plover.scripts.main import main  # noqa: E402
     sys.exit(main())
 
+# NOTES:
+# Other methods to toggle plover:
+
+# 1. Click on the tray icon
 # eval $(xdotool getmouselocation --shell)
 # xdotool mousemove 990 5 click --delay 500 1
 # xdotool mousemove $X $Y
 
+# 2. Ask Plover (slow)
 # plover -s plover_send_command toggle
