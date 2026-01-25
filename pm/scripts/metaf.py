@@ -69,6 +69,14 @@ def readable_date_from_epoch(epoch):
     return datetime.fromtimestamp(epoch).strftime(DATEFORMAT)
 
 
+def get_file_type(path):
+    # type: (str) -> str
+    c = subprocess.run([
+        'file', '--mime-type', path
+    ], capture_output=True)
+    return c.stdout.decode().split()[-1]
+
+
 def get_file_information(path):
     # type: (str) -> dict
     c_epoch = get_file_creation_epoch(path)
@@ -78,6 +86,7 @@ def get_file_information(path):
         'creation_epoch': c_epoch,
         'modification': readable_date_from_epoch(m_epoch),
         'modification_epoch': m_epoch,
+        'type': get_file_type(path),
     }
 
 
