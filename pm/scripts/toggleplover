@@ -22,6 +22,8 @@ import sys
 import psutil
 
 PLOVER_PATH = '/media/Windows/Users/pm/dev/reps/plover'
+ARGS_TO_MAIN_PLOVER = ['--version', '-s', '--script', '-g', '--gui']
+
 sys.path.insert(0, PLOVER_PATH)
 
 
@@ -36,13 +38,14 @@ def is_running(script):
     return False
 
 
-if is_running("plover"):
+if (not is_running("plover")
+        or len(sys.argv) > 1 and sys.argv[1] in ARGS_TO_MAIN_PLOVER):
+    from plover.scripts.main import main  # noqa: E402
+    sys.exit(main())
+else:
     from plover.scripts.send_command import main  # noqa: E402
     if len(sys.argv) < 2:
         sys.argv.append('toggle')
-    sys.exit(main())
-else:
-    from plover.scripts.main import main  # noqa: E402
     sys.exit(main())
 
 # NOTES:
