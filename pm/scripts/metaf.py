@@ -17,6 +17,13 @@ PROG = 'metaf'
 DEFAULTSAVENAME = 'metaf.json'
 DATEFORMAT = '%F %T'
 
+FORMATOPTIONS = {
+    'C': 'creation', 'c': 'creation epoch',
+    'M': 'modification', 'm': 'modification epoch',
+    't': 'type',
+}
+DEFAULTFORMATOPTIONS = 'CcMm'
+
 
 def msg(text):
     # type: (str) -> None
@@ -77,20 +84,33 @@ def get_file_type(path):
     return c.stdout.decode().split()[-1]
 
 
-def get_file_information(path):
+def get_file_information(path, fmt):
     # type: (str) -> dict
-    c_epoch = get_file_creation_epoch(path)
-    m_epoch = get_file_modification_epoch(path)
-    return {
-        'creation': readable_date_from_epoch(c_epoch),
-        'creation_epoch': c_epoch,
-        'modification': readable_date_from_epoch(m_epoch),
-        'modification_epoch': m_epoch,
-        'type': get_file_type(path),
-    }
+    res = {}
+    c = m = None
+    if 'c' in fmt.lower():
+        c = get_file_creation_epoch(path)
+    if 'm' in fmt.lower():
+        m = get_file_modification_epoch(path)
+    for char in fmt:
+        data = None
+        if char == 'C':
+            data = readable_date_from_epoch(c)
+        elif char == 'M':
+            data = readable_date_from_epoch(m)
+        elif char == 'c':
+            data = c
+        elif char == 'm':
+            data = m
+        elif char == 't':
+            data = get_file_type(path)
+        opt = FORMATOPTIONS.get(char)
+        if opt:
+            res[opt] = data
+    return res
 
 
-def get_files_information_recursively(parent_path, include_subdirs=False):
+def get_files_information_recursively(parent_path, fmt, include_subdirs=False):
     # type: (str) -> dict
     files_info_dict = {}
     for root, subdirs, files in os.walk(parent_path):
@@ -98,12 +118,12 @@ def get_files_information_recursively(parent_path, include_subdirs=False):
             for f in subdirs:
                 p = os.path.join(root, f)
                 rel_p = p.removeprefix(parent_path + '/')
-                files_info_dict[rel_p] = get_file_information(p)
+                files_info_dict[rel_p] = get_file_information(p, fmt)
         for f in files:
             p = os.path.join(root, f)
             rel_p = p.removeprefix(parent_path + '/')
             try:
-                files_info_dict[rel_p] = get_file_information(p)
+                files_info_dict[rel_p] = get_file_information(p, fmt)
             except FileNotFoundError as e:
                 msg(f'{p} not found - broken symlink? Exception: {e}')
                 msg('Skipping.')
@@ -113,6 +133,12 @@ def get_files_information_recursively(parent_path, include_subdirs=False):
 def parse_args():
     parser = argparse.ArgumentParser(prog=PROG)
     parser.add_argument('path')
+    parser.add_argument(
+        '-f', '--format', default=DEFAULTFORMATOPTIONS,
+        help='Which metadata fields to include and in which order. '
+        f'Default: {DEFAULTFORMATOPTIONS}. '
+        'Options: '
+        f'{", ".join([f"{k} ({v})" for k, v in FORMATOPTIONS.items()])}.')
     parser.add_argument(
         '-a', '--all', action='store_true',
         help='Include metadata for directories too.')
@@ -126,7 +152,7 @@ def parse_args():
         help='Path to save output to. '
         'Ignored if -s/--save is not provided.')
     parser.add_argument(
-        '-f', '--overwrite', action='store_true',
+        '-o', '--overwrite', action='store_true',
         help='Overwrite save file if it already exists. '
         'Ignored if -s/--save is not provided.')
     return parser.parse_args()
@@ -146,7 +172,7 @@ def main():
     now = time.time()
     out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
            'files': get_files_information_recursively(
-               parent_path, args.all)}
+               parent_path, args.format, args.all)}
     dump = json.dumps(out, indent=2)
 
     if args.save:
