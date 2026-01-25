@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Terminal=false
+Exec=toggleplover
+Name=Plover
+GenericName=Stenography
+Icon=/media/Windows/Users/pm/dev/reps/plover/plover/assets/plover.png
+Categories=Utility;Accessibility;
+Comment=stenographic input and translation
+Keywords=steno;input;keyboard;
+X-Unity-IconBackgroundColor=#414F4C

@@ -1,12 +1,34 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
+import os
+import sys
+import psutil
+
+PLOVER_PATH = '/media/Windows/Users/pm/dev/reps/plover'
+sys.path.insert(0, PLOVER_PATH)
+
+
+def is_running(script):
+    # kabapy https://stackoverflow.com/a/50063190/18396947
+    for q in psutil.process_iter():
+        if q.name().startswith('python'):
+            if (len(q.cmdline()) > 1
+                    and script in q.cmdline()[1]
+                    and q.pid != os.getpid()):
+                return True
+    return False
+
+
+if is_running("plover"):
+    from plover.scripts.send_command import main  # noqa: E402
+    if len(sys.argv) < 2:
+        sys.argv.append('toggle')
+    sys.exit(main())
+else:
+    from plover.scripts.main import main  # noqa: E402
+    sys.exit(main())
 
 # eval $(xdotool getmouselocation --shell)
 # xdotool mousemove 990 5 click --delay 500 1
 # xdotool mousemove $X $Y
 
 # plover -s plover_send_command toggle
-
-# source /media/Windows/Users/pm/dev/reps/plover/.tox/dev/bin/activate
-# exec plover_send_command toggle
-/media/Windows/Users/pm/dev/reps/plover/.tox/dev/bin/plover_send_command toggle
-# sleep 0.1; tmp=$(xdotool getactivewindow); if xdotool search --name Plover; then xdotool windowactivate --sync $(xdotool search --name Plover | head -n 1) key ctrl+period && xdotool windowactivate $tmp; fi

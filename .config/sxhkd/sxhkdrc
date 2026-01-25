@@ -29,7 +29,7 @@ super + x
 Scroll_Lock
       toggleplover
 ctrl + Scroll_Lock
-     /media/Windows/Users/pm/dev/reps/plover/.tox/dev/bin/plover_send_command focus
+      toggleplover focus
 
 super + shift + x
       soncontrol rofi
