@@ -95,6 +95,9 @@ For unicode insertion to work in Qt applications, including Plover's own Qt-base
 Unicode insertion is broken in Qt when it is inserted too fast. I have 3ms input delay in the configuration to deal with this issue. Even then if you spam unicode characters too fast, it breaks.
 
 ## Non-exhaustive list of arch packages to install to get Plover working locally without tox
+Pacman:
+- `wcwidth`
+
 AUR:
 - `python-plover_stroke`
 - `python-rtf_tokenize`
