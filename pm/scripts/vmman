@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# Command to launch my win98 qemu virtual machine
+# 2026-01-30 08:02
+#
+# Based on https://computernewb.com/wiki/QEMU/Guests/Windows_98
+# and https://www.qemu.org/docs/master/system/images.html
+
+VM_IMG=/home/pm/pm/vm/win98.img
+VM_SHARE=/home/pm/pm/vm/share
+VM_CD=/home/pm/Downloads/win98qi_v0.9.6_stock.iso
+# ^ change while running with `change ide1-cd0 path/to/iso`
+
+qemu-system-i386 \
+    -display gtk,zoom-to-fit=on,show-menubar=off \
+    -device lsi53c895a,id=vm.scsi_controller \
+    -drive if=none,id=vm.hda_drive,file=$VM_IMG \
+    -device scsi-hd,id=vm.hda,drive=vm.hda_drive,bus=vm.scsi_controller.0,bootindex=1 \
+    -drive if=none,id=vvfat,file=fat:rw:$VM_SHARE,format=raw \
+    -device scsi-hd,drive=vvfat,bootindex=2 \
+    -cdrom $VM_CD \
+    -device VGA,vgamem_mb=64 \
+    -cpu host \
+    -m 256 \
+    -M pc,hpet=off,acpi=on,usb=on,accel=kvm \
+    -netdev user,id=lan \
+    -device rtl8139,netdev=lan \
+    -device usb-tablet \
+    -rtc base=localtime \
+    -monitor stdio

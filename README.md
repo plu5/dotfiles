@@ -88,6 +88,8 @@ in [./pm/scripts](pm/scripts)
 30. [**metaf.py**](pm/scripts/metaf.py) : 2026-01-23 19:32
     <br>creates a json file with a list of files under a path (recursive) and their dates of creation and modification.
     <br>would like to add saving also size and checksum.
+31. [**vmman**](pm/scripts/vmman) : 2026-01-30 08:02
+    <br>command to launch my win98 qemu vm. named as such because if i create more i will change it to have all the commands and give an argument to which one.
 
 ## TODO
 - **add screenshots**  
