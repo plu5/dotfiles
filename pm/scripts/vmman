@@ -1,9 +1,29 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # Command to launch my win98 qemu virtual machine
 # 2026-01-30 08:02
 #
 # Based on https://computernewb.com/wiki/QEMU/Guests/Windows_98
 # and https://www.qemu.org/docs/master/system/images.html
+#
+# Dependencies (for this script):
+# - qemu
+# - paths in the variables VM_IMG, VM_SHARE, VM_CD defined below
+#
+# Requirements to set up VM:
+# - https://github.com/oerg866/win98-quickinstall for win98 itself
+# - https://github.com/JHRobotics/softgpu for graphics
+# - AC97 driver linked in softgpu readme ^ for sound
+#
+# Usage:
+# vmman
+#
+# Notes:
+# Careful with the shared folder, vvfat is pretty fragile, you should not
+# change anything it from the host while vm is running. It's also limited
+# to 500 MB max, there is allegedly a way to get it to 2 GB but I've not
+# worked it out. ISOs can be used to transfer larger files, with the advantage
+# that you can change them while the vm is running. Personally to transfer
+# from guest to host I use the vvfat share, and from host to guest I use ISOs.
 
 VM_IMG=/home/pm/pm/vm/win98.img
 VM_SHARE=/home/pm/pm/vm/share

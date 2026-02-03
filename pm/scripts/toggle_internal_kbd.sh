@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env sh
+# Toggle internal keyboard
+# 2024-12-25 19:12
+#
+# Turn off internal keyboard and apply Xmodmap.
 
 # use `xinput list` to check your keyboard name. this one is for laptop internal keyboard
 deviceName="AT Translated Set 2"

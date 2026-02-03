@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# Set volume by regex of audio stream title
+# 2025-11-26 15:35
+#
+# Dependencies:
+# - pactl
+#
+# Usage:
+# volume yt 130%
+# volume bili 50%
+# volume .*anothersite.* 10% b
 
 truc="$1"
 vol="$2"
@@ -31,13 +41,6 @@ setvol() {
     local regex=$1
     local volume=$2
     local trouve="false"
-    # if [[ $lastcall -lt $EPOCHSECONDS ]]; then
-    #     listcache=$(pactl list sink-inputs)
-    #     lastcall=$EPOCHSECONDS
-    #     echo lastcall $lastcall
-    #     echo "$listcache" | grep -B27 "media.name = $regex"
-    # fi
-    # for id in $(echo "$listcache" | grep -B27 "media.name = $regex" | grep 'Sink Input #' | awk '{print $3}'); do
     for id in $(pactl list sink-inputs | grep -B27 "media.name = $regex" | grep 'Sink Input #' | awk '{print $3}'); do
         trouve="true"
         echo "volume: mise de $id à $volume"

@@ -1,14 +1,39 @@
-#!/bin/bash
-# basé sur la solution de contournement de yutkat https://github.com/dunst-project/dunst/issues/669
+#!/usr/bin/env sh
+# Add custom copy action to dunst notifications
+# 2025-11-30 02:15
+#
+# Dependencies:
+# - dunst
+# - xclip
+#
+# Usage:
+# Add this script to a rule in your dunstrc
+# ```
+# [copyhack]
+#    appname = notify-send
+#    script = ~/pm/scripts/dunstaction
+# ```
+# That will invoke this script when matching notifications are raised. This
+# script then replaces the notification with an identical notification with a
+# custom action. If invoked (clicked or right clicked or whatever you have
+# invoking actions set to be in your dunst configuration) the script continues
+# into the case statement, which copies the notification's summary and body
+# into the clipboard.
+#
+# This sadly will not work with notifications popped back from history.
+#
+# Based on yutkat's workaround:
+# https://github.com/dunst-project/dunst/issues/669
+#
+# Notes on replacing the notification (see `ACTION=[..]` below):
+# * summary must be specified (can't just --replace-id)
+# * appname (-a) must be changed to something that does not match a rule that
+#   has this script set to avoid an infinite loop.
 
-# summary must be specified. et il faut changer le appname à quelque chose sur laquelle on n'a pas un script dans dunstrc pour garder contre une boucle infinie
-
-# notify-send -a dontreact "env: $(printenv)"
+# notify-send -a dontreact "env: $(printenv)"  # debug
 text="${DUNST_SUMMARY}${DUNST_BDOY}"
 ACTION=$(notify-send --replace-id="$DUNST_ID" -a donotreactwithascript -u "$DUNST_URGENCY" "$text" --action="default,Copy")
 
 case "$ACTION" in
-    "0")
-        echo -n "$text" | xclip -selection clipboard
-        ;;
+    "0") echo -n "$text" | xclip -selection clipboard;;
 esac

@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env sh
+# Wacom tablet configuration script for a systemd service
+# 2025-05-20 00:56
 
 for i in $(seq 10); do
     if xsetwacom list devices | grep -q Wacom; then

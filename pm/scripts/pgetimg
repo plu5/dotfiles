@@ -1,19 +1,41 @@
-#!/bin/bash
+#!/usr/bin/env sh
+# Download file to a set directory and with a dated filename
+# 2025-12-21 07:07
+#
+# Dependencies:
+# - wget
+#
+# Usage:
+# pgetimg https://upload.wikimedia.org/wikipedia/commons/5/5b/Name.jpg name.jpg
+
+DESTINATIONFOLDER=~/pm/r/illustrations/
+DATEFORMAT="+%y%m%d%H%M"
+T_EXISTS="dest '%s' existe déjà"
+T_SUCCESS="le téléchargement vers '%s' a réussi.
+exécution de touch sur le fichier..."
+T_BADARGS="il manque des arguments"
+T_HELP="syntaxe : %s <lien> <destnom>"
+
+NOM="${0##*/}"
+
 lien="$1"
 destnom="$2"
-dt=$(date +%y%m%d%H%M)
-destdossier=~/pm/r/illustrations/
-destinationfinale="$destdossier""$dt""$destnom"
+dt=$(date "$DATEFORMAT")
+destinationfinale="$DESTINATIONFOLDER""$dt""$destnom"
+
 if [ -e $destinationfinale ]; then
-    echo "pgetimg: dest '$destinationfinale' existe déjà"
+    printf "$NOM: ${T_EXISTS}\n" "$destinationfinale"
     exit 1
 elif [ ! -z $lien ]; then
     wget "$lien" -O "$destinationfinale"
     if [ $? = 0 ]; then
-        echo "pgetimg: le téléchargement vers '$destinationfinale' a réussi. exécution de touch sur le fichier..."
+        printf "$NOM: ${T_SUCCESS}\n" "$destinationfinale"
         touch "$destinationfinale"
+        # ^ the reason for the touch is to update the modified date on the
+        # image, which otherwise is the same as it is on the server, often
+        # years ago, which may be misleading.
     fi
 else
-    echo "pgetimg: il manque des arguments"
-    echo "syntaxe : pgetimg <lien> <destnom>"
+    echo "$NOM: $T_BADARGS"
+    printf "${T_HELP}\n" "$NOM"
 fi

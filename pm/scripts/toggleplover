@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Toggle plover
+# 2026-01-06 22:39
 """Script to run Plover from source without tox,
 and send commands to a running instance.
 

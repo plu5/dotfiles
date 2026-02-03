@@ -1,4 +1,26 @@
 #!/usr/bin/env bash
+# My mess of a command to launch rofi
+# 2025-12-01 17:57
+#
+# It wraps calls so that we get the output to commands in a notification.
+# It also does weird things with quotes which I arrived at by accident and now
+# have become used to so don't really want to get rid of; you can do:
+# `echo this doesn't break for some reason`
+# which is quite useful for translation (see scripts t and g) without having to
+# escape single quotes, but if you *do* need single quotes, they will not work
+# properly -- unless there is a pipe in the command. Because what I have done
+# written two different methods of resolution based on whether or not there is
+# a pipe in the command. If there is, it expands it further to make quotes and
+# pipes work. So you can do:
+# `python -c 'help(str)' | grep contains`
+#
+# The run-shell-command (S-RET) runs the command in a terminal that stays open
+# (so you get a terminal window open with the output and can subsequently do
+#  what you want with it).
+#
+# Q: Is it possible to give the name of a script in run command instead of this
+# mess?
+
 rofi -show combi -run-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; echo \"$out :: $(xdotool get_desktop)\" > /tmp/profidesireddesktop; if [[ \"$out\" =~ \"|\" ]]; then echo \"1\"; out=$(bash -c \"$out\"); else echo \"2\"; out=$($out); fi; [ -n \"$out\" ] && notify-send \"$out\";"' -run-shell-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; bash -c \"{terminal} -e $SHELL --rcfile <(echo \\\"$out\\\")\""'
 
 # rofi -show combi -run-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: $out; out=$($out); [ -n \"$out\" ] && notify-send \"$out\""' -run-shell-command 'bash -c "set -f; read -r -d \"\" out <<<\"{cmd}\"; echo interpreted cmd: \"$out\"; bash -c \"{terminal} -e $SHELL --rcfile <(echo \\\"$out\\\")\""'

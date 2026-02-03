@@ -6,7 +6,8 @@
 # License: Simplified BSD
 # https://gist.github.com/garaud/06b38554103aa7120337
 
-# légèrement modifié par pm
+# Modified by plu5 to remove pop-to-buffer from create_buffer
+# 2025-12-03 16:51
 
 """Allow you to pipe command results into an Emacs buffer. Suppose you have an
 Emacs server since you launch 'emacsclient'.

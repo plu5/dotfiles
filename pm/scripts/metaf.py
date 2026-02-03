@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# metaf
+# 2026-01-23 19:32
 """Recurses files under a given path saving information (metadata)
 about each file to a json structure.
 

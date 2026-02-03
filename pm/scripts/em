@@ -1,10 +1,20 @@
-#!/usr/bin/env bash
-if [[ -z "$1" ]]; then
+#!/usr/bin/env sh
+# Emacs sudo editor in terminal
+# 2025-12-07 18:34
+#
+# Dependencies:
+# - Emacs server (M-x server-start)
+#
+# Usage:
+# em
+# em "file to edit"
+# em /etc/fstab
+
+if [ -z "$1" ]; then
     emacsclient -t
 else
-    if [[ "$1" == /* ]]; then
-        emacsclient -t /sudo::"$1"
-    else
-        emacsclient -t /sudo::"${PWD}/$1"
-    fi
+    case "$1" in
+        /*) emacsclient -t /sudo::"$1";;
+        *) emacsclient -t /sudo::"${PWD}/$1";;
+    esac
 fi

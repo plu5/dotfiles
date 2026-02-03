@@ -1,7 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Lock and log inputs
+# 2026-01-05 08:13
+#
+# Purpose: Prevent inputs while I sleep, and log when they happen
+#
+# Dependencies:
+# - xtrlock
+# - (Optional) Emacs daemon (to run a command on unlock)
+#
+# Usage:
+# sommeil
+# Usually activated with a hotkey
+# To unlock type (blindly) user password. If it fails don't panic, try again
+# (previous inputs could interfere. ESC to clear)
+# Pressing a mouse key will quit also. This may be removed in a later version
+# due to my tendency to press it by accident.
+
 FICHIER=~/sommeil.log
 LOCKAPP=xtrlock
+DATEFMT='+%H:%M'
+TIMETOSLEEPAFTERINPUTBEFOREDIMMINGSCREEN=5s
+# avoid logging the timestamp if another input occurred before n seconds
+LOGTHRESHOLD=50
+EMACSCMD='(with-current-buffer (file-name-nondirectory p-main-file) (insert-file-contents "~/sommeil.log"))'
+T_ABANDON="Aucun processus %s, abandon"
+
 NOM="${0##*/}"
+
 now=0
 echo -n "" > "$FICHIER"
 jobpid=
@@ -11,30 +36,34 @@ cleanup() {
         jobpid=
     fi
 }
+
 quit() {
     cleanup
-    emacsclient --eval '(with-current-buffer (file-name-nondirectory p-main-file) (insert-file-contents "~/sommeil.log"))'
+    command -v emacsclient >/dev/null 2>&1 && emacsclient --eval "$EMACSCMD"
     exit
 }
+
 maybeabandon() {
     pgrep "$LOCKAPP" >/dev/null 2>&1
     if [[ ! "$?" = 0 ]]; then
-        echo "$NOM: Aucun processus $LOCKAPP, abandon"
+        printf "$NOM: ${T_ABANDON}\n" "$LOCKAPP"
         quit
     fi
 }
+
 maybeeteindre() {
-    sleep 5
+    sleep $TIMETOSLEEPAFTERINPUTBEFOREDIMMINGSCREEN
     xset dpms force off
 }
+
 xtrlock &
 xinput test-xi2 --root |
     while read -r line; do
         # echo "$line"  # DEBUG
         case "$line" in
             *\(KeyRelease\))
-                if [[ $now < $(($EPOCHSECONDS - 50)) ]]; then
-                    echo -n "$(date '+%H:%M') " >> "$FICHIER"
+                if [[ $now < $(($EPOCHSECONDS - $LOGTHRESHOLD)) ]]; then
+                    echo -n "$(date "$DATEFMT") " >> "$FICHIER"
                     now=$EPOCHSECONDS
                 fi
                 cleanup

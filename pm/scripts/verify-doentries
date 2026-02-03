@@ -1,24 +1,32 @@
 #!/usr/bin/env bash
-# 2025-12-05 04:01
+# Verify validity of xml files with exclusions
+# 2025-12-05 04:01 / 04:10
+#
+# Dependencies:
+# - xmllint
+#
+# Usage:
+# Run in folder containing the files to verify
 
-# pour vérifier combien il y en a sans doublons :
-# ls -Uba1 | grep -v conflicted | grep -c .doentry
+FILESGLOB=*.doentry
+T_IGNORED="Ignoré :"
+T_CURRENT="Traitement :"
 
 ignore=("1A71DD04CF8141EBBC6DB74819B9A127 botched (Zhu Q's conflicted copy 2020-12-16).doentry" # corrupted
-        "56399F901C154422A5287F7D0C16205D.doentry" # corriger ça ? [2019]
-        "9FD95EB57DD3419D8388A1F8C1B02560.doentry" # corriger ? [2017]
+        "56399F901C154422A5287F7D0C16205D.doentry"  # 2019
+        "9FD95EB57DD3419D8388A1F8C1B02560.doentry"  # 2017
        )
 
 COUNTER=1
-for xmlfile in *.doentry; do
+for xmlfile in $FILESGLOB; do
     for ign in "${ignore[@]}"; do
         if [[ "$xmlfile" == "$ign" ]]; then
-            echo "$COUNTER Ignoré : $xmlfile"
+            echo "$COUNTER $T_IGNORED $xmlfile"
             let COUNTER++
             continue 2
         fi
     done
-    echo "$COUNTER Traitement : $xmlfile";
+    echo "$COUNTER $T_CURRENT $xmlfile";
     xmllint --format "$xmlfile" > /dev/null;
     if [ $? != 0 ]; then
         break;

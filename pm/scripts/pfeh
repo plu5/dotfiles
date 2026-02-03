@@ -1,2 +1,38 @@
-#!/bin/bash
-feh --action 'notify-send "$(prename "%f")"' --action9 'notify-send "$(file "%f")"' --action8 'notify-send "$(stat "%f")"' --action7 'echo -n "%f" | xclip -selection clipboard' --action1 'fehfavoris' --action2 'fehfavoris "%f"' --scale-down --sort mtime -r /home/pm/pm/r "$@"
+#!/usr/bin/env bash
+# feh launch command
+# 2025-12-21 10:30
+#
+# Dependencies:
+# - feh
+# - xclip
+# - script prename
+# - script fehfavoris
+
+IMAGESDIR=/home/pm/pm/r
+
+cmd=(
+    feh
+    # rename
+    --action 'notify-send "$(prename "%f")"'
+    # file type and size
+    --action9 'notify-send "$(file "%f")"'
+    # file dates
+    --action8 'notify-send "$(stat "%f")"'
+    # copy path
+    --action7 'echo -n "%f" | xclip -selection clipboard'
+    # copy image. should maybe be image/%t, but with that it doesn't work
+    # everywhere, for example pasting into imgur doesn't work
+    --action6 'xclip -selection clipboard -t image/png -i %F'
+    # open favourites
+    --action1 'fehfavoris'
+    # save to favourites
+    --action2 'fehfavoris "%f"'
+    # scale to fit
+    --scale-down
+    # sort by modification date
+    --sort mtime
+    -r "$IMAGESDIR"
+    "$@"
+)
+
+"${cmd[@]}"

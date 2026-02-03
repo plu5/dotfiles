@@ -1,10 +1,21 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+# Toggle pause
+# 2026-01-06 08:04
+#
+# Dependencies:
+# - xdotool
+# - (Optional) script soncontrol
+#
+# Usage:
+# bound to a hotkey
+
 if xdotool search --name Parliamentlive.tv; then
     xdotool search --name Parliamentlive.tv key --clearmodifiers space;
 elif xdotool search --name mpv; then
     xdotool search --name mpv key --clearmodifiers space;
 elif xdotool search --name _bilibili; then
     tmp=$(xdotool getactivewindow);
-    soncontrol stopobscur;
-    xdotool windowactivate --sync $(xdotool search --name _bilibili) key --clearmodifiers space && xdotool windowactivate $tmp;
+    command -v soncontrol >/dev/null 2>&1 && soncontrol stopobscur;
+    xdotool windowactivate --sync $(xdotool search --name _bilibili) key --clearmodifiers space &&
+        xdotool windowactivate $tmp;
 fi

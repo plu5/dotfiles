@@ -1,7 +1,26 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+# Simple pomodoro-like focus/pause
+# 2025-12-28 17:54
+#
+# Dependencies:
+# - The sounds defined below (sonpause, sonunpause)
+# - (Optional) paplay (play the sounds on focus/pause)
+# - (Optional) Emacs daemon (get a message in Emacs on focus/pause)
+#
+# Usage:
+# `pausepp` to start it
+# `pausepp r` to restart
+# `pausepp k` to kill all instances
 
+FOCUSFOR=25m
+PAUSEFOR=5m
+MESSAGE_PAUSE=pause
+MESSAGE_CONTINUE=continue
 sonpause="/home/pm/Downloads/pronunciation_fr_une_pause_pipi.mp3"
 sonunpause="/home/pm/Downloads/pronunciation_fr_alors,_on_continue__.mp3"
+T_NOTHINGTOKILL="aucun processus à tuer."
+T_KILLED="processus tués : %s"
+
 NOM="${0##*/}"
 
 has_paplay=$(command -v paplay >/dev/null 2>&1 && echo true)
@@ -10,10 +29,10 @@ has_emacs=$(command -v emacsclient >/dev/null 2>&1 && echo true)
 kill_other_instances() {
     PIDS=$(pid=$BASHPID; pgrep -af "$0" | grep -v $pid | grep -v $$ | awk '{print $1}')
     if [ -z "$PIDS" ]; then
-        [ "$1" = "interactive" ] && echo "$NOM: aucun processus à tuer."
+        [ "$1" = "interactive" ] && echo "$NOM: $T_NOTHINGTOKILL"
     else
         kill $PIDS
-        echo "$NOM: processus tués : $PIDS"
+        printf "$NOM: ${T_KILLED}\n" "$PIDS"
     fi
 }
 
@@ -43,20 +62,20 @@ message() {
 
 do_pause() {
     joue "$sonpause"
-    message pause
+    message "$MESSAGE_PAUSE"
 }
 
 do_continue() {
     joue "$sonunpause"
-    message continue
+    message "$MESSAGE_CONTINUE"
 }
 
 # main loop
 (
     while true; do
-        sleep 25m
+        sleep $FOCUSFOR
         do_pause
-        sleep 5m
+        sleep $PAUSEFOR
         do_continue
     done
 ) & disown

@@ -1,57 +1,66 @@
 #!/usr/bin/env bash
+# Control background music (mpv processes)
+# 2026-01-05 19:37
+#
+# Dependencies:
+# - mpv
+# - rofi
+# - audio files below (sons)
+#
+# Usage:
+# soncontrol rofi
+# brings up rofi interface to start/stop the different audio files
+
 NOM="${0##*/}"
-tokyopid=
-obscurpid=
-if [ -f /tmp/tokyopid ]; then
-    tokyopid=$(cat /tmp/tokyopid)
-fi
-if [ -f /tmp/obscurpid ]; then
-    obscurpid=$(cat /tmp/obscurpid)
-fi
+
+declare -A sons=(
+    ["tokyo"]="/media/Windows/Users/pm/Music/Tokyo's Most Dangerous Metropolitan Expressway in Heavy Rain [zFio5Tbqy8Y].opus"
+    ["obscur"]="/media/Windows/Users/pm/Music/clair obscur [LAQZfeETFbg].m4a"
+)
+declare -A volumes=(
+    ["tokyo"]=70
+    ["obscur"]=100
+)
+DEFAULT=tokyo
+mpvargs=(--no-video --loop --save-position-on-quit --load-scripts=no)
+
+options="start\nstop"
+for son in "${!sons[@]}"; do
+    options="$options\nstart$son\nstop$son"
+done
+
+get_name() {
+    son="${1#$2}"
+    [ -z "$son" ] && son="$DEFAULT"
+    echo "$son"
+}
+
+kill_pid() {
+    name="$1"
+    pid=$(cat "/tmp/${name}pid" 2>/dev/null)
+    [ ! -z $pid ] && kill $pid
+}
+
+save_pid() {
+    pid="$1"
+    name="$2"
+    echo "$pid" > "/tmp/${name}pid"
+}
+
 case "$1" in
     rofi)
-        res=$(echo -en "start\nstop\nstartobscur\nstopobscur" | rofi -i -cycle -dmenu -p "soncontrol")
+        res=$(echo -en "$options" | rofi -i -cycle -dmenu -p "soncontrol")
         $0 $res
         ;;
-    start)
-        [ ! -z $tokyopid ] && kill $tokyopid
-        mpv "/media/Windows/Users/pm/Music/Tokyo's Most Dangerous Metropolitan Expressway in Heavy Rain [zFio5Tbqy8Y].opus" --no-video --loop --volume=70 --save-position-on-quit --load-scripts=no &
-        tokyopid=$!
-        echo $tokyopid > /tmp/tokyopid
+    start*)
+        son="$(get_name "$1" start)"
+        kill_pid "$son"
+        mpv "${sons[$son]}" --volume=${volumes[$son]} ${mpvargs[@]} &
+        save_pid "$!" "$son"
         ;;
-    stop)
-        if [ ! -z $tokyopid ]; then
-            kill $tokyopid
-            tokyopid=
-            echo $tokyopid > /tmp/tokyopid
-        fi
-        ;;
-    startobscur)
-        [ ! -z $obscurpid ] && kill $obscurpid
-        mpv "/media/Windows/Users/pm/Music/clair obscur [LAQZfeETFbg].m4a" --no-video --loop --volume=70 --save-position-on-quit --load-scripts=no &
-        obscurpid=$!
-        echo $obscurpid > /tmp/obscurpid
-        ;;
-    stopobscur)
-        if [ ! -z $obscurpid ]; then
-            kill $obscurpid
-            obscurpid=
-            echo $obscurpid > /tmp/obscurpid
-        fi
-        ;;
-    list)
-        ps aux | grep "$0" | grep -v "grep" | grep -v "$0 list"
-        exit
-        ;;
-    k|kill)
-        PIDS=$(ps aux | grep "$0" | grep -v grep | grep -v k | grep -v kill | awk '{print $2}')
-        if [ -z "$PIDS" ]; then
-            echo "$NOM: aucun processus à tuer."
-        else
-            echo "$NOM: processus à tuer : $PIDS"
-            kill $PIDS
-            echo "$NOM: processus tués."
-        fi
-        exit
+    stop*)
+        son="$(get_name "$1" stop)"
+        kill_pid "$son"
+        save_pid  # intentionally no argument in order to empty it
         ;;
 esac

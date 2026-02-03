@@ -1,2 +1,11 @@
 #!/usr/bin/env sh
+# Okular launch command to open with most recent document
+# 2026-01-22 01:29
+#
+# Dependencies:
+# - okular
+#
+# Usage:
+# put okularf instead of okular in desktop file Exec
+
 okular "$(cat $HOME/.local/share/okular/docdata/"$(ls -ct $HOME/.local/share/okular/docdata | head -n1)" | grep 'documentInfo url' | cut -d\" -f2)" $@

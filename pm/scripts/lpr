@@ -1,6 +1,10 @@
-#!/bin/sh
-cat >> ~/lpr_captured.txt
-
-# fais :
+#!/usr/bin/env sh
+# Masquerade as a printer
+# 2025-12-17 05:57
+#
+# Usage:
 # export PATH="$HOME/pm/scripts:$PATH"
-# dans la session pour intercepter des appels à lpr
+# where `$HOME/pm/scripts` is the path to the folder containing this script
+# in the session where you want to intercept calls to lpr
+
+cat >> ~/lpr_captured.txt

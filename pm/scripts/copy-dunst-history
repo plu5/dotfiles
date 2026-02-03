@@ -1,9 +1,26 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+# Rofi interface for dunst history for copying notifications
+# 2025-11-30 12:38
+#
+# Dependencies:
+# - dunst
+# - jq
+# - rofi
+# - xclip
+#
+# Optional:
+# - pipe-to-emacs (S-RET to pipe notification to emacs instead of copy)
+#
+# Usage:
+# Simply call it or assign it to a hotkey. It should open a rofi interface
+# with the list of notifications present in `dunstctl history`.
 
+# Notifications don't appear in history until they are closed, so for quality
+# of life close existing notifications first
 dunstctl close-all
+
 json=$(dunstctl history)
 
-# Uptime système en secondes (horloge boottime)
 uptime_s=$(cut -d' ' -f1 /proc/uptime)
 
 choice=$(echo "$json" | jq -r --compact-output --argjson uptime "$uptime_s" '
@@ -11,40 +28,45 @@ choice=$(echo "$json" | jq -r --compact-output --argjson uptime "$uptime_s" '
   .data[0][] |
   .id.data as $id |
 
+  # Replace newlines
   (.summary.data | gsub("\n"; " > ")) as $summary_clean |
+  # Truncate long lines
   ($summary_clean |
    if length > 74 then .[0:77] + "..." else . end) as $preview |
-($preview | if length > 35 then .[0:35] + "\n" + .[35:] else . end) as $preview |
+  # Display over 2 lines
+  ($preview | if length > 35 then .[0:35] + "\n" + .[35:] else . end)
+   as $preview |
 
+  # Timestamp calculation
   (.timestamp.data / 1000000 | floor) as $timestamp_s |
   ($uptime - $timestamp_s) as $age_s |
-
-  # format humain
   (if $age_s < 60 then "\($age_s|floor)s"
    elif $age_s < 3600 then "\(($age_s/60)|floor)m"
    elif $age_s < 86400 then "\(($age_s/3600)|floor)h"
    else "\(($age_s/86400)|floor)d"
    end) as $age |
 
+  # Final format for each notification
   "<b>\($id)) <span foreground=\"#cc7799\">\($age)</span></b> \"\($preview)\""
 ] | join("\u001e")
-' | head -c -1 | rofi -sep '\x1e' -eh 2 -i -no-cycle -markup-rows -dmenu -kb-accept-alt "" -kb-custom-1 "Shift+Return" -p "cp notification")
+' | head -c -1 |
+             rofi -sep '\x1e' -eh 2 -i -no-cycle -markup-rows -dmenu \
+                  -kb-accept-alt "" -kb-custom-1 "Shift+Return" \
+                  -p "cp notification")
+# ^ using \x1e as the separator between each notification instead of \n in
+# order to be able to have multiline entries in rofi. `-eh 2` is also to that
+# end.
+
+# Saving return value in order to check later if user selected with kb-accept
+# (RET) or kb-accept-alt (S-RET).
 ret=$?
 
-# Rien faire si aucune notif
-# [ -z "$list" ] && exit 0
-#echo -en "$list"
-# Ouvrir rofi
-# choice=$(echo -en "$list" | rofi -sep '\x1e' -eh 2 -i -no-cycle -markup-rows -dmenu -p "cp notification")
-
-# Rien faire si rien choisi
 [ -z "$choice" ] && exit 0
 
-# Extraire l'ID sélectionné
-# modifie le -d')' su tu changes le format dans jq
+# This needs to be modified if you change the format in jq, specifically the
+# `-d')'` to the character after the id (currently `)`)
 id=$(echo "$choice" | head -1 | cut -d')' -f1 | cut -d'>' -f2 | tr -d ' ')
 
-# Récupérer le summary correspondant
 summary=$(echo "$json" | jq -r --arg id "$id" '
   .data[0][] | select(.id.data == ($id|tonumber)) | .summary.data
 ')

@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
-set -f
-# e.g. `t de text` utile pour le dictionnaire si tu envoies un seul mot.
-# mais si tu veux traduire en de d'une autre langue, utilise `t -t de text` au lieu de ça
-# d'ailleurs pas toutes les langues ont une dictionnaire, par exemple le latin et le chinois non malheureusement
+# translate-shell wrapper
+# 2025-11-29 01:09
+#
+# Dependencies:
+# - translate-shell (trans)
+#
+# Usage:
+# `t translate this into french`
+# `t -t de translate this into german`
+# `t .de text` utile pour le dictionnaire si tu envoies un seul mot.
+# (équivalent à `t -hl de -t de text`)
+# mais si tu veux traduire depuis une autre langue, utilise `t -t de text`.
+# certaines langues n'ont pas de de dictionnaire malheureusement (la, zh)
+
+set -f  # no glob
 if [ "$1" = ".de" ]; then
-    trans -hl de -t de -j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y ${@:2}
+    trans -hl de -t de -j -no-ansi -show-original n -show-prompt-message n \
+          -show-alternatives Y ${@:2}
 elif [ "$1" = ".en" ]; then
-    trans -hl en -t en -s en -j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y ${@:2}
+    trans -hl en -t en -s en -j -no-ansi -show-original n \
+          -show-prompt-message n -show-alternatives Y ${@:2}
 else
-    trans -hl fr -t fr -j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y $@
+    trans -hl fr -t fr -j -no-ansi -show-original n -show-prompt-message n \
+          -show-alternatives Y $@
 fi
 set +f

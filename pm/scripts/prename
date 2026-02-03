@@ -1,18 +1,54 @@
-#!/bin/bash
+#!/usr/bin/env sh
+# Rename file with rofi interface
+# 2025-12-21 09:29
+#
+# In the options in the rofi interface there is provided the existing path
+# as is for ease of autocompleting the path to be able to modify it
+# (add to your rofi config `kb-row-select: "Tab";`)
+# and also the path with its birth date in the name in the format DATEFMT.
+#
+# Dependencies:
+# - rofi
+#
+# Usage:
+# prename /path/to/file
+#
+# I use it with feh:
+# --action 'notify-send "$(prename "%f")"'
+
+DATEFMT="+%y%m%d%H%M"
+T_DOESNTEXIST="fichier '%s' n'existe pas"
+T_EXISTS="fichier '%s' existe déjà"
+
+NOM="${0##*/}"
+
 fichier="$1"
 if [ -z "$fichier" ] || [ ! -e "$fichier" ]; then
-    echo "prename: fichier '$fichier' n'existe pas"
+    printf "$NOM: ${T_DOESNTEXIST}\n" "$fichier"
     exit 1
 fi
-b=$(stat -c %w "$fichier")
+b=$(stat -c %w "$fichier")  # birth date
+
 options="$fichier"
-[ "$b" != "-" ] && options="${options}\n${fichier%/*}/$(date -d "$b" +%y%m%d%H%M)${fichier##*/}"
+
+[ "$b" != "-" ] && case "$fichier" in
+    # path
+    */*) options="${options}
+${fichier%/*}/$(date -d "$b" "$DATEFMT")${fichier##*/}";;
+    # just filename
+    *) options="${options}
+$(date -d "$b" "$DATEFMT")${fichier}";;
+esac
+
 res=$(echo -en "$options" | rofi -i -no-cycle -dmenu -p "rename")
-[ -z "$res" ] && exit 0  # quitté sans rien choisir
-if [ -e "$res" ]; then
-    echo "prename: fichier '$fichier' existe déjà"
+
+[ -z "$res" ] && exit 0
+
+if [ -e "$res" ]; then  # already exists
+    printf "$NOM: ${T_EXISTS}\n" "$fichier"
     exit 1
 else
-    echo "prename: mv \"$fichier\" \"$res\""
+    # finally rename
+    echo "$NOM: mv \"$fichier\" \"$res\""
     mv "$fichier" "$res"
 fi

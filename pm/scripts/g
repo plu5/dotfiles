@@ -1,20 +1,27 @@
 #!/usr/bin/env bash
-# echo "$*" > /tmp/grammalecteinput
-# grammalecte-cli -wss -roff "apostrophe_typographique" -f /tmp/grammalecteinput
-# languagetool -l fr -d UPPERCASE_SENTENCE_START,POINT /tmp/grammalecteinput
-# output=$(languagetool -l fr -d UPPERCASE_SENTENCE_START /tmp/grammalecteinput)
-# echo "${output##*/tmp/grammalecteinput...}"
+# translate-shell output fed back into itself
+# 2025-11-29 17:50
+#
+# Dependencies:
+# - translate-shell (trans)
+# - t
+#
+# Usage:
+# `g traduis ça en allemand puis en français`
+# `g .en traduis ça en anglais puis en français`
+# `g .zh traduis ça en chinois puis en français`
+# `g .la traduis ça en latin puis en français`
+# the source language is always french, to change this modify -hl
 
-set -f
+set -f  # no glob
 # en intermédiaire, car des fois l'allemand est trop loin du français
 if [ "$1" = ".en" ]; then
-t -show-languages n $(set -f; trans -hl fr -t en -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
+    t -show-languages n $(set -f; trans -hl fr -t en -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
 elif [ "$1" = ".zh" ]; then
-t -show-languages n $(set -f; trans -hl fr -t zh -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
+    t -show-languages n $(set -f; trans -hl fr -t zh -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
 elif [ "$1" = ".la" ]; then
-t -show-languages n $(set -f; trans -hl fr -t la -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
+    t -show-languages n $(set -f; trans -hl fr -t la -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "${@:2}")
 else
-t -show-languages n $(set -f; trans -hl fr -t de -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "$@")
+    t -show-languages n $(set -f; trans -hl fr -t de -j -no-ansi -show-original n -show-prompt-message n -show-alternatives n -show-languages n "$@")
 fi
-
 set +f

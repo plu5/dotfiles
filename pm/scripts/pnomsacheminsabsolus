@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# Paths pain
+# 2026-01-02 16:47
+#
+# I discovered a flaw in the French language (evergreen). The same
+# accented character can be encoded differently (there are variants as
+# 1 character or as 2 by having the accent be combining). This is
+# hellish when you have a list of file paths some of which are encoded
+# in one way and some the other.
+
 # NOMSFICHIER="/run/user/1000/gvfs/smb-share:server=apollo,share=p/tmp.txt"
 # while read n; do
 #     res=$(find . -maxdepth 1 -name "${n//[$'\t\r\n']}")

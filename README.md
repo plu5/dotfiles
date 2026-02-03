@@ -26,9 +26,9 @@ X, bspwm
 ## Scripts
 in [./pm/scripts](pm/scripts)
 
-1. [**toggle_internal_kbd.sh**](pm/scripts/toggle_internal_kbd.sh) : 2024-12-25 19:12:57  
+1. [**toggle_internal_kbd.sh**](pm/scripts/toggle_internal_kbd.sh) : 2024-12-25 19:12:57 (birth)  
    turn off or on internal keyboard and apply modmap. ran at launch, when my external keyboard gets connected, and upon clicking the keyboard layout on polybar
-2. [**close_windows.sh**](pm/scripts/close_windows.sh) : 2025-01-19 04:49:32 (birth)  
+2. [**close_windows.sh**](pm/scripts/close_windows.sh) : 2025-01-19 04:49:32  
    close all windows gracefully, used in `xlogout.sh` (see below)
 3. [**xlogout.sh**](pm/scripts/xlogout.sh) : 2025-01-19 05:07:25  
    kill bspc gracefully (without killing programs brutally which is what happens if you do just `bspc quit`)
@@ -57,9 +57,9 @@ in [./pm/scripts](pm/scripts)
 15. [**pipe-to-emacs**](pm/scripts/pipe-to-emacs) : 2025-12-03 16:51:44  
     from [this gist by garaud](https://gist.github.com/garaud/06b38554103aa7120337). i modified it to not pop buffer because i find that annoying.
 16. [**verify-doentries**](pm/scripts/verify-doentries) : 2025-12-05 04:10:38  
-    verifying validity of my doentry files which are xml with markdown; the xml needs to be valid ideally. these are the files i have been using for daily "logs" for over a decade and some old ones are known invalid so i am skipping them in the check. i could fix them but it feels wrong to modify such old files, i can't even open them without mental pain.
+    verify validity of xml files with exclusions
 17. [**em**](pm/scripts/em) : 2025-12-07 18:34:51  
-    [see SE answer i wrote](https://stackoverflow.com/q/79840434). simple script to open a file you need permissions for in emacs tramp in terminal.
+    Emacs sudo editor in terminal. [SE](https://stackoverflow.com/q/79840434).
 18. [**lpr**](pm/scripts/lpr) : 2025-12-17 05:57:16  
     a script for masquerading as the real lpr which is a command to print which is the urxvt terminal does by default if you press <kbd>S-print</kbd>. and that was my usecase, i had a session where i needed to save the output but copying was broken, added the location of the script ahead of path `export PATH="$HOME/pm/scripts:$PATH"` so then the output is written to file instead of printed. for future sessions you can achieve the same thing with `URxvt.print-pipe` in `.Xresources`, which i now have as `URxvt.print-pipe: cat | pipe-to-emacs piped-mode`, but the sad thing is unlike copying it puts in linebreaks where the console wraps.
 19. [**pgetimg**](pm/scripts/pgetimg) : 2025-12-21 07:07:33  
