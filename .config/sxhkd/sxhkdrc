@@ -104,6 +104,9 @@ hyper + apostrophe
 hyper + 4
 	old=$(xsel -o --clipboard); echo -n "$(date +"[%H:%M] ")" | xclip -selection clipboard; sleep 0.1; xdotool key --window $(xdotool getactivewindow) --clearmodifiers XF86Paste; sleep 0.1; echo -n "$old" | xclip -selection clipboard
 
+hyper + 5
+	old=$(xsel -o --clipboard); echo -n "$(date +"%F %H:%M")" | xclip -selection clipboard; sleep 0.1; xdotool key --window $(xdotool getactivewindow) --clearmodifiers XF86Paste; sleep 0.1; echo -n "$old" | xclip -selection clipboard
+
 # hyper + 5
 #	echo "$(date +"%Y-%m-%d %H:%M")" | xclip -selection clipboard; sleep 0.1; xdotool key --window $(xdotool getactivewindow) XF86Paste
 
