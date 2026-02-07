@@ -6,6 +6,7 @@
 # - The sounds defined below (sonpause, sonunpause)
 # - (Optional) paplay (play the sounds on focus/pause)
 # - (Optional) Emacs daemon (get a message in Emacs on focus/pause)
+# - (Optional) xosd (display message at the top of the screen during pause)
 #
 # Usage:
 # `pausepp` to start it
@@ -16,6 +17,7 @@ FOCUSFOR=25m
 PAUSEFOR=5m
 MESSAGE_PAUSE=pause
 MESSAGE_CONTINUE=continue
+OSD_PAUSE=PAUSE
 sonpause="/home/pm/Downloads/pronunciation_fr_une_pause_pipi.mp3"
 sonunpause="/home/pm/Downloads/pronunciation_fr_alors,_on_continue__.mp3"
 T_NOTHINGTOKILL="aucun processus à tuer."
@@ -25,6 +27,7 @@ NOM="${0##*/}"
 
 has_paplay=$(command -v paplay >/dev/null 2>&1 && echo true)
 has_emacs=$(command -v emacsclient >/dev/null 2>&1 && echo true)
+has_xosd=$(command -v osd_cat >/dev/null 2>&1 && echo true)
 
 kill_other_instances() {
     PIDS=$(pid=$BASHPID; pgrep -af "$0" | grep -v $pid | grep -v $$ | awk '{print $1}')
@@ -51,7 +54,7 @@ case "$1" in
 esac
 
 joue() {
-    [ $has_paplay = true ] && paplay "$1"
+    [ $has_paplay = true ] && paplay "$1" &
 }
 
 message() {
@@ -60,9 +63,37 @@ message() {
     [ $has_emacs = true ] && emacsclient --eval "(message \"$msg\")" >/dev/null 2>&1
 }
 
+# Stéphane Chazelas https://unix.stackexchange.com/a/314777
+# used to calculate seconds to show the osd
+remaining_sleep_time() { # arg: pid
+  ps -o etime= -o args= -p "$1" | perl -MPOSIX -lane '
+    %map = qw(d 86400 h 3600 m 60 s 1);
+    $F[0] =~ /(\d+-)?(\d+:)?(\d+):(\d+)/;
+    $t = -($4+60*($3+60*($2+24*$1)));
+    for (@F[2..$#F]) {
+      s/\?//g;
+      ($n, $p) = strtod($_);
+      $n *= $map{substr($_, -$p)} if $p;
+      $t += $n
+    }
+    print $t'
+}
+
+osd() {
+    # calculate how long the pause is in seconds
+    sleep "$PAUSEFOR" &
+    pid=$!
+    s=$(remaining_sleep_time $pid)
+    kill $pid
+    # show osd for that time
+    echo "$OSD_PAUSE" |
+        osd_cat -p top -A center -d $s &
+}
+
 do_pause() {
     joue "$sonpause"
     message "$MESSAGE_PAUSE"
+    [ $has_xosd = true ] && osd
 }
 
 do_continue() {
