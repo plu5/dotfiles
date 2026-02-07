@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+# Krita launch command
+# 2026-02-07 10:33
+#
+# Dependencies:
+# - krita
+# - a krita file in the path defined in TEMPLATE to base new documents off of
+# - a destination folder defined in DESTDOSSIER to place new documents
+#
+# Usage:
+# pkrita  # launches krita with most recent document
+# pkrita new this is my new file
+# ^ creates "DATE this is my new file.kra" from a copy of TEMPLATE
+
+TEMPLATE="$HOME/pm/r/_mien/krita/template.kra"
+DESTDOSSIER="$HOME/pm/r/_mien/krita"
+DATEFMT="+%Y%m%d %H%M"  # 20260207 1033
+SEP=" "  # separator between date and name
+T_EXISTS="fichier '%s' existe déjà"
+
+NOM="${0##*/}"
+
+if [ "$1" = "new" ]; then
+    res="$DESTDOSSIER/$(date "$DATEFMT")$SEP${@:2}.kra"
+    if [ -e "$res" ]; then  # already exists
+        printf "$NOM: ${T_EXISTS}\n" "$res"
+        exit 1
+    fi
+    echo "$NOM: cp '$TEMPLATE' '$res'"
+    cp "$TEMPLATE" "$res"
+    krita --nosplash "$res"
+else
+    # launch krita with most recent document
+    krita --nosplash "$(sh -c "echo $(cat $HOME/.config/kritarc | grep 'File.*\[$e\]' | sed s/File// | sort -n | tail -1 | cut -d'=' -f2)")" $@
+fi

@@ -90,14 +90,14 @@ in [./pm/scripts](pm/scripts)
     <br>would like to add saving also size and checksum.
 31. [**vmman**](pm/scripts/vmman) : 2026-01-30 08:02
     <br>command to launch my win98 qemu vm. named as such because if i create more i will change it to have all the commands and give an argument to which one.
+32. [**krita**](pm/scripts/pkrita) : 2026-02-07 10:33
+    <br>command to launch krita with most recent document, with also the possibility to easily create new documents and launch into them
 
 ## TODO
 - **add screenshots**  
   desktop, rofi (maybe that one not on here but on .config/rofi). upload the images to a subfolder called 'static'
 - **general: increase portability**  
   reduce hard-coded paths, or at least have a centralised source of truth for them.
-- **krita: streamline save new file**  
-  streamline saving files in krita instead of having to use the dialog, likely a plugin can do this. ideally i press a hotkey and it would save to a defined folder with current timestamp, with maybe ability to later rename via launching something like a rofi interface like my prename script. unsaved file C-s save to a new project in defined directory with current timestamp. if i opened an image (not kra) and press C-s, don't save to the image save to a new project with current timestamp.
 - **krita: hide/show easily**  
   krita shortcut toggle hide/show panels (without interface cachée)
 - **krita: try using interface cachée anyway**  
