@@ -22,7 +22,7 @@ declare -A volumes=(
     ["obscur"]=80
 )
 DEFAULT=tokyo
-mpvargs=(--no-video --loop --save-position-on-quit --load-scripts=no)
+mpvargs=(--no-video --loop --save-position-on-quit --load-scripts=no --quiet)
 
 options="start\nstop"
 for son in "${!sons[@]}"; do
