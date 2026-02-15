@@ -18,8 +18,8 @@ declare -A sons=(
     ["obscur"]="/media/Windows/Users/pm/Music/clair obscur [LAQZfeETFbg].m4a"
 )
 declare -A volumes=(
-    ["tokyo"]=70
-    ["obscur"]=100
+    ["tokyo"]=100
+    ["obscur"]=80
 )
 DEFAULT=tokyo
 mpvargs=(--no-video --loop --save-position-on-quit --load-scripts=no)
