@@ -32,7 +32,7 @@ then
             echo "desktop=3"
             exit
             ;;
-        *'bilibili — Mozilla Firefox')
+        *哔哩哔哩*' — Mozilla Firefox')
             echo "desktop=9"
             exit
             ;;
