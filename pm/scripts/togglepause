@@ -11,8 +11,8 @@
 
 if xdotool search --name Parliamentlive.tv; then
     xdotool search --name Parliamentlive.tv key --clearmodifiers space;
-elif xdotool search --name mpv; then
-    xdotool search --name mpv key --clearmodifiers space;
+elif xdotool search --name ' - mpv'; then
+    xdotool search --name ' - mpv' key --clearmodifiers space;
 elif xdotool search --name 哔哩哔哩; then
     tmp=$(xdotool getactivewindow);
     command -v soncontrol >/dev/null 2>&1 && soncontrol stopobscur;
