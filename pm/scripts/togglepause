@@ -12,7 +12,17 @@
 if xdotool search --name Parliamentlive.tv; then
     xdotool search --name Parliamentlive.tv key --clearmodifiers space;
 elif xdotool search --name ' - mpv'; then
-    xdotool search --name ' - mpv' key --clearmodifiers space;
+    # toggle the oldest window (sorted by PID)
+    xdotool key --window $(
+        xdotool search --name ' - mpv' |
+            while read -r wid; do
+                pid=$(xprop -id "$wid" _NET_WM_PID 2>/dev/null | cut -d ' ' -f3)
+                [ -n "$pid" ] && echo "$pid $wid"
+            done |
+            sort -n |
+            head -1 |
+            cut -d ' ' -f2
+            ) --clearmodifiers space
 elif xdotool search --name 哔哩哔哩; then
     tmp=$(xdotool getactivewindow);
     command -v soncontrol >/dev/null 2>&1 && soncontrol stopobscur;
