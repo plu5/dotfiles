@@ -1,0 +1,296 @@
+#!/usr/bin/env sh
+# Gapless mpv
+# 2026-03-10 11:44
+# Modified from ZaxonXP's gapless_play
+# https://github.com/ZaxonXP/youtube-viewer-scripts/blob/master/gapless_play.sh
+#
+# Dependencies:
+# - mpv
+# - yt-dlp
+# - wmctrl
+# - socat
+# - (Optional) bspwm window manager
+#
+# Usage:
+# gaplessmpv [--purgecache] [--purgepos] (QUERY|INPUTFILE)
+# QUERY = any link or search accepted by yt-dlp.
+# * gaplessmpv scsearch1000:fjellstrom
+# * gaplessmpv youtube.com/@slowgermanlistening/videos
+# * gaplessmpv youtube.com/?v=zADVzO7m5qM
+# INPUTFILE = a file where each line contains a link to a video or a yt-id.
+# * gaplessmpv Example_list.txt
+# * gaplessmpv <(yt-dlp --no-warnings --print "%(webpage_url)s" ytsearch2:cat)
+# Options:
+# --reverse     Read video list in reverse order. Does not support pseudofiles.
+# --purgecache  Remove file that caches the video list for a given QUERY.
+# --purgepos    Remove file that stores current position in the video list.
+
+NAME="${0##*/}"
+
+help() {
+    cat <<EOF
+Usage: $NAME [options] (QUERY|INPUTFILE)
+
+QUERY = any link or search accepted by yt-dlp.
+INPUTFILE = a file where each line contains a link to a video or a yt-id.
+
+Options:
+
+-h | --help   Show this help text and exit.
+--reverse     Read video list in reverse order. Does not support pseudofiles.
+--purgecache  Remove file that caches the video list for a given QUERY.
+--purgepos    Remove file that stores current position in the video list.
+
+Examples:
+* $NAME scsearch1000:fjellstrom
+* $NAME youtube.com/@slowgermanlistening/videos
+* $NAME youtube.com/?v=zADVzO7m5qM
+* $NAME Example_list.txt
+* $NAME <(yt-dlp --no-warnings --print "%(webpage_url)s" ytsearch2:cat)
+EOF
+}
+
+has_bspc=$(command -v bspc >/dev/null 2>&1 && echo 1)
+
+if [ $has_bspc ] && ! bspc rule -l | grep -q 'mpv:mpvalt.*hidden=on'; then
+    bspc rule -a mpv:mpvalt hidden=on
+fi
+
+prefix_echo () {
+  if [ "$(("$1" % 2))" = "0" ]; then
+      color=green
+  else
+      color=cyan
+  fi
+  perl -sne 'use Term::ANSIColor;$|=1; print colored("[$pre]\t$_", $col)' -- -col="$color" -pre="$2"
+}
+
+get_args() {
+    if [ "$1" = 0 ]; then
+        echo "--quiet --force-window=yes"
+    else
+        echo "--quiet --force-window=yes --x11-name=mpvalt --pause"
+    fi
+}
+
+get_soc() {
+    echo "/tmp/${NAME}_soc_$(( $1 % 2 ))"
+}
+
+unhide_alt() {
+    if [ $has_bspc ]; then
+        bspc node "$(wmctrl -lx | grep mpvalt | cut -d' ' -f1)" -g hidden=off
+    else
+        wmctrl -xr mpvalt -b remove,hidden
+    fi
+}
+
+i=0
+
+pid=
+prev_pid=
+
+store_pid() {
+    prev_pid="$pid"
+    pid="$1"
+}
+
+wait_alt() {       # wait until prev exits, then unhide and unpause $1
+    tail --pid="$prev_pid" -f /dev/null
+    unhide_alt
+    echo '{ "command": ["set_property", "pause", false] }' | socat - "$1"
+}
+
+get_link() {    # if $1 contains a yt-id return its link, $1 otherwise
+    id=$(echo "$1" | sed -n \
+'s/.*\(^\|[ |]\)\([A-Za-z0-9_-]\{11\}\)\([ |]\|$\).*/\2/p')
+    [ -z "$id" ] && echo "$1" || echo "https://www.youtube.com/watch?v=$id"
+}
+
+store_pos() {                   # $1 = pos, $2 = pos file
+    if [ -n "$1" ] && [ -n "$2" ]; then
+        echo "$1" > "$2"
+        echo "$NAME: Stored position $1 in $2"
+    fi
+}
+
+process_lines() {     # main work loop. $1 = pos offset, $2 = pos file
+    read -r line || exit
+    while :; do
+        link=$(get_link "$line")
+        soc=$(get_soc $i)
+        mpv --term-playing-msg="$link" --input-ipc-server="$soc" $(get_args $i) \
+            "$link" |
+            prefix_echo $i $i &
+        store_pid $!
+        [ $i -gt 0 ] && wait_alt "$soc"
+        [ $i -gt 0 ] && store_pos "$(($i + "$1"))" "$2"
+        if read -r next; then
+            line="$next"
+            i=$((i + 1))
+        else  # last line
+            echo "$NAME: Last video"
+            tail --pid="$pid" -f /dev/null  # wait for last mpv process
+            break
+        fi
+    done
+}
+
+CACHE_DIR="$HOME/.cache/$NAME"
+mkdir -p "$CACHE_DIR"
+
+get_cache_file() {  # $1 = query
+    echo "$CACHE_DIR/$(echo -n "$1" | md5sum | cut -d' ' -f1).txt"
+}
+
+get_pos_file() {  # $1 = query
+    cache_file=$(get_cache_file "$1")
+    echo "${cache_file%.txt}.pos.txt"
+}
+
+reverse_flag=0
+purge_cache_flag=0
+purge_pos_flag=0
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            help
+            exit;;
+        --reverse)
+            reverse_flag=1;;
+        --purgecache)
+            purge_cache_flag=1;;
+        --purgepos)
+            purge_pos_flag=1;;
+        --)
+            shift
+            break;;
+        -*)
+            echo "$NAME: Unknown option $1" >&2
+            exit 1;;
+        *)
+            break;;
+    esac
+    shift
+done
+
+# by peterh https://stackoverflow.com/a/21188136/18396947
+get_abs_filename() {
+  filename=$1
+  parentdir=$(dirname "${filename}")
+  if [ -d "${filename}" ]; then
+      echo "$(cd "${filename}" && pwd)"
+  elif [ -d "${parentdir}" ]; then
+    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
+  fi
+}
+
+query=$1
+[ -z "$query" ] && { help; exit 1; }
+[ -f "$query" ] && query=$(get_abs_filename "$query") # normalise file path
+
+cache_file=$(get_cache_file "$query")
+pos_file=$(get_pos_file "$query")
+
+if [ "$reverse_flag" = 1 ]; then # calculate reverse cache and pos if possible
+    reverse_cache_file="${cache_file%.txt}-reverse.txt"
+    reverse_pos_file="${pos_file%.txt}-reverse.txt"
+    len=
+    if [ -f "$query" ]; then    # INPUTFILE and non-pseudofile
+        if [ ! -e "$reverse_cache_file" ]; then
+            tac "$query" > "$reverse_cache_file"
+            echo "$NAME: Wrote reversed list to cache $reverse_cache_file"
+        fi
+    else                        # QUERY
+        if [ -r "$cache_file" ] && [ ! -e "$reverse_cache_file" ]; then
+            tac "$cache_file" > "$reverse_cache_file"
+            echo "$NAME: Wrote reversed cached list to $reverse_cache_file"
+        fi
+    fi
+    if [ -e "$reverse_cache_file" ]; then
+        len=$(wc -l < "$reverse_cache_file")
+    elif [ -e "$cache_file" ]; then
+        len=$(wc -l < "$cache_file")
+    fi
+    if [ -e "$pos_file" ] && [ ! -e "$reverse_pos_file" ] && [ -n "$len" ]; then
+        pos="$(cat "$pos_file")"
+        reverse_pos=$(($len - $pos - 1))
+        echo $reverse_pos > "$reverse_pos_file"
+        echo "$NAME: Calculated reverse pos $reverse_pos > $reverse_pos_file"
+    fi
+    cache_file=$reverse_cache_file
+    pos_file=$reverse_pos_file
+fi
+
+if [ "$purge_cache_flag" = 1 ] && [ -f "$cache_file" ]; then
+    rm "$cache_file"
+    echo "$NAME: Purged cache file $cache_file"
+fi
+if [ "$purge_pos_flag" = 1 ] && [ -f "$pos_file" ]; then
+    rm "$pos_file"
+    echo "$NAME: Purged pos file $pos_file"
+fi
+
+ytdlp_pid=
+cache_pid=
+
+cleanup() {                     # kill forked processes
+    [ -n "$ytdlp_pid" ] && kill "$ytdlp_pid" 2>/dev/null
+    [ -n "$cache_pid" ] && kill "$cache_pid" 2>/dev/null
+    exit 130
+}
+
+trap cleanup INT TERM
+
+if [ -r "$query" ]; then        # INPUTFILE
+    inputfile=$query
+    [ "$reverse_flag" = 1 ] && [ -r "$cache_file" ] && inputfile=$cache_file
+    if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then # pos
+        pos="$(cat "$pos_file")"
+        echo "$NAME: Restoring position $pos"
+        cat "$inputfile" | tail -n "+$(($pos + 1))" |
+            process_lines $pos "$pos_file"
+    else                        # no pos
+        process_lines 0 "$pos_file" < "$inputfile"
+    fi
+else                            # QUERY
+    if [ -r "$cache_file" ]; then # cache
+        echo "$NAME: Using cached list $cache_file"
+        if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then # pos
+            pos="$(cat "$pos_file")"
+            echo "$NAME: Restoring position $pos"
+            cat "$cache_file" | tail -n "+$(($pos + 1))" |
+                process_lines $pos "$pos_file"
+        else                    # no pos
+            process_lines 0 "$pos_file" < "$cache_file"
+        fi
+    else                        # no cache
+        ytdlp_args="--no-warnings"
+        pos=0
+        if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then # pos
+            pos="$(cat "$pos_file")"
+            if [ "$reverse_flag" = 1 ]; then
+                ytdlp_args="$ytdlp_args -I -$(($pos + 1))::-1"
+            else
+                ytdlp_args="$ytdlp_args --playlist-start $(($pos + 1))"
+            fi
+            cache_file="${cache_file%.txt}-start${pos}.txt"
+            echo "$NAME: Restoring position $pos"
+        else                    # no pos
+            [ "$reverse_flag" = 1 ] && ytdlp_args="$ytdlp_args -I ::-1"
+        fi
+        stdbuf -oL yt-dlp $ytdlp_args --print "%(webpage_url)s" "$query" \
+               > "$cache_file.tmp" & # line-buffered cache
+        ytdlp_pid=$!
+        ( # finalise cache when yt-dlp is done irrespective of read loop
+            tail --pid="$ytdlp_pid" -f /dev/null
+            if [ -s "$cache_file.tmp" ]; then
+                mv "$cache_file.tmp" "$cache_file"
+                echo "$NAME: Finalised cache $cache_file"
+            fi
+        ) &
+        cache_pid=$!
+        tail -f "$cache_file.tmp" | process_lines $pos "$pos_file" # stream
+    fi
+fi
