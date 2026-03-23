@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Cachage
+# 2026-02-25 / 2026-03-23 18:52
+# Hide bspwm windows on other workspaces for CPU usage optimisation
+#
+# Dependencies:
+# - bspwm
+#
+# Usage:
+# Keep running in the background
+
+declare -A focus
+declare -a hidden
+while read -r event _ desktop node; do
+    case "$event" in
+        desktop_focus)
+            while read -r wid; do
+                printf "%s\n" "${hidden[@]}" | grep -q "^${wid}$" &&
+                    bspc node "$wid" -g hidden=off  # unhide if in hidden
+                hidden=("${hidden[@]/$wid}")  # remove from hidden
+            done < <(bspc query -N -n '.local.window.hidden')
+            while read -r wid; do
+                [ -n "$wid" ] && bspc node "$wid" -g hidden=on  # hide
+                [ -n "$wid" ] && hidden+=("$wid")  # add to hidden
+            done < <(bspc query -N -n '.!local.window.!hidden')
+            [ -n "${focus[$desktop]}" ] && bspc node "${focus[$desktop]}" -f
+            ;;
+        node_focus)
+            focus["$desktop"]="$node"
+            ;;
+    esac
+done < <(bspc subscribe desktop_focus node_focus)
