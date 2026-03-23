@@ -85,3 +85,5 @@ bspc config external_rules_command $HOME/.config/bspwm/external_rules.sh
 # systemctl start sonixkbd.service --user
 # systemctl start wacom.service --user
 # ^ ils sont enabled alors pas besoin
+
+bspc rule -a mpv:mpvalt desktop="^9" hidden=on
