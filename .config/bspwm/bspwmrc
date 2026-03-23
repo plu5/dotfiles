@@ -87,3 +87,5 @@ bspc config external_rules_command $HOME/.config/bspwm/external_rules.sh
 # ^ ils sont enabled alors pas besoin
 
 bspc rule -a mpv:mpvalt desktop="^9" hidden=on
+
+bspc rule -a Chromium split_dir=west
