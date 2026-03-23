@@ -12,9 +12,8 @@
 # sommeil
 # Usually activated with a hotkey
 # To unlock type (blindly) user password. If it fails don't panic, try again
-# (previous inputs could interfere. ESC to clear)
-# Pressing a mouse key will quit also. This may be removed in a later version
-# due to my tendency to press it by accident.
+# (previous inputs could interfere. ESC to clear) or try unplugging and
+# replugging the keyboard.
 
 FICHIER=~/sommeil.log
 LOCKAPP=xtrlock
@@ -70,11 +69,13 @@ xinput test-xi2 --root |
                 maybeeteindre &
                 jobpid=$!
                 ;;
-            *\(ButtonRelease\))
-                pkill "$LOCKAPP"
-                echo "$NOM: keyboard interrupt"
-                quit
-                ;;
+            # Pressing a mouse key to quit. Commented out due to my
+            # tendency to press it by accident.
+            # *\(ButtonRelease\))
+            #     pkill "$LOCKAPP"
+            #     echo "$NOM: mouse interrupt"
+            #     quit
+            #     ;;
             EVENT*)
                 maybeabandon
                 ;;
