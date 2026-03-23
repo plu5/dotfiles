@@ -6,4 +6,4 @@
 
 # pm additions
 export QT_STYLE_OVERRIDE=kvantum
-export PATH=$PATH:~/pm/scripts:/home/pm/.local/share/gem/ruby/3.3.0/bin
+export PATH=$PATH:~/pm/scripts:~/.local/bin:/home/pm/.local/share/gem/ruby/3.3.0/bin
