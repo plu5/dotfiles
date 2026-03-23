@@ -18,9 +18,10 @@ local o = {
 	resume_option = 'notification', --'none': for disabled. 'notification': a message to resume the previous reached time will be triggered. 'force': to forcefully resume last playback based on threshold
 	resume_option_threshold = 2, --0 to always trigger the resume option when the same video has been played previously, a value such as 5 will only trigger the resume option if the last played time starts after 5% of the video and ends before completion by 5%
 	mark_history_as_chapter = false, --true is for marking the time as a chapter. false disables mark as chapter behavior.
-	invert_history_blacklist = false, --true so that blacklist becomes a whitelist, resulting in stuff such as paths / websites that are added to history_blacklist to be saved into history
+	invert_history_blacklist = true, --true so that blacklist becomes a whitelist, resulting in stuff such as paths / websites that are added to history_blacklist to be saved into history
+        --   v (whitelist)
 	history_blacklist=[[
-	["opus", "m4a"]
+	["mp4", "https://www.youtube.com"]
 	]], --Paths / URLs / Websites / Files / Protocols / Extensions, that wont be added to history automatically, e.g.: ["c:\\users\\eisa01\\desktop", "c:\\users\\eisa01\\desktop\\*", "c:\\temp\\naruto-01.mp4", "youtube.com", "https://dailymotion.com/", "avi", "https://www.youtube.com/watch?v=e8YBesRKq_U", ".jpeg", "magnet:", "https://", "ftp"]
 	history_resume_keybind=[[
 	["ctrl+r", "ctrl+R"]
