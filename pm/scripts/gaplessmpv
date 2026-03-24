@@ -126,7 +126,7 @@ process_lines() {     # main work loop. $1 = pos offset, $2 = pos file
         link=$(get_link "$line")
         soc=$(get_soc $i)
         mpv --term-playing-msg="$link" --input-ipc-server="$soc" $(get_args $i) \
-            "$link" |
+            "$link" 2>&1 |
             prefix_echo $i "$(($i + "$1"))" &
         store_pid $!
         [ $i -gt 0 ] && wait_alt "$soc"
