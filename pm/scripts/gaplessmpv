@@ -26,6 +26,7 @@
 # --purgepos    Remove file that stores current position in the video list.
 
 NAME="${0##*/}"
+mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
 
 help() {
     cat <<EOF
@@ -62,7 +63,12 @@ prefix_echo () {
   else
       color=cyan
   fi
-  perl -sne 'use Term::ANSIColor;$|=1; print colored("[$pre]\t$_", $col)' -- -col="$color" -pre="$2"
+  perl -ne "
+use Term::ANSIColor;
+\$|=1;
+if (/$mpvoutput_filter/) { }
+else { print colored(\"[$2] \$_\", $color) }
+"
 }
 
 get_args() {
@@ -121,7 +127,7 @@ process_lines() {     # main work loop. $1 = pos offset, $2 = pos file
         soc=$(get_soc $i)
         mpv --term-playing-msg="$link" --input-ipc-server="$soc" $(get_args $i) \
             "$link" |
-            prefix_echo $i $i &
+            prefix_echo $i "$(($i + "$1"))" &
         store_pid $!
         [ $i -gt 0 ] && wait_alt "$soc"
         [ $i -gt 0 ] && store_pos "$(($i + "$1"))" "$2"
