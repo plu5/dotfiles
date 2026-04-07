@@ -98,6 +98,8 @@ in [./pm/scripts](pm/scripts)
     Similar to gaplessmpv but in one instance. It works by adding mirror links to the playlist, since with mirror links and prefetch-playlist=yes, mpv is able to cache the next video in the playlist. Unlike gaplessmpv, not only do you not have to juggle several instances, this also has the ability to go back and forwards in the playlist. In some ways it is more complicated though, because mirror links expire, and are sometimes restricted to particular headers or cookies. (cf devlog 9)
 35. [**cachage**](pm/scripts/cachage): 2026-02-25 / 2026-03-23 18:52  
     Hacky thing to hide windows on other workspaces in order to optimise CPU usage. Programs have some optimisations for when they are not in the foreground, but when you switch workspaces they seem to think they are still in the foreground normally. Browsers especially benefit from this, especially if you're on a site that does a tonne of timers like bilibili; when you go to another tab or focus a different window, the browser limits what the site can do. (cf devlog 9)
+36. [**onedriveverrer**](pm/scripts/onedriveverrer): 2026-02-22 / 2026-04-02 13:24  
+    Script to download an older version of a OneDrive file or folder. (cf devlog 11)
 
 ## TODO
 - **add screenshots**  

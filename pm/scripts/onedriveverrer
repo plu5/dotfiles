@@ -1,0 +1,423 @@
+#!/usr/bin/env python3
+# OneDrive verrer
+# 2026-04-02 13:24
+"""Script to download an older version of a OneDrive file or folder.
+
+Examples:
+    onedriveverrer --list-children ''
+    onedriveverrer --download-file '/test.txt'  # current version
+    onedriveverrer --download-file '/test.txt' 2026-03-01 ~/test.txt
+    onedriveverrer --download-folder '/test' 2026-03-01 ~/test
+"""
+
+import re  # re.search for extracting auth code from url, re.match versionid
+import sys                      # sys.argv
+import json                     # load and dump in get_tokens and save_tokens
+import argparse                 # CLI
+import requests                 # all communication with server
+import dateutil                 # dateutil.parser for version_before_date
+from time import time           # tokens expiration calculation
+from os import makedirs         # save_tokens, download_folder
+from os.path import (
+    expanduser,                 # expand ~
+    dirname,                    # with makedirs in save_tokens
+    getmtime)                   # tokens expiration calculation
+
+NAME = "onedriveverrer"
+DESCRIPTION = "Download an older version of a OneDrive file or folder."
+ARGS = [(["--auth"], {"action": "store_true", "help": "\
+Use our own refresh token or do an auth flow to generate one instead of using \
+the assumed existing refresh token of a OneDrive client in \
+~/.config/onedrive/refresh_token."}),
+        (["--dry-run"], {"action": "store_true", "help": "\
+With download operations, only log without downloading."}),
+        (["--dump"], {"help": "\
+Get file information object for given PATH, which should be relative to root \
+and start with a /.", "metavar": "PATH"}),
+        (["-l", "--list-children"], {"help": "\
+List files and subfolders under given PATH, which should be relative to root \
+and start with a /. Empty string will list top-level.", "metavar": "PATH"}),
+        (["-a", "--list-arborescence"], {"help": "\
+Like --list-children but recursive.", "metavar": "PATH"}),
+        (["--list-versions"], {"help": "\
+List versions of a file given its ID or PATH. PATH should be relative to \
+root and start with a /. ID should be passed in single quotes in shells like \
+Bash or it will try to interpret the ! in it.", "metavar": "(ID|PATH)"}),
+        (["--download-file"], {"nargs": "+", "help": "\
+Download a file given its ID or PATH. It will be downloaded to pwd with the \
+same name as on OneDrive unless a destination path is provided as second \
+argument DEST. A VERSIONID or DATE can be specified as the third argument to \
+download the version specified or most recent version before DATE. \
+PATH should be relative to root and start with a /. \
+DATE should be in a format supported by dateutil.parser.parse, e.g. \
+'2026-04-04 10:30'. If timezone is not provided it's assumed to be the local \
+timezone.", "metavar": "(ID|PATH) [DEST] [VERSIONID|DATE]"}),
+        (["--download-folder"], {"nargs": "+", "help": "\
+Download a folder given its PATH. It will be downloaded to pwd with the \
+same name as on OneDrive unless a destination path is provided as second \
+argument DEST. A DATE can be specified as the third argument to \
+download for each file the most recent version before DATE. \
+PATH should be relative to root and start with a /. \
+DATE should be in a format supported by dateutil.parser.parse, e.g. \
+'2026-04-04 10:30'. If timezone is not provided it's assumed to be the local \
+timezone.", "metavar": "PATH [DEST] [DATE]"})]
+
+# Used if no --auth
+EXISTINGRTOKENPATH = expanduser("~/.config/onedrive/refresh_token")  # expand ~
+# Used always (if nothing else, to store the access token)
+OWNTOKENSPATH = expanduser("~/.config/onedriveverrer/tokens")
+
+CLIENTID = "d50ca740-c83f-4d1b-b616-12c519384f0c"
+USERAGENT = "ISV|abraunegg|OneDrive Client for Linux/v2.5.9"
+SCOPE = "\
+Files.ReadWrite Files.ReadWrite.All Sites.ReadWrite.All offline_access"
+AUTHDOMAIN = "https://login.microsoftonline.com/common/oauth2"
+REDIRECTURI = f"{AUTHDOMAIN}/nativeclient"
+AUTHURI = f"{AUTHDOMAIN}/v2.0/authorize"
+TOKENURI = f"{AUTHDOMAIN}/v2.0/token"
+GRAPHDOMAIN = "https://graph.microsoft.com/v1.0/me/drive"
+
+
+def get_res(r, json=True):
+    """Get json response of a request or print details and raise exception
+    if it failed."""
+    if r.status_code == 200:
+        return r.json() if json else r.content
+    else:
+        try:
+            print(r.json())
+        except requests.exceptions.JSONDecodeError:
+            print(f"{NAME}: No json body. Status code: {r.status_code}")
+        r.raise_for_status()
+
+
+def headers(token=None):
+    """Return standard headers to send with requests."""
+    if token:
+        return {"authorization": f"bearer {token}", "user-agent": USERAGENT}
+    return {"user-agent": USERAGENT}
+
+
+def auth():
+    """Interactive auth flow to generate a refresh token.
+    Requires opening a page in the browser, logging in, and pasting the URL of
+    the page one got redirected to, which should contain ?code= parameter."""
+    print("Please authorise this application by visiting the following URL:")
+    d = {"client_id": CLIENTID,
+         "redirect_uri": REDIRECTURI,
+         "scope": SCOPE.replace(" ", "%20"),
+         "response_type": "code",
+         "prompt": "login"}
+    print(AUTHURI + "?" + "&".join("%s=%s" % (k, v) for k, v in d.items()))
+    print("After completing the authorisation in your browser, copy the full "
+          "redirect URI (from the address bar) and paste it below.")
+    response = input("Paste redirect URI here: ")
+    code = re.search(r"(?:[?&]code=)([^&]+)", response.strip())
+    if not code:
+        raise RuntimeError("An empty or invalid redirect URI was entered")
+    d = {"client_id": CLIENTID,
+         "redirect_uri": REDIRECTURI,
+         "code": code.group(1),
+         "grant_type": "authorization_code"}
+    r = requests.post(TOKENURI, headers=headers(),
+                      data="&".join("%s=%s" % (k, v) for k, v in d.items()))
+    return get_res(r)
+
+
+def save_tokens(tokens, path):
+    """Save object TOKENS at PATH, creating containing directories if
+    necessary."""
+    makedirs(dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(tokens, f)
+        print(f"{NAME}: Wrote tokens in {path}")
+
+
+def get_tokens(path, arg_auth=False):
+    """Get tokens from file at PATH.
+    If arg_auth is True and there are no tokens on disk, trigger
+    interactive auth flow to generate them."""
+    tokens = None
+    try:
+        with open(path, "r") as f:
+            tokens = json.load(f)
+    except json.decoder.JSONDecodeError as e:
+        print(f"{NAME}: Something wrong with existing tokens file {path}: {e}")
+        print(f"{NAME}: Will attempt to regenerate tokens.")
+    except FileNotFoundError:
+        print(f"{NAME}: No tokens in {path}. "
+              "This is normal if we have not generated any yet.")
+        if arg_auth:            # FIXME: Not tested this codepath
+            print(f"{NAME}: Triggering interactive auth flow...")
+            tokens = auth()
+            save_tokens(tokens, path)
+    return tokens
+
+
+def read_refreshtoken(path):
+    """Get refresh token from file at PATH.
+    This is only used if --auth is not provided which means we are using an
+    existing refresh token generated by another application. It must exist or
+    it's a fatal error."""
+    refreshtoken = None
+    try:
+        with open(path, "r") as f:
+            refreshtoken = f.read()
+            if not refreshtoken:
+                raise RuntimeError(f"Empty refresh token file in {path}")
+    except FileNotFoundError:
+        raise RuntimeError(f"No refresh token file in {path}")
+    return refreshtoken
+
+
+def fetch_tokens(refreshtoken):
+    """Fetch new tokens using a refresh token."""
+    d = {"client_id": CLIENTID,
+         "redirect_uri": REDIRECTURI,
+         "refresh_token": refreshtoken,
+         "grant_type": "refresh_token"}
+    r = requests.post(TOKENURI, headers=headers(), data=d)
+    return get_res(r)
+
+
+def get_me(token, sub=""):
+    """Drive details."""
+    r = requests.get(f"{GRAPHDOMAIN}{sub}", headers=headers(token))
+    return get_res(r)
+
+
+def get_file_info(token, path):
+    """Get information object for file at PATH.
+    (Path relative to root, with starting /)"""
+    return get_me(token, f"/root:{path}")
+
+
+def get_itemid(token, path):
+    """Get itemid of file at PATH.
+    (Path relative to root, with starting /)"""
+    data = get_file_info(token, path)
+    return data["id"]
+
+
+def get_children(token, path=""):
+    """Drive top-level files, or files in PATH.
+    (Path relative to root, with starting /)"""
+    if path and path[0] != "/":
+        raise ValueError("PATH must either be empty or begin with a /")
+    p = f"/root:{path}:/children" if path else "/root/children"
+    return get_me(token, p)
+
+
+def get_next(token, data):
+    """Resolve next link in data. Used for pagination."""
+    r = requests.get(data['@odata.nextLink'], headers=headers(token))
+    return get_res(r)
+
+
+def get_all_children(token, path=""):
+    """get_children wrapper with pagination handling."""
+    data = get_children(token, path)
+    entries = data.get("value", [])
+    while "@odata.nextLink" in data:  # handle pagination
+        data = get_next(token, data)
+        entries.extend(data.get("value", []))
+    return entries
+
+
+def list_children(token, path="", recurse=False, pre="", callback=None):
+    """List files/subfolders in root or under PATH.
+    If RECURSE, list descendants. PRE is an extra prefix before each item.
+    If CALLBACK is provided, it will be called with info of each descendant."""
+    entries = get_all_children(token, path)
+    for i, entry in enumerate(entries):
+        is_last = i == len(entries)-1
+        connector = "└──" if is_last else "├──"
+        is_folder = "folder" in entry
+        what = "+" if is_folder else " "
+        print(f"{pre}{connector}{what}{entry['name']} (ID: {entry['id']}, "
+              f"Last Modified: {entry['lastModifiedDateTime']})")
+        if (callback):
+            callback(entry)
+        if recurse and is_folder:
+            p = f"{path}/{entry['name']}" if path else entry['name']
+            pre_ = pre + ("    " if is_last else "│   ")
+            list_children(token, p, True, pre_, callback)
+
+
+def get_versions(token, itemid):
+    """Data with versions of a file with given ITEMID."""
+    return get_me(token, f"/items/{itemid}/versions")
+
+
+def get_all_versions(token, itemid):
+    """get_versions wrapper with pagination handling."""
+    data = get_versions(token, itemid)
+    entries = data.get("value", [])
+    while "@odata.nextLink" in data:  # handle pagination
+        data = get_next(token, data)
+        entries.extend(data.get("value", []))
+    return entries
+
+
+def list_versions(token, of):
+    """List versions for file with given itemid or path.
+    (Path relative to root, with starting /)"""
+    is_path = of[0] == "/"
+    itemid = get_itemid(token, of) if is_path else of
+    entries = get_all_versions(token, itemid)
+    if not entries:
+        print(f"{NAME}: No versions found for {itemid}")
+        return
+    for entry in entries:
+        print(f"- {entry['id']} (ID) (Size: {entry['size']}, "
+              f"Last Modified: {entry['lastModifiedDateTime']})")
+
+
+def download_url(token, url, dest, overwrite=False):
+    """Function for downloading a @microsoft.graph.downloadUrl URL."""
+    r = requests.get(url)
+    flags = "wb" if overwrite else "xb"
+    with open(dest, flags) as f:
+        f.write(get_res(r, json=False))
+        print(f"{NAME}: Downloaded to '{dest}'")
+
+
+def find_versionid_in_entries(token, versionid, entries):
+    """Return entry with version VERSIONID in entries array ENTRIES."""
+    for entry in entries:
+        if entry["id"] == versionid:
+            return entry
+    print(f"{NAME}: No version with ID {versionid} found")
+
+
+def find_version_before_date_in_entries(token, date, entries):
+    """Return entry before DATE in entries array ENTRIES.
+    (Date in a format supported by dateutil.parser.parse, e.g.
+    '2026-04-04 10:30'. If timezone is not provided it's assumed to be the
+    local timezone.)"""
+    date = dateutil.parser.parse(date)
+    if not date.tzinfo:  # can't compare timezone-aware with unaware
+        date = date.astimezone()
+    for entry in entries:
+        if dateutil.parser.parse(entry["lastModifiedDateTime"]) < date:
+            return entry
+    print(f"{NAME}: No version before date {date} found")
+
+
+def download_file(token, file, dest="", ver=None, dry_run=False):
+    """Download FILE given its id or path. It will be downloaded to pwd with
+    the same name as on OneDrive unless a destination path DEST is provided.
+    A versionid or date VER can be specified to download that version or most
+    recent version before date.
+    PATH should be relative to root and start with a /.
+    DATE should be in a format supported by dateutil.parser.parse, e.g.
+    '2026-04-04 10:30'. If timezone is not provided it's assumed to be
+    the local timezone."""
+    entry = None
+    if not ver:
+        entry = get_file_info(token, file)
+    else:
+        is_path = file[0] == "/"
+        itemid = get_itemid(token, file) if is_path else file
+        entries = get_all_versions(token, itemid)
+        if not entries:
+            print(f"{NAME}: No versions found for {itemid}")
+            return
+        ver_is_date = re.match(r"[0-9]+\.0", ver) is None
+        entry = find_version_before_date_in_entries(token, ver, entries) \
+            if ver_is_date \
+            else find_versionid_in_entries(token, ver, entries)
+        if not entry:
+            return
+    if not len(dest):
+        dest = entry["name"]
+    if "@microsoft.graph.downloadUrl" not in entry:
+        raise RuntimeError("No '@microsoft.graph.downloadUrl' in entry. This \
+can happen if the path provided is a folder instead of a file.")
+    what = f"version {entry['id']}" if ver else f"file {entry['name']}"
+    print(f"{NAME}: Downloading {what} (Last Modified: "
+          f"{entry['lastModifiedDateTime']}) to {dest}")
+    if not dry_run:
+        download_url(token, entry["@microsoft.graph.downloadUrl"], dest)
+
+
+def download_folder(token, path, dest="", ver=None, dry_run=False):
+    """Download folder given its PATH. It will be downloaded to pwd with
+    the same name as on OneDrive unless a destination path DEST is provided.
+    A date VER can be specified to download for each file the most recent
+    version before given date.
+    PATH should be relative to root and start with a /.
+    DATE should be in a format supported by dateutil.parser.parse, e.g.
+    '2026-04-04 10:30'. If timezone is not provided it's assumed to be
+    the local timezone."""
+    entry = get_file_info(token, path)
+    if "folder" not in entry:
+        raise ValueError(f"{path} is not a folder")
+    dest = dest if dest else entry["name"]
+    top = f'{entry["parentReference"]["path"].split(":")[1]}/{entry["name"]}'
+
+    def cb(entry):
+        p = f'{entry["parentReference"]["path"].split(":")[1]}/{entry["name"]}'
+        dest_ = dest + (p[len(top):] if p.startswith(top) else p)
+        if "folder" in entry:
+            print(f"{NAME}: Creating folder {dest_}")
+            if not dry_run:
+                makedirs(dest_)
+        else:
+            download_file(token, p, dest_, ver, dry_run=dry_run)
+
+    list_children(token, path, True, callback=cb)
+
+
+def parse_args():
+    """CLI."""
+    parser = argparse.ArgumentParser(
+        prog=NAME,
+        description=DESCRIPTION)
+    parser.suggest_on_error = True
+    for args, kwargs in ARGS:
+        parser.add_argument(*args, **kwargs)
+    # parse args / print help and quit if no args
+    # (Primer https://stackoverflow.com/a/47440202/18396947)
+    return parser.parse_args(sys.argv[1:] or ['--help'])
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    tokens = get_tokens(OWNTOKENSPATH, args.auth)
+    accesstoken = refreshtoken = None
+    if not tokens:
+        if args.auth:
+            print(f"{NAME}: This should be unreachable, because when --auth "
+                  "is provided, if getting tokens fails it does the "
+                  "interactive auth flow, and if that fails an exception "
+                  "would have kicked you out.")
+            exit(1)
+        else:
+            refreshtoken = read_refreshtoken(EXISTINGRTOKENPATH)
+            tokens = fetch_tokens(refreshtoken)
+            save_tokens(tokens, OWNTOKENSPATH)
+    else:
+        if time() > getmtime(OWNTOKENSPATH) + tokens["expires_in"]:
+            # CONCERN: Maybe it should be fetched with the refresh
+            # token in EXISTINGRTOKENPATH if not args.auth, in case
+            # this refresh token is also too old
+            tokens = fetch_tokens(tokens["refresh_token"])
+            save_tokens(tokens, OWNTOKENSPATH)
+    refreshtoken = tokens['refresh_token']
+    token = tokens['access_token']
+
+    dry_run = args.dry_run
+    if args.dump is not None:
+        print(get_file_info(token, args.dump))
+    if args.list_children is not None:
+        list_children(token, args.list_children)
+    if args.list_arborescence is not None:
+        list_children(token, args.list_arborescence, True)
+    if args.list_versions is not None:
+        list_versions(token, args.list_versions)
+    if args.download_file is not None:
+        download_file(token, *args.download_file, dry_run=dry_run)
+    if args.download_folder is not None:
+        download_folder(token, *args.download_folder, dry_run=dry_run)
