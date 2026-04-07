@@ -7,7 +7,17 @@
 # - bspwm
 #
 # Usage:
-# Keep running in the background
+# Keep running in the background. If you stop the script, run it with
+# --restore after in order to unhide all the windows. If you restart
+# the script, you need to unhide all the windows before starting it
+# again or they will remain hidden.
+
+if [ "$1" == "--restore" ]; then
+    for n in $(bspc query -N -n .hidden); do
+        bspc node "$n" -g hidden
+    done
+    exit
+fi
 
 declare -A focus
 declare -a hidden
