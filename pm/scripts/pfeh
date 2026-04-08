@@ -4,9 +4,10 @@
 #
 # Dependencies:
 # - feh
-# - xclip
-# - script prename
-# - script fehfavoris
+# - xclip (for copy path/image)
+# - script prename (for rename)
+# - script fehfavoris (for saving and loading favourites)
+# - mpv (for open in mpv)
 
 IMAGESDIR=/home/pm/pm/r
 
@@ -23,6 +24,8 @@ cmd=(
     # copy image. should maybe be image/%t, but with that it doesn't work
     # everywhere, for example pasting into imgur doesn't work
     --action6 'xclip -selection clipboard -t image/png -i %F'
+    # open in mpv. useful for gifs, which feh can't play
+    --action5 'mpv "%f"'
     # open favourites
     --action1 'fehfavoris'
     # save to favourites
