@@ -354,6 +354,7 @@ def download_folder(token, path, dest="", ver=None, dry_run=False):
     if "folder" not in entry:
         raise ValueError(f"{path} is not a folder")
     dest = dest if dest else entry["name"]
+    makedirs(dest)
     top = f'{entry["parentReference"]["path"].split(":")[1]}/{entry["name"]}'
 
     def cb(entry):
