@@ -14,7 +14,7 @@
 #   keyboard-controlled mouse emulation instead of a real mouse.
 # * --hidecursor : to not have the mouse cursor appear in screenshots
 
-SAVETO="~/pm/r/screen"
+SAVETO="$HOME/pm/r/screen"  # Don't use ~, it doesn't expand in quotes
 
 case $1 in
     clipboard)
