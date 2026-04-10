@@ -9,6 +9,15 @@
 # Usage:
 # bound to a hotkey
 
+micnotpid=$(ps aux | grep [m]icnot | awk '{print $2}')
+[ -n "$micnotpid" ] && {
+    kill "$micnotpid"
+    amixer set Capture nocap
+} || {
+    amixer set Capture cap
+    micnot -q l &
+}
+
 if xdotool search --name Parliamentlive.tv; then
     xdotool search --name Parliamentlive.tv key --clearmodifiers space;
 elif xdotool search --name ' - mpv'; then
