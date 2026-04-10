@@ -100,6 +100,8 @@ in [./pm/scripts](pm/scripts)
     Hacky thing to hide windows on other workspaces in order to optimise CPU usage. Programs have some optimisations for when they are not in the foreground, but when you switch workspaces they seem to think they are still in the foreground normally. Browsers especially benefit from this, especially if you're on a site that does a tonne of timers like bilibili; when you go to another tab or focus a different window, the browser limits what the site can do. (cf devlog 9)
 36. [**onedriveverrer**](pm/scripts/onedriveverrer): 2026-02-22 / 2026-04-02 13:24  
     Script to download an older version of a OneDrive file or folder. (cf devlog 11)
+37. [**micnot**](pm/scripts/micnot): 2026-04-05 11:05  
+    Audio feedback when the microphone exceeds a given threshold. I use it to be able to tell when there is an alert when I am in the bathroom. (cf devlog 13)
 
 ## TODO
 - **add screenshots**  
