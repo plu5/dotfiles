@@ -149,7 +149,10 @@ CACHE_DIR="$HOME/.cache/$NAME"
 mkdir -p "$CACHE_DIR"
 
 get_cache_file() {  # $1 = query
-    echo "$CACHE_DIR/$(echo -n "$1" | md5sum | cut -d' ' -f1).txt"
+    pad=..............          # padding for human-readable component
+    h=$(echo -n "$1" | sed 's/[^a-zA-Z0-9]*//g' | rev | cut -c -14 | rev)
+    #     [14 chars human readable].[15 chars md5sum].txt
+    echo "$CACHE_DIR/$h${pad:${#h}}.$(echo -n "$1" | md5sum | cut -c -15).txt"
 }
 
 get_pos_file() {  # $1 = query
