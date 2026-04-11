@@ -7,9 +7,7 @@
 # Dependencies:
 # - mpv
 # - yt-dlp
-# - wmctrl
-# - socat
-# - (Optional) bspwm window manager
+# - socat (IPC)
 #
 # Usage: See help string below
 
@@ -46,12 +44,6 @@ EOF
 
 pos=
 
-has_bspc=$(command -v bspc >/dev/null 2>&1 && echo 1)
-
-if [ $has_bspc ] && ! bspc rule -l | grep -q 'mpv:mpvalt.*hidden=on'; then
-    bspc rule -a mpv:mpvalt hidden=on
-fi
-
 prefix_echo () {
   if [ "$(("$1" % 2))" = "0" ]; then
       color=green
@@ -78,14 +70,6 @@ get_soc() {
     echo "/tmp/${NAME}_soc_$(( $1 % 2 ))"
 }
 
-unhide_alt() {
-    if [ $has_bspc ]; then
-        bspc node "$(wmctrl -lx | grep mpvalt | cut -d' ' -f1)" -g hidden=off
-    else
-        wmctrl -xr mpvalt -b remove,hidden
-    fi
-}
-
 i=0
 
 pid=
@@ -96,9 +80,8 @@ store_pid() {
     pid="$1"
 }
 
-wait_alt() {       # wait until prev exits, then unhide and unpause $1
+wait_alt() {       # wait until prev exits, then unpause $1
     tail --pid="$prev_pid" -f /dev/null
-    unhide_alt
     echo '{ "command": ["set_property", "pause", false] }' | socat - "$1"
 }
 
