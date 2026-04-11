@@ -11,24 +11,14 @@
 # - socat
 # - (Optional) bspwm window manager
 #
-# Usage:
-# gaplessmpv [--purgecache] [--purgepos] [--pos=N] (QUERY|INPUTFILE)
-# QUERY = any link or search accepted by yt-dlp.
-# * gaplessmpv scsearch1000:fjellstrom
-# * gaplessmpv youtube.com/@slowgermanlistening/videos
-# * gaplessmpv youtube.com/?v=zADVzO7m5qM
-# INPUTFILE = a file where each line contains a link to a video or a yt-id.
-# * gaplessmpv Example_list.txt
-# * gaplessmpv <(yt-dlp --no-warnings --print "%(webpage_url)s" ytsearch2:cat)
-# Options:
-# --reverse     Read video list in reverse order. Does not support pseudofiles.
-# --purgecache  Remove file that caches the video list for a given QUERY.
-# --purgepos    Remove file that stores current position in the video list.
+# Usage: See help string below
 
 NAME="${0##*/}"
 mpvargs="--quiet --force-window=yes"
 mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
 READTIMEOUT=10                  # seconds
+CACHE_DIR="$HOME/.cache/$NAME"
+mkdir -p "$CACHE_DIR"
 
 help() {
     cat <<EOF
@@ -149,9 +139,6 @@ process_lines() {     # main work loop. $1 = pos offset, $2 = pos file
         fi
     done
 }
-
-CACHE_DIR="$HOME/.cache/$NAME"
-mkdir -p "$CACHE_DIR"
 
 get_cache_file() {  # $1 = query
     pad=..............          # padding for human-readable component

@@ -8,22 +8,11 @@
 # - yt-dlp
 # - socat
 #
-# Usage:
-# queuedmpv [--rawoutput] [--reverse] [--purgecache] [--purgepos] [--pos=N] (QUERY|INPUTFILE)
-# QUERY = any link or search accepted by yt-dlp.
-# * queuedmpv scsearch1000:fjellstrom
-# * queuedmpv youtube.com/@slowgermanlistening/videos
-# * queuedmpv youtube.com/?v=zADVzO7m5qM
-# INPUTFILE = a file where each line contains a link to a video or a yt-id.
-# * queuedmpv Example_list.txt
-# * queuedmpv <(yt-dlp --no-warnings --print "%(webpage_url)s" ytsearch2:cat)
+# Usage: See help string below
 
 NAME="${0##*/}"
 soc="/tmp/queuedmpv-soc"
 mpvargs="--quiet --prefetch-playlist=yes --force-window=yes"
-pos=
-file=
-loaded=
 should_save=1
 mpvoutput_colour="magenta"
 mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
@@ -55,6 +44,10 @@ Examples:
 * $NAME <(yt-dlp --no-warnings --print "%(webpage_url)s" ytsearch2:cat)
 EOF
 }
+
+pos=
+file=
+loaded=
 
 get_link() {    # if $1 contains a yt-id return its link, $1 otherwise
     id=$(echo "$1" | sed -n \
