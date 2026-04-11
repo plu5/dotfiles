@@ -29,6 +29,7 @@ NAME="${0##*/}"
 CLASS=$NAME
 mpvargs="--quiet --force-window=yes --x11-name=$CLASS"
 mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
+should_save=1
 READTIMEOUT=10                  # seconds
 CACHE_DIR="$HOME/.cache/$NAME"
 mkdir -p "$CACHE_DIR"
@@ -123,7 +124,7 @@ process_lines() {     # main work loop. $1 = pos offset, $2 = pos file
             prefix_echo $i "$(($i + "$1"))" &
         store_pid $!
         [ $i -gt 0 ] && wait_alt "$soc"
-        [ $i -gt 0 ] && store_pos "$(($i + "$1"))" "$2"
+        [ $i -gt 0 ] && [ -n "$should_save" ] && store_pos "$(($i + "$1"))" "$2"
         timebeforeread=$(date +%s)
         if read -r -t "$READTIMEOUT" next; then
             line="$next"
@@ -161,6 +162,8 @@ while [ $# -gt 0 ]; do
             exit;;
         --reverse)
             reverse_flag=1;;
+        --nosave)
+            should_save=;;
         --purgecache)
             purge_cache_flag=1;;
         --purgepos)
@@ -264,6 +267,17 @@ try_restore_pos() {
     fi
 }
 
+finalise_cache_fork() {
+    (    # finalise cache when yt-dlp is done irrespective of read
+        tail --pid="$ytdlp_pid" -f /dev/null
+        if [ -s "$cache_file.tmp" ]; then
+            mv "$cache_file.tmp" "$cache_file"
+            echo "$NAME: Finalised cache $cache_file"
+        fi
+    ) &
+    cache_pid=$!
+}
+
 if [ -r "$query" ]; then        # INPUTFILE
     file=$query
     if [ -f "$query" ]; then    # real file (not pseudofile)
@@ -299,17 +313,16 @@ else                            # QUERY
         else                    # no need to restore pos
             [ "$reverse_flag" = 1 ] && ytdlp_args="$ytdlp_args -I ::-1"
         fi
+        if [ -n "$should_save" ]; then
+            file="$cache_file.tmp"
+        else
+            file=$(mktemp -u)
+            mkfifo "$file"
+        fi
         stdbuf -oL yt-dlp $ytdlp_args --print "%(webpage_url)s" "$query" \
-               > "$cache_file.tmp" & # line-buffered cache
+               > "$file" &  # line-buffered cache
         ytdlp_pid=$!
-        ( # finalise cache when yt-dlp is done irrespective of read loop
-            tail --pid="$ytdlp_pid" -f /dev/null
-            if [ -s "$cache_file.tmp" ]; then
-                mv "$cache_file.tmp" "$cache_file"
-                echo "$NAME: Finalised cache $cache_file"
-            fi
-        ) &
-        cache_pid=$!
+        [ -n "$should_save" ] && finalise_cache_fork
         tail -f "$cache_file.tmp" | process_lines $pos "$pos_file" # stream
     fi
 fi
