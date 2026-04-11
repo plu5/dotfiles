@@ -348,16 +348,17 @@ else                            # QUERY
         [ -z "$pos" ] && try_restore_pos
     else                        # no cache
         ytdlp_args="--no-warnings"
-        if [ -n "$pos" ] || ([ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]); then
-            [ -z "$pos" ] && pos="$(cat "$pos_file")"
+        [ -z "$pos" ] && try_restore_pos
+        [ -z "$pos" ] && pos=0
+        if [ "$pos" -gt 0 ]; then
             if [ "$reverse_flag" = 1 ]; then
                 ytdlp_args="$ytdlp_args -I -$(($pos + 1))::-1"
             else
                 ytdlp_args="$ytdlp_args --playlist-start $(($pos + 1))"
             fi
+            # separate cache file, because it's not going to be the entire list
             cache_file="${cache_file%.txt}-start${pos}.txt"
-            echo "$NAME: Restoring position $pos"
-        else                    # no pos
+        else                    # no need to restore pos
             [ "$reverse_flag" = 1 ] && ytdlp_args="$ytdlp_args -I ::-1"
         fi
         if [ -n "$should_save" ]; then
