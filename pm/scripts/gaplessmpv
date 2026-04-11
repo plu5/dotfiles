@@ -26,6 +26,7 @@
 # --purgepos    Remove file that stores current position in the video list.
 
 NAME="${0##*/}"
+mpvargs="--quiet --force-window=yes"
 mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
 
 help() {
@@ -76,9 +77,9 @@ else { print colored(\"[$2] \$_\", $color) }
 
 get_args() {
     if [ "$1" = 0 ]; then
-        echo "--quiet --force-window=yes"
+        echo "$mpvargs"
     else
-        echo "--quiet --force-window=yes --x11-name=mpvalt --pause"
+        echo "$mpvargs --x11-name=mpvalt --pause"
     fi
 }
 
