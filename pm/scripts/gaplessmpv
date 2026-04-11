@@ -12,7 +12,7 @@
 # - (Optional) bspwm window manager
 #
 # Usage:
-# gaplessmpv [--purgecache] [--purgepos] (QUERY|INPUTFILE)
+# gaplessmpv [--purgecache] [--purgepos] [--pos=N] (QUERY|INPUTFILE)
 # QUERY = any link or search accepted by yt-dlp.
 # * gaplessmpv scsearch1000:fjellstrom
 # * gaplessmpv youtube.com/@slowgermanlistening/videos
@@ -41,6 +41,7 @@ Options:
 --reverse     Read video list in reverse order. Does not support pseudofiles.
 --purgecache  Remove file that caches the video list for a given QUERY.
 --purgepos    Remove file that stores current position in the video list.
+--pos=N       Force starting position N.
 
 Examples:
 * $NAME scsearch1000:fjellstrom
@@ -50,6 +51,8 @@ Examples:
 * $NAME <(yt-dlp --no-warnings --print "%(webpage_url)s" ytsearch2:cat)
 EOF
 }
+
+pos=
 
 has_bspc=$(command -v bspc >/dev/null 2>&1 && echo 1)
 
@@ -169,6 +172,9 @@ while [ $# -gt 0 ]; do
             purge_cache_flag=1;;
         --purgepos)
             purge_pos_flag=1;;
+        --pos=*)
+            pos="${1#--pos=}"
+            echo "$NAME: Forcing position $pos";;
         --)
             shift
             break;;
@@ -198,22 +204,11 @@ query=$1
 
 cache_file=$(get_cache_file "$query")
 pos_file=$(get_pos_file "$query")
+reverse_cache_file="${cache_file%.txt}-reverse.txt"
+reverse_pos_file="${pos_file%.txt}-reverse.txt"
 
-if [ "$reverse_flag" = 1 ]; then # calculate reverse cache and pos if possible
-    reverse_cache_file="${cache_file%.txt}-reverse.txt"
-    reverse_pos_file="${pos_file%.txt}-reverse.txt"
+reverse_pos() {
     len=
-    if [ -f "$query" ]; then    # INPUTFILE and non-pseudofile
-        if [ ! -e "$reverse_cache_file" ]; then
-            tac "$query" > "$reverse_cache_file"
-            echo "$NAME: Wrote reversed list to cache $reverse_cache_file"
-        fi
-    else                        # QUERY
-        if [ -r "$cache_file" ] && [ ! -e "$reverse_cache_file" ]; then
-            tac "$cache_file" > "$reverse_cache_file"
-            echo "$NAME: Wrote reversed cached list to $reverse_cache_file"
-        fi
-    fi
     if [ -e "$reverse_cache_file" ]; then
         len=$(wc -l < "$reverse_cache_file")
     elif [ -e "$cache_file" ]; then
@@ -225,6 +220,26 @@ if [ "$reverse_flag" = 1 ]; then # calculate reverse cache and pos if possible
         echo $reverse_pos > "$reverse_pos_file"
         echo "$NAME: Calculated reverse pos $reverse_pos > $reverse_pos_file"
     fi
+}
+
+is_newer() {                   # $1 and $2 = paths to files or folders
+    find "$1" -prune -newer "$2" | grep -q . && return 0 || return 1
+}
+
+if [ "$reverse_flag" = 1 ]; then # calculate reverse cache and pos if possible
+    if [ -f "$query" ]; then    # INPUTFILE and non-pseudofile
+        if [ ! -e "$reverse_cache_file" ] ||
+               is_newer "$query" "$reverse_cache_file"; then
+            tac "$query" > "$reverse_cache_file"
+            echo "$NAME: Wrote reversed list to cache $reverse_cache_file"
+        fi
+    else                        # QUERY
+        if [ -r "$cache_file" ] && [ ! -e "$reverse_cache_file" ]; then
+            tac "$cache_file" > "$reverse_cache_file"
+            echo "$NAME: Wrote reversed cached list to $reverse_cache_file"
+        fi
+    fi
+    [ -z "$pos" ] && reverse_pos
     cache_file=$reverse_cache_file
     pos_file=$reverse_pos_file
 fi
@@ -249,33 +264,37 @@ cleanup() {                     # kill forked processes
 
 trap cleanup INT TERM
 
-if [ -r "$query" ]; then        # INPUTFILE
-    inputfile=$query
-    [ "$reverse_flag" = 1 ] && [ -r "$cache_file" ] && inputfile=$cache_file
-    if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then # pos
+try_restore_pos() {
+    if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then
         pos="$(cat "$pos_file")"
         echo "$NAME: Restoring position $pos"
-        cat "$inputfile" | tail -n "+$(($pos + 1))" |
-            process_lines $pos "$pos_file"
-    else                        # no pos
-        process_lines 0 "$pos_file" < "$inputfile"
     fi
+}
+
+if [ -r "$query" ]; then        # INPUTFILE
+    file=$query
+    if [ -f "$query" ]; then    # real file (not pseudofile)
+        [ "$reverse_flag" = 1 ] && [ -r "$cache_file" ] && file=$cache_file
+        [ -z "$pos" ] && try_restore_pos
+    else
+        echo "$NAME: Cache and position cannot be saved for pseudofiles"
+        should_save=
+    fi
+    [ -z "$pos" ] && pos=0
+    cat "$file" | tail -n "+$(($pos + 1))" |
+        process_lines $pos "$pos_file"
 else                            # QUERY
     if [ -r "$cache_file" ]; then # cache
         echo "$NAME: Using cached list $cache_file"
-        if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then # pos
-            pos="$(cat "$pos_file")"
-            echo "$NAME: Restoring position $pos"
-            cat "$cache_file" | tail -n "+$(($pos + 1))" |
-                process_lines $pos "$pos_file"
-        else                    # no pos
-            process_lines 0 "$pos_file" < "$cache_file"
-        fi
+        file=$cache_file
+        [ -z "$pos" ] && try_restore_pos
+        [ -z "$pos" ] && pos=0
+        cat "$file" | tail -n "+$(($pos + 1))" |
+            process_lines $pos "$pos_file"
     else                        # no cache
         ytdlp_args="--no-warnings"
-        pos=0
-        if [ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]; then # pos
-            pos="$(cat "$pos_file")"
+        if [ -n "$pos" ] || ([ -r "$pos_file" ] && [ "$(cat "$pos_file")" -gt 0 ]); then
+            [ -z "$pos" ] && pos="$(cat "$pos_file")"
             if [ "$reverse_flag" = 1 ]; then
                 ytdlp_args="$ytdlp_args -I -$(($pos + 1))::-1"
             else
@@ -285,6 +304,7 @@ else                            # QUERY
             echo "$NAME: Restoring position $pos"
         else                    # no pos
             [ "$reverse_flag" = 1 ] && ytdlp_args="$ytdlp_args -I ::-1"
+            pos=0
         fi
         stdbuf -oL yt-dlp $ytdlp_args --print "%(webpage_url)s" "$query" \
                > "$cache_file.tmp" & # line-buffered cache
