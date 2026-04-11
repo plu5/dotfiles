@@ -9,10 +9,25 @@
 # - yt-dlp
 # - socat (IPC)
 #
+# Note: This script opens a new instance of mpv for each video. It is
+# recommended to create a rule with your window manager to open them
+# on a particular workspace to avoid annoyance. The instances will all
+# get the WM_CLASS instance name $CLASS (set to the name of the script
+# by default; gaplessmpv). Example with bspwm:
+#
+#     bspc rule -a mpv:gaplessmpv desktop="^5"
+#
+# Volume, playback speed, and other non-persistent instance settings
+# will not be preserved. You can add arguments that will be passed to
+# the mpv instance in the variable mpvargs below, or modify your
+# mpv.conf with the settings you want all instances to have
+# (e.g. `volume=160`, `speed=3`)
+#
 # Usage: See help string below
 
 NAME="${0##*/}"
-mpvargs="--quiet --force-window=yes"
+CLASS=$NAME
+mpvargs="--quiet --force-window=yes --x11-name=$CLASS"
 mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
 READTIMEOUT=10                  # seconds
 CACHE_DIR="$HOME/.cache/$NAME"
@@ -62,7 +77,7 @@ get_args() {
     if [ "$1" = 0 ]; then
         echo "$mpvargs"
     else
-        echo "$mpvargs --x11-name=mpvalt --pause"
+        echo "$mpvargs --pause"
     fi
 }
 
