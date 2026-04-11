@@ -28,6 +28,7 @@
 NAME="${0##*/}"
 mpvargs="--quiet --force-window=yes"
 mpvoutput_filter='^\[vo\/gpu-next\/libplacebo|^MESA-INTEL:|^\[osd\/libass'
+READTIMEOUT=10                  # seconds
 
 help() {
     cat <<EOF
@@ -135,10 +136,13 @@ process_lines() {     # main work loop. $1 = pos offset, $2 = pos file
         store_pid $!
         [ $i -gt 0 ] && wait_alt "$soc"
         [ $i -gt 0 ] && store_pos "$(($i + "$1"))" "$2"
-        if read -r next; then
+        timebeforeread=$(date +%s)
+        if read -r -t "$READTIMEOUT" next; then
             line="$next"
             i=$((i + 1))
         else  # last line
+            [ $(date +%s) -ge $((timebeforeread + READTIMEOUT)) ] &&
+                echo "$NAME: Read timeout"
             echo "$NAME: Last video"
             tail --pid="$pid" -f /dev/null  # wait for last mpv process
             break
