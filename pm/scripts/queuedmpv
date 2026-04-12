@@ -325,11 +325,21 @@ finalise_cache_fork() {
     cache_pid=$!
 }
 
+[ -z "$pos" ] && try_restore_pos
+[ -z "$pos" ] && pos=0
+
+# yt-dlp query, pos > 0, no cache
+if [ ! -r "$query" ] && [ "$pos" -gt 0 ] && [ ! -e "$cache_file" ]; then
+    # separate cache file, because it's not going to be the entire list
+    cache_file="${cache_file%.txt}-start${pos}.txt"
+    # relative to that list which starts at pos, the pos is 0
+    [ -r "$cache_file" ] && pos=0
+fi
+
 if [ -r "$query" ]; then        # INPUTFILE
     file=$query
     if [ -f "$query" ]; then    # real file (not pseudofile)
         [ "$reverse_flag" = 1 ] && [ -r "$cache_file" ] && file=$cache_file
-        [ -z "$pos" ] && try_restore_pos
     else
         echo "$NAME: Cache and position cannot be saved for pseudofiles"
         should_save=
@@ -338,19 +348,14 @@ else                            # QUERY
     if [ -r "$cache_file" ]; then # cache
         echo "$NAME: Using cached list $cache_file"
         file=$cache_file
-        [ -z "$pos" ] && try_restore_pos
     else                        # no cache
         ytdlp_args="--no-warnings"
-        [ -z "$pos" ] && try_restore_pos
-        [ -z "$pos" ] && pos=0
         if [ "$pos" -gt 0 ]; then
             if [ "$reverse_flag" = 1 ]; then
                 ytdlp_args="$ytdlp_args -I -$(($pos + 1))::-1"
             else
                 ytdlp_args="$ytdlp_args --playlist-start $(($pos + 1))"
             fi
-            # separate cache file, because it's not going to be the entire list
-            cache_file="${cache_file%.txt}-start${pos}.txt"
         else                    # no need to restore pos
             [ "$reverse_flag" = 1 ] && ytdlp_args="$ytdlp_args -I ::-1"
         fi
@@ -366,8 +371,6 @@ else                            # QUERY
         [ -n "$should_save" ] && finalise_cache_fork
     fi
 fi
-
-[ -z "$pos" ] && pos=0
 
 # Run mpv
 mpvargs="$mpvargs --idle=once --input-ipc-server="
