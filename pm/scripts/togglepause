@@ -5,25 +5,26 @@
 # Dependencies:
 # - xdotool
 # - (Optional) script soncontrol
+# - (Optional) script micnot
 #
 # Usage:
 # bound to a hotkey
 
-micnotpid=$(ps aux | grep [m]icnot | awk '{print $2}')
-[ -n "$micnotpid" ] && {
-    kill "$micnotpid"
-    amixer set Capture nocap
-} || {
-    amixer set Capture cap
-    micnot -q l &
+toggle_micnot() {
+    micnotpid=$(ps aux | grep [m]icnot | awk '{print $2}')
+    [ -n "$micnotpid" ] && {
+        kill "$micnotpid"
+        amixer set Capture nocap
+    } || {
+        amixer set Capture cap
+        micnot -q l &
+    }
 }
 
-if xdotool search --name Parliamentlive.tv; then
-    xdotool search --name Parliamentlive.tv key --clearmodifiers space;
-elif xdotool search --name ' - mpv'; then
+toggle_oldest() {           # $1 name search query (can be partial)
     # toggle the oldest window (sorted by PID)
     xdotool key --window $(
-        xdotool search --name ' - mpv' |
+        xdotool search --name "$1" |
             while read -r wid; do
                 pid=$(xprop -id "$wid" _NET_WM_PID 2>/dev/null | cut -d ' ' -f3)
                 [ -n "$pid" ] && echo "$pid $wid"
@@ -32,8 +33,15 @@ elif xdotool search --name ' - mpv'; then
             head -1 |
             cut -d ' ' -f2
             ) --clearmodifiers space
+}
+
+if xdotool search --name Parliamentlive.tv; then
+    xdotool search --name Parliamentlive.tv key --clearmodifiers space;
+elif xdotool search --name ' - mpv'; then
+    toggle_oldest ' - mpv'
 elif xdotool search --name 哔哩哔哩; then
     tmp=$(xdotool getactivewindow);
+    command -v micnot >/dev/null 2>&1 && toggle_micnot
     command -v soncontrol >/dev/null 2>&1 && soncontrol stopobscur;
     xdotool windowactivate --sync $(xdotool search --name 哔哩哔哩) key --clearmodifiers space &&
         xdotool windowactivate $tmp;
