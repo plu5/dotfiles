@@ -49,7 +49,11 @@ if [[ -f "/tmp/profidesireddesktop" ]]; then
         program=$(echo "$d" | grep -oP '(?<=/)[^/ ]+(?=\s|$)|^(\w+)' | head -n 1)
         class=$(echo "$window_class" | awk -F "." '{print tolower($NF)}')
         # notify-send "$d // $program // $class // $window_class"  # debug
-        if [[ "$class" == "$program" ]]; then
+        # I have some scripts that wrap programs which usually have a
+        # p added to the start like "pkrita" or an f added to the end
+        # like "okularf", to explain why I'm using this regex instead
+        # of just "$program" == "$class"
+        if [[ "p?${program}f?" =~ "$class" ]]; then
             echo "desktop=$desktop"
             exit
         fi
