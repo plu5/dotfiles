@@ -70,6 +70,7 @@ in [./pm/scripts](pm/scripts)
     command to launch feh in my images directory with actions to rename <kbd>0</kbd> (see `prename` above), see file information and type <kbd>9</kbd>, see stat dates <kbd>8</kbd>, copy file path to clipboard <kbd>7</kbd>, <kbd>1</kbd> to open `fehfavoris` rofi interface (see below), <kbd>2</kbd> to save the image to `fehfavoris`. i don't have one to delete because i don't want to do it by accident. when i need to delete i press 7 to copy the file path, open a terminal with <kbd>C-e</kbd> and enter rm with the path.
 22. [**pausepp**](pm/scripts/pausepp) : 2025-12-28 17:54:02  
     it's a simple pomodoro-type thing. just sleeps 25 minutes, plays a sound, sleeps another 5 minutes, plays another sound. simple as that so that i have nothing to fiddle with, can't constantly check how much time there is left. the sounds i used i downloaded from forvo. [une pause pipi](https://forvo.com/word/une_pause_pipi/#fr), [alors on continue](https://forvo.com/word/alors%2C_on_continue_%253F/#fr), both by Pat91.
+    + I don't use it anymore in favour of "natural pauses" at :00 and :30 if I notice (like pausepp, it helps me get started doing something I don't want to do, but without the distraction/annoyance when I don't want a break)
 23. [**fehfavoris**](pm/scripts/fehfavoris) : 2026-01-01 14:03:48  
     a way to save images you want to get back to later in feh, bound to an action in `pfeh` (see above). rofi interface for opening the favourites.
 24. [**pnomsacheminsabsolus**](pm/scripts/pnomsacheminsabsolus) : 2026-01-02 16:47:37  
