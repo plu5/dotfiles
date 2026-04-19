@@ -10,6 +10,7 @@ metaf.py . -s
 import os
 import json
 import time
+import hashlib
 import argparse
 import platform
 import subprocess
@@ -22,7 +23,7 @@ DATEFORMAT = '%F %T'
 FORMATOPTIONS = {
     'C': 'creation', 'c': 'creation epoch',
     'M': 'modification', 'm': 'modification epoch',
-    't': 'type', 'n': 'name', 'p': 'path',
+    't': 'type', 'n': 'name', 'p': 'path', 'h': 'sha256',
 }
 DEFAULTFORMATOPTIONS = 'CcMm'
 
@@ -89,8 +90,17 @@ def get_file_type(path):
     return c.stdout.decode().split()[-1]
 
 
+def get_file_checksum(path):
+    # type: (str) -> str
+    """Python 3.11+"""
+    with open(path, 'rb') as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
+
+
 def fields_to_update(path, fmt, existing):
     # type: (str, str, dict) -> str
+    # REMARK(plu5): Maybe add checking sha256 instead of modification
+    # date if it is present
     ret = []
     m = existing.get(FORMATOPTIONS['m'])
     if not m:
@@ -140,6 +150,7 @@ def get_file_information(path, fmt, existing=None):
         't': lambda: get_file_type(path),
         'n': lambda: os.path.basename(path),
         'p': lambda: os.path.abspath(path),
+        'h': lambda: get_file_checksum(path),
     }
 
     for char in fmt:
