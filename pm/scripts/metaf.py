@@ -167,7 +167,7 @@ def get_files_information_recursively(
     def process_file_or_subdir(root, name, is_subdir=False):
         # type: (str, str, bool) -> None
         p = os.path.join(root, name)
-        rel_p = p.removeprefix(parent_path + '/')
+        rel_p = os.path.relpath(p, parent_path)
         e = existing.get(rel_p) if existing else None
         if existing and not e:
             msg(f"File {p} is new")
