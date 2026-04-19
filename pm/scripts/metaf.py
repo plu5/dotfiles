@@ -209,6 +209,11 @@ def parse_args():
         'Options: '
         f'{", ".join([f"{k} ({v})" for k, v in FORMATOPTIONS.items()])}.')
     parser.add_argument(
+        '--sort', choices=[x for k in FORMATOPTIONS for x in (k, k + 'r')],
+        help='Sort by a given metadata field. Options are the same as for '
+        '-f/--format, or followed by r for reverse order. '
+        '(Example: cr -> sort by creation epoch, reverse order.)')
+    parser.add_argument(
         '-a', '--all', action='store_true',
         help='Include metadata for directories too.')
     parser.add_argument(
@@ -274,9 +279,29 @@ def main():
                 exit()
 
     now = time.time()
+
+    d = get_files_information_recursively(
+        parent_path, args.format, args.all, existing)
+
+    def sort_key(item):
+        key, value = item
+        k = FORMATOPTIONS[args.sort[0]]
+        data_to_sort_by = value.get(k, None)
+        if data_to_sort_by is None:
+            msg(f"{k} not in file data, can't sort by it")
+            data_to_sort_by = False
+        # REMARK(plu5): I set it ^ to False because one can't compare
+        # None to None, but comparing booleans is fine. If we get None
+        # for one element, we should get None for all of them, as all
+        # data for each file should have the same keys.
+        return data_to_sort_by
+
+    if args.sort:
+        reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        d = dict(sorted(d.items(), key=sort_key, reverse=reverse))
+
     out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
-           'files': get_files_information_recursively(
-               parent_path, args.format, args.all, existing)}
+           'files': d}
     dump = json.dumps(out, indent=2)
 
     if args.save:
