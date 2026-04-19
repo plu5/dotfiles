@@ -26,11 +26,14 @@ FORMATOPTIONS = {
 }
 DEFAULTFORMATOPTIONS = 'CcMm'
 
+QUIET = False
+
 
 def msg(text):
     # type: (str) -> None
     """Utility for logs/errors, could be replaced with proper logging"""
-    print(f'{PROG}: {text}')
+    if not QUIET:
+        print(f'{PROG}: {text}')
 
 
 def get_file_modification_epoch(path):
@@ -197,6 +200,9 @@ def parse_args():
     parser = argparse.ArgumentParser(prog=PROG)
     parser.add_argument('path')
     parser.add_argument(
+        '-q', '--quiet', action='store_true',
+        help='Suppress messages in output.')
+    parser.add_argument(
         '-f', '--format', default=DEFAULTFORMATOPTIONS,
         help='Which metadata fields to include and in which order. '
         f'Default: {DEFAULTFORMATOPTIONS}. '
@@ -233,7 +239,10 @@ def parse_args():
 
 def main():
     # type: () -> None
+    global QUIET
+
     args = parse_args()
+    QUIET = args.quiet
     parent_path = args.path
 
     # parent_path = '.'  # debug
