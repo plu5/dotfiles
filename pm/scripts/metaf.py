@@ -22,7 +22,7 @@ DATEFORMAT = '%F %T'
 FORMATOPTIONS = {
     'C': 'creation', 'c': 'creation epoch',
     'M': 'modification', 'm': 'modification epoch',
-    't': 'type',
+    't': 'type', 'n': 'name', 'p': 'path',
 }
 DEFAULTFORMATOPTIONS = 'CcMm'
 
@@ -138,6 +138,8 @@ def get_file_information(path, fmt, existing=None):
         'C': lambda: readable_date_from_epoch(c),
         'M': lambda: readable_date_from_epoch(m),
         't': lambda: get_file_type(path),
+        'n': lambda: os.path.basename(path),
+        'p': lambda: os.path.abspath(path),
     }
 
     for char in fmt:
