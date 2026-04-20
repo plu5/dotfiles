@@ -6,8 +6,14 @@ about each file to a json structure.
 
 Example usage:
 metaf.py . -s
+metaf.py . -us  # update save
+
+Known issues:
+1. csv exporter still saves to DEFAULTSAVENAME metaf.json if you don't
+   specify your own name/path for the save file with --save-to.
 """
 import os
+import csv
 import json
 import time
 import hashlib
@@ -28,6 +34,8 @@ FORMATOPTIONS = {
 DEFAULTFORMATOPTIONS = 'CcMm'
 
 QUIET = False
+
+MAGICCSVKEYPREFIX = '<<metaf:'
 
 
 def msg(text):
@@ -201,12 +209,97 @@ def get_files_information_recursively(
     return files_info_dict
 
 
+def parse_csv(s):
+    # type: str -> dict
+    res = {}
+    rows = list(csv.DictReader(s.splitlines()))
+    keys = list(rows[0].keys())
+    i_files_start = 0
+    # general metadata fields
+    for i, row in enumerate(rows):
+        key = row['key']
+        if key.startswith(MAGICCSVKEYPREFIX):
+            res[key[len(MAGICCSVKEYPREFIX):]] = row[keys[1]]
+        else:
+            i_files_start = i
+            break
+    # file data
+    files = res['files'] = {}
+    for row in rows[i_files_start:]:
+        f = files[row['key']] = {}
+        for field in keys[1:]:
+            # REMARK(plu5): Epochs are the only non-string value we
+            # are storing currently, so this does the job despite
+            # being an ugly hack (I apologise)
+            f[field] = float(row[field]) if 'epoch' in field else row[field]
+    return res
+
+
 def read_existing(path):
     # type: str -> dict | None
     existing = None
     with open(path, "r") as f:
-        existing = json.load(f)
+        # REMARK(plu5): At the moment we have just 2 exporters, json
+        # and csv. json will fail to parse csv files so I am doing it
+        # that way, but it's not very robust and will make it hard to
+        # add other exporters. Possibly should add a magic string to
+        # our exports to be able to check it to see which format we
+        # are dealing with
+        try:
+            existing = json.load(f)
+        except json.decoder.JSONDecodeError:
+            msg("File contents are not valid json, trying csv.")
+            f.seek(0)  # needed to be able to read after the failed json.load
+            existing = parse_csv(f.read())
     return existing
+
+
+def export_json(d):
+    # type: dict -> str
+    return json.dumps(d, indent=2)
+
+
+class CsvOutput():
+    """Passed to csv module to get it write into a string instead of a file.
+    Adapted from Bhavesh Poddar:
+    https://levelup.gitconnected.com/building-csv-strings-in-python-32934aed5a9e
+    """
+    def __init__(self):
+        self.lines = []
+
+    def write(self, line):
+        self.lines.append(line)
+
+    def __str__(self):
+        return ''.join(self.lines)
+
+
+def export_csv(d):
+    # type: dict -> str
+    files = d['files']
+    # key header so that we can convert to a dictionary later, and the
+    # rest of the headers are the metadata fields on the first file
+    # (they should all have the same fields)
+    fieldnames = ['key', *list(files[list(files.keys())[0]].keys())]
+
+    rows = []
+    rows.append(fieldnames)
+    for k, v in d.items():
+        if k != 'files':
+            # non-file keys each in their own row, because we can't
+            # guarantee there will be more than 1 column
+            rows.append([f'{MAGICCSVKEYPREFIX}{k}'] + [str(v)])
+    for k, data in files.items():
+        rows.append([k] + [str(v) for v in data.values()])
+
+    out = CsvOutput()
+    writer = csv.writer(out)
+    writer.writerows(rows)
+
+    return str(out)
+
+
+EXPORTERS = {'json': export_json, 'csv': export_csv}
 
 
 def parse_args():
@@ -252,6 +345,11 @@ def parse_args():
     # REMARK(plu5): Maybe add "exists" field on items so that when
     # using --update, items that no longer exist on disk can have
     # their "exists" field set to False.
+    parser.add_argument(
+        '-x', '--exporter', choices=EXPORTERS.keys(),
+        default=list(EXPORTERS.keys())[0],
+        help='Exporter to use for formatting the data. '
+        f'Default: {list(EXPORTERS.keys())[0]}')
     return parser.parse_args()
 
 
@@ -315,7 +413,7 @@ def main():
 
     out = {'generated': readable_date_from_epoch(now), 'generated_epoch': now,
            'files': d}
-    dump = json.dumps(out, indent=2)
+    dump = EXPORTERS[args.exporter](out)
 
     if args.save:
         save_to = args.save_to or os.path.join(parent_path, DEFAULTSAVENAME)
