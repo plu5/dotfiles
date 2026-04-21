@@ -350,6 +350,10 @@ def parse_args():
         default=list(EXPORTERS.keys())[0],
         help='Exporter to use for formatting the data. '
         f'Default: {list(EXPORTERS.keys())[0]}')
+    parser.add_argument(
+        '--dryrun', action='store_true',
+        help='Don\'t write to disk. Can be useful with --update to see what '
+        'has changed since the save without modifying the file.')
     return parser.parse_args()
 
 
@@ -415,12 +419,15 @@ def main():
            'files': d}
     dump = EXPORTERS[args.exporter](out)
 
-    if args.save:
+    if args.save and not args.dryrun:
         save_to = args.save_to or os.path.join(parent_path, DEFAULTSAVENAME)
         open_as = 'w' if args.overwrite or args.update else 'x'
         with open(save_to, open_as) as f:
             f.write(dump)
     else:
+        # REMARK(plu5): Maybe we shouldn't dump to stdout in the case
+        # of --update --dryrun? Maybe all the user wants to see is
+        # what changed. cf devlog 14
         print(dump)
 
 
