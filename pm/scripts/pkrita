@@ -11,6 +11,15 @@
 # pkrita  # launches krita with most recent document
 # pkrita new this is my new file
 # ^ creates "DATE this is my new file.kra" from a copy of TEMPLATE
+#
+# Note: If you use the timelapses recorder feature of Krita, you
+# should delete the documentinfo.xml file in the your template .kra
+# file (.kra files are zip archives), otherwise Krita will place all
+# of the captures for files created as copies of the template in the
+# same folder, because the creation-date field in the documentinfo.xml
+# file is used as the name of the folder the captures get saved in. If
+# one isn't present, a new one is created with the current date when
+# the document is saved, which is what we want.
 
 TEMPLATE="$HOME/pm/r/_mien/krita/template.kra"
 DESTDOSSIER="$HOME/pm/r/_mien/krita"
