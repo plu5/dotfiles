@@ -1,0 +1,218 @@
+#!/usr/bin/env python3
+# 2026-04-28 07:03
+"""Script for manipulating Krita timelapses.
+
+Inspired by freyalupen's script from May 2024
+https://krita-artists.org/t/time-lapse-auto-record-save-location/91987/10
+
+Examples:
+    timelapsemod ls
+    # ^ List folders in ~/KritaRecorder
+    timelapsemod mv 20140603180818 swat --range 0 4987 --renumber
+    # ^ Move captures 0 to 4987 in ~/KritaRecorder/20140603180818 to
+    # ~/KritaRecorder/swat and renumber the remaining captures
+    # in 20140603180818 to start from 0
+"""
+
+import os
+import sys
+import argparse
+
+NAME = "timelapsemod"
+CAPTURESDIR = os.path.expanduser("~/KritaRecorder")
+
+COMMANDS = {
+    "":                         # TOP LEVEL ARGS
+    {"args": [(["--dryrun"], {"action": "store_true", "help": """
+Don't move/delete files on disk, only log what would happen."""}),
+              (["--force"], {"action": "store_true", "help": """
+Force moving/renaming files even if destination path already exists
+(will overwrite existing files)."""}),
+              (["--dir"], {"help": """Specify a different path to the
+KritaRecorder folder that contains the timelapse captures (default: """
+                           f"{CAPTURESDIR})", "default": CAPTURESDIR})]},
+    "ls":                       # LS
+    {"desc": "explore contents of the captures folder", "usage": "[PATH]",
+     "args": [
+         (["path"], {"metavar": "PATH", "default": "", "nargs": "?",
+                     "help": """
+List contents in given PATH relative to the KritaRecorder folder.
+Empty string will list top-level."""})]},
+    "mv":                       # MV
+    {"desc": "move captures", "usage": "FROM TO [--range START END]",
+     "args": [
+        (["from"], {"help": """Name of the folder in KritaRecorder containing
+the captures you wish to move. If no --range is given, the entire folder will
+be moved (renamed).""", "metavar": "FROM"}),
+        (["to"], {"help": """Name of the destination folder in KritaRecorder
+to move the captures to (name that does not yet exist is allowed, the new
+folder will be created).""", "metavar": "TO"}),
+        (["--range"], {"help": """Move only captures in a given numerical
+range. For example --range 0 10 will move captures 0000000 to 0000010.
+""", "nargs": 2, "metavar": "N", "type": int}),
+        (["--renumber"], {"action": "store_true", "help": """Renumber the
+captures in the FROM folder after the move, so that they start from 0000000
+and are valid for timelapse export."""})]},
+    "rm":                       # RM
+    {"desc": "remove captures", "usage": "FROM TO [--range START END]",
+     "args": [
+        (["from"], {"help": """Name of the folder in KritaRecorder containing
+the captures you wish to remove. If no --range is given, the entire folder will
+be removed.""", "metavar": "FROM"}),
+        (["--range"], {"help": """Remove only captures in a given numerical
+range. For example --range 0 10 will remove captures 0000000 to 0000010.
+""", "nargs": 2, "metavar": "N", "type": int}),
+        (["--renumber"], {"action": "store_true", "help": """Renumber the
+captures in the FROM folder after the removal, so that they start from 0000000
+and are valid for timelapse export."""}),
+        (["--noconfirm"], {"action": "store_true", "help": """Skip having to
+confirm before deletion."""})]},
+    "renumber":                 # RENUMBER
+    {"desc": "renumber captures", "usage": "IN",
+     "args": [
+        (["in"], {"help": """Name of the folder in KritaRecorder containing
+the captures you wish to renumber.""", "metavar": "IN"})]},
+}
+
+
+def log(msg):
+    print(f'{NAME}: {msg}')
+
+
+def entries_in_dir(path):
+    entries = []
+    with os.scandir(path) as it:
+        for entry in it:
+            entries.append(entry.name)
+    return entries
+
+
+def rename(fr, to, force=False):
+    # Since on Windows os.rename will fail, to force we need os.replace
+    if force:
+        os.replace(fr, to)
+    # On Linux os.rename will replace an existing file silently
+    elif not os.path.exists(to):
+        os.rename(fr, to)
+    else:
+        log(f"FAILURE: '{to}' exists already. Skipping move/rename to avoid "
+            "silently overwriting the file.")
+
+
+def renumber(in_, dryrun=False, force=False):
+    entries = entries_in_dir(in_)
+    entries.sort()
+    for i, entry in enumerate(entries):
+        name, ext = entry.split('.')
+        fr = os.path.join(in_, entry)
+        to = os.path.join(in_, f"{i:07d}.{ext}")
+        if fr == to:
+            continue
+        log(f"renumber {i} ; rename '{fr}' to {to}")
+        if not dryrun:
+            rename(fr, to, force=force)
+
+
+def cmd_ls(args):
+    log(args.dir)
+    log(entries_in_dir(os.path.join(args.dir, args.path)))
+
+
+def cmd_mv(args):
+    # can't access it like args.from because from is a builtin :-/
+    from_ = os.path.join(args.dir, vars(args)['from'])
+    to_ = os.path.join(args.dir, args.to)
+    if not args.dryrun:
+        os.makedirs(to_, exist_ok=True)
+    if not args.range:
+        log(f"mv '{from_}' '{to_}'")
+        if not args.dryrun:
+            rename(from_, to_, force=args.force)
+        return
+    entries = entries_in_dir(from_)
+    for entry in entries:
+        n = int(entry.split('.')[0])
+        if args.range[0] <= n <= args.range[1]:
+            fr = os.path.join(from_, entry)
+            to = os.path.join(to_, entry)
+            log(f"mv '{fr}' '{to}'")
+            if not args.dryrun:
+                rename(fr, to, force=args.force)
+    if args.renumber:
+        renumber(from_, dryrun=args.dryrun, force=args.force)
+
+
+def cmd_rm(args):
+    from_ = os.path.join(args.dir, vars(args)['from'])
+    if not args.range:
+        if not args.dryrun:
+            if not args.noconfirm:
+                c = input(f"Are you sure you want to remove '{from_}' and all "
+                          "of its contents? (Enter 'yes' to confirm): ")
+                if c != "yes":
+                    return
+            os.rmdir(from_)
+        log(f"rm '{from_}'")
+        return
+    if not args.dryrun and not args.noconfirm:
+        c = input(f"Are you sure you want to remove captures "
+                  f"{args.range[0]} to {args.range[1]} in '{from_}'? "
+                  "(Enter 'yes' to confirm): ")
+        if c != "yes":
+            return
+    entries = entries_in_dir(from_)
+    for entry in entries:
+        n = int(entry.split('.')[0])
+        if args.range[0] <= n <= args.range[1]:
+            fr = os.path.join(from_, entry)
+            log(f"rm '{fr}'")
+            if not args.dryrun:
+                os.remove(fr)
+    if args.renumber:
+        renumber(from_, dryrun=args.dryrun, force=args.force)
+
+
+def cmd_renumber(args):
+    # in is another builtin I can't access directly
+    renumber(os.path.join(args.dir, vars(args)['in']),
+             dryrun=args.dryrun, force=args.force)
+
+
+COMMANDS['ls']['func'] = cmd_ls
+COMMANDS['mv']['func'] = cmd_mv
+COMMANDS['rm']['func'] = cmd_rm
+COMMANDS['renumber']['func'] = cmd_renumber
+
+
+def parse_args():
+    """CLI."""
+    parser = argparse.ArgumentParser(prog=NAME)
+    parser.suggest_on_error = True
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    descs = []
+    for k, v in COMMANDS.items():
+        if v.get('desc'):       # description generation
+            descs.append(f"{v['desc']} ({k})")
+        if k == "":             # arguments on top parser
+            for args, kwargs in v['args']:
+                parser.add_argument(*args, **kwargs)
+            continue
+        subparser = subparsers.add_parser(
+            k, help=f"[-h|--help] {v.get('usage')}")
+        for args, kwargs in v['args']:
+            subparser.add_argument(*args, **kwargs)
+        # Set handler
+        subparser.set_defaults(func=v.get('func'))
+    # Add generated description
+    if len(descs):
+        descs[-1] = f"or {descs[-1]}."
+    parser.description = f"A Krita timelapses utility script to \
+{', '.join(descs)}"
+    # Parse args / print help and quit if no args
+    # (Primer https://stackoverflow.com/a/47440202/18396947)
+    return parser.parse_args(sys.argv[1:] or ['--help'])
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    args.func(args)

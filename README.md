@@ -103,6 +103,8 @@ in [./pm/scripts](pm/scripts)
     Script to download an older version of a OneDrive file or folder. (cf devlog 11)
 37. [**micnot**](pm/scripts/micnot): 2026-04-05 11:05  
     Audio feedback when the microphone exceeds a given threshold. I use it to be able to tell when there is an alert when I am in the bathroom. (cf devlog 13)
+38. [**timelapsemod**](pm/scripts/timelapsemod): 2026-04-28 07:03  
+    Script for manipulating Krita timelapses (i.e. the captures in ~/KritaRecorder).
 
 ## TODO
 - **add screenshots**  
