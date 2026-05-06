@@ -105,6 +105,8 @@ in [./pm/scripts](pm/scripts)
     Audio feedback when the microphone exceeds a given threshold. I use it to be able to tell when there is an alert when I am in the bathroom. (cf devlog 13)
 38. [**timelapsemod**](pm/scripts/timelapsemod): 2026-04-28 07:03  
     Script for manipulating Krita timelapses (i.e. the captures in ~/KritaRecorder).
+39. [**r**](pm/scripts/r): 2026-05-06 03:34  
+    A little script to easily toggle redshift (reddenning screen to reduce brightness) in oneshot manual mode.
 
 ## TODO
 - **add screenshots**  

@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+# Toggle redshift (oneshot manual mode)
+# 2026-05-06 03:34
+#
+# Dependencies:
+# - redshift
+#
+# Usage:
+# r       # turn on (turns screen red)
+# r -off  # turn off (return screen to normal)
+# r [..]  # passes the arguments to redshift -P -O
+#
+# redshift range: 1000 - 25000
+#                 red    blue
+# 6500 : normal
+
+if [ "$1" = "-off" ]; then
+    redshift -P -O 6500
+elif [ -n "$1" ]; then
+    redshift -P -O ${@:1}
+else
+    redshift -P -O 1000
+fi
