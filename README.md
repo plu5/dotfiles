@@ -91,7 +91,7 @@ in [./pm/scripts](pm/scripts)
     <br>would like to add saving also size and checksum.
 31. [**vmman**](pm/scripts/vmman) : 2026-01-30 08:02
     <br>command to launch my win98 qemu vm. named as such because if i create more i will change it to have all the commands and give an argument to which one.
-32. [**krita**](pm/scripts/pkrita) : 2026-02-07 10:33
+32. [**pkrita**](pm/scripts/pkrita) : 2026-02-07 10:33
     <br>command to launch krita with most recent document, with also the possibility to easily create new documents and launch into them
 33. [**gaplessmpv**](pm/scripts/gaplessmpv): 2026-03-10 11:44  
     Modified from [ZaxonXP's `gapless_play`](https://github.com/ZaxonXP/youtube-viewer-scripts/blob/master/gapless_play.sh). Alternates 2 instances of mpv in order to play gaplessly a list of remote videos. Supports also yt-dlp queries and has caching and keeping track of position. (cf devlog 9)
