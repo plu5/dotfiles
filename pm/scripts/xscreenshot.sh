@@ -5,6 +5,7 @@
 # Dependencies:
 # - maim
 # - xclip
+# - (Optional) notify-send (notification with path on success)
 #
 # Options explanation:
 # * --select : interactive selection mode to select a window or region
@@ -16,15 +17,21 @@
 
 SAVETO="$HOME/pm/r/screen"  # Don't use ~, it doesn't expand in quotes
 
+notifysaved() {  # $1 = path
+    echo "Saved screenshot to '$1'"
+    command -v notify-send >/dev/null 2>&1 &&
+        notify-send "Saved screenshot to '$1'"
+}
+
 case $1 in
     clipboard)
         maim --select --tolerance 10 --nokeyboard --format png /dev/stdout |
             xclip -selection clipboard -t image/png -i
-        echo "Saved screenshot to clipboard"
+        [ $? = 0 ] && notifysaved "{clipboard}"
         ;;
     *)
         path="${SAVETO}/"$(date +%y%m%d%H%M%S).png
-        maim --select --tolerance 10 --nokeyboard --hidecursor $path
-        echo "Saved screenshot to '${path}'"
+        maim --select --tolerance 10 --nokeyboard --hidecursor "$path"
+        [ $? = 0 ] && notifysaved "$path"
         ;;
 esac
