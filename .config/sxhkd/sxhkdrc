@@ -41,6 +41,9 @@ super + s
 super + shift + s
 	~/pm/scripts/xscreenshot.sh clipboard
 
+ctrl + super + shift + s
+	~/pm/scripts/xscreenshot.sh delay
+
 super + shift + m
         magnus
 

@@ -29,6 +29,11 @@ case $1 in
             xclip -selection clipboard -t image/png -i
         [ $? = 0 ] && notifysaved "{clipboard}"
         ;;
+    delay)
+        path="${SAVETO}/"$(date +%y%m%d%H%M%S).png
+        maim --nokeyboard --hidecursor -d 5 "$path"
+        [ $? = 0 ] && notifysaved "$path"
+        ;;
     *)
         path="${SAVETO}/"$(date +%y%m%d%H%M%S).png
         maim --select --tolerance 10 --nokeyboard --hidecursor "$path"
