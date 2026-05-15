@@ -12,12 +12,43 @@
 # the script, you need to unhide all the windows before starting it
 # again or they will remain hidden.
 
-if [ "$1" == "--restore" ]; then
-    for n in $(bspc query -N -n .hidden); do
-        bspc node "$n" -g hidden
+NOM="${0##*/}"
+
+kill_other_instances() {
+    PIDS=$(pid=$BASHPID; pgrep -af "$0" | grep -v $pid | grep -v $$ | awk '{print $1}')
+    if [ -z "$PIDS" ]; then
+        [ "$1" = "interactive" ] && echo "$NOM: $T_NOTHINGTOKILL"
+    else
+        kill $PIDS
+        printf "$NOM: ${T_KILLED}\n" "$PIDS"
+    fi
+}
+
+restore() {
+    bspc query -N -n .hidden | while read -r n; do
+        bspc node "$n" -g hidden=off
     done
-    exit
-fi
+}
+
+case "$1" in
+    --restore|restore)
+        restore
+        exit
+        ;;
+    --list|list)
+        ps aux | grep "$0" | grep -v "grep" | grep -v "$0 \(--\)\?list"
+        exit
+        ;;
+    -r|--restart|r|restart)
+        kill_other_instances
+        restore
+        ;;
+    -k|--kill|k|kill)
+        kill_other_instances interactive
+        restore
+        exit
+        ;;
+esac
 
 declare -A focus
 declare -a hidden
