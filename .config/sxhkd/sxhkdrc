@@ -2,10 +2,8 @@
 # wm independent hotkeys
 #
 
-hyper + shift + slash
-      dunstctl close-all
-hyper + slash
-      dunstctl history-pop
+hyper + {_,shift +} slash
+      dunstctl {history-pop,close-all}
 hyper + ctrl + shift + slash
       copy-dunst-history
 
@@ -15,10 +13,8 @@ hyper + ctrl + shift + slash
 
 # ctrl+left; sleep 0.5; xdotool key ctrl+right
 
-XF86MonBrightnessDown
-	brightnessctl set 10-
-XF86MonBrightnessUp
-	brightnessctl set +10
+XF86MonBrightness{Down,Up}
+	brightnessctl set {10-,+10}
 
 # xdotool search --name Parliamentlive.tv key space &&
 
@@ -26,29 +22,32 @@ super + x
 	togglepause
 
 #super + shift + space  # casse plover
-Scroll_Lock
-      toggleplover
-ctrl + Scroll_Lock
-      toggleplover focus
+# Scroll_Lock
+#       toggleplover
+# ctrl + Scroll_Lock
+#       toggleplover focus
 
 super + shift + x
       soncontrol rofi
 
-super + s
-	~/pm/scripts/xscreenshot.sh
-	# xdotool search --name Kasts windowactivate
-
-super + shift + s
-	~/pm/scripts/xscreenshot.sh clipboard
-
-ctrl + super + shift + s
-	~/pm/scripts/xscreenshot.sh delay
+super + {_,super + shift +,ctrl + super + shift} s
+	~/pm/scripts/xscreenshot.sh {_,clipboard,delay}
 
 super + shift + m
         magnus
 
 hyper + h
-	setxkbmap il
+        bspc node -g hidden
+hyper + shift + h
+        bspc node any.local.hidden -g hidden
+hyper + alt + h
+        setxkbmap il
+super + F1
+        setxkbmap gb && ~/pm/scripts/toggle_internal_kbd.sh disable
+
+# ctrl + hyper + h
+#         setxkbmap gb
+#	# ~/pm/scripts/toggle_internal_kbd.sh disable
 # super + j
 # 	~/pm/scripts/toggle_internal_kbd.sh disable
 
