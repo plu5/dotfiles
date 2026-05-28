@@ -14,6 +14,7 @@ import bpy, bmesh, os
 from math import radians
 from mathutils import Vector, Matrix
 from bpy.props import StringProperty, IntProperty, BoolProperty, PointerProperty, EnumProperty, FloatProperty
+import subprocess
 
 PANEL_CATEGORY = "ScreenSnap"
 CAPTURE_PREFIX = "blender_"
@@ -273,131 +274,30 @@ def _restore_hidden_edit_elements(snap):
             if i < len(bm.faces): bm.faces[i].hide = True
         bmesh.update_edit_mesh(me, loop_triangles=False, destructive=False)
 
+def popup(text):
+    def draw(self, context):
+        self.layout.label(text=text)
+
+    bpy.context.window_manager.popup_menu(
+        draw,
+        title="ScreenSnap",
+        icon='INFO'
+    )
+
+def update_preview(f):
+    c = subprocess.run([
+        'pgrep', 'imv'
+    ], capture_output=True).stdout.decode()
+    if len(c):
+        subprocess.run([
+            'imv-msg', c, 'open', f
+        ])
+        subprocess.run([
+            'imv-msg', c, 'goto', '-1'
+        ])
+    return None  # stop timer
+
 def _capture_viewport(context, prefs, filepath):
-    # global _internal_change
-    # scene = context.scene
-    # # mats_state, temp_hidden_objs, modified_layer_collections = [], [], []
-    # # edit_hide_snapshot = []
-    # # window, screen, area, region, space = find_view3d_context()
-    # # if not area:
-    # #     prefs.last_message = "No 3D View to capture."
-    # #     return False
-
-    # _internal_change = True
-    # try:
-    #     # with bpy.context.temp_override(window=window, screen=screen, area=area, region=region, space_data=space, scene=scene):
-    #     #     r3d, sh, ov = space.region_3d, space.shading, space.overlay
-    #     #     state = _snapshot_view_state(space)
-
-    #     #     try:
-    #     #         active_cam = None
-    #     #         if prefs.use_fixed_camera and prefs.fixed_camera and prefs.fixed_camera.type == 'CAMERA':
-    #     #             active_cam = prefs.fixed_camera
-    #     #             space.camera = active_cam
-    #     #             r3d.view_perspective = 'CAMERA'
-
-    #     #         if prefs.overlay_mode == 'ALL': ov.show_overlays = False
-    #     #         elif prefs.overlay_mode == 'EXTRAS' and hasattr(ov, "show_extras"): ov.show_extras = False
-
-    #     #         floor_prev = getattr(ov, "show_floor", True)
-    #     #         axx_prev = getattr(ov, "show_axis_x", True)
-    #     #         axy_prev = getattr(ov, "show_axis_y", True)
-    #     #         axz_prev = getattr(ov, "show_axis_z", True)
-    #     #         if prefs.hide_grid_axes:
-    #     #             if hasattr(ov, "show_floor"): ov.show_floor = False
-    #     #             if hasattr(ov, "show_axis_x"): ov.show_axis_x = False
-    #     #             if hasattr(ov, "show_axis_y"): ov.show_axis_y = False
-    #     #             if hasattr(ov, "show_axis_z"): ov.show_axis_z = False
-
-    #     #         if hasattr(ov, "show_face_orientation"): ov.show_face_orientation = False
-
-    #     #         if prefs.hide_blueprints_by_mode:
-    #     #             cam_proj = _camera_projection_of(space, active_cam)
-    #     #             for obj in context.view_layer.objects:
-    #     #                 try:
-    #     #                     if obj.type == 'EMPTY' and getattr(obj, "empty_display_type", None) == 'IMAGE':
-    #     #                         sp, so = _empty_image_visibility_flags(obj)
-    #     #                         hide = (cam_proj == 'PERSP' and not sp) or (cam_proj == 'ORTHO' and not so)
-    #     #                         if hide and not obj.hide_viewport:
-    #     #                             obj.hide_viewport = True; temp_hidden_objs.append(obj)
-    #     #                 except Exception:
-    #     #                     pass
-
-    #     #         if prefs.hide_collection:
-    #     #             vl, root = context.view_layer, context.view_layer.layer_collection
-    #     #             targets = []; _collect_layer_collections(root, prefs.hide_collection, targets, recursive=prefs.hide_collection_recursive)
-    #     #             for lc in targets:
-    #     #                 try: modified_layer_collections.append((lc, lc.exclude)); lc.exclude = True
-    #     #                 except Exception: pass
-
-    #     #         if prefs.capture_shading != 'KEEP': sh.type = prefs.capture_shading
-    #     #         if prefs.reveal_hidden_edit and _in_edit_mesh_mode(context): edit_hide_snapshot = _snapshot_and_reveal_hidden_edit_elements(context)
-
-    #     #         if prefs.force_opaque_materials:
-    #     #             for mat in bpy.data.materials:
-    #     #                 try:
-    #     #                     if hasattr(mat, "blend_method"):
-    #     #                         mats_state.append((mat, mat.blend_method, getattr(mat, "shadow_method", None)))
-    #     #                         mat.blend_method = 'OPAQUE'
-    #     #                         if hasattr(mat, "shadow_method") and mat.shadow_method is not None: mat.shadow_method = 'OPAQUE'
-    #     #                 except Exception: pass
-    #     #             if hasattr(sh, "show_xray"): sh.show_xray = False
-
-    #     prev_fp, prev_fmt, prev_mv = scene.render.filepath, scene.render.image_settings.file_format, scene.render.use_multiview
-    #     # scene.render.image_settings.file_format = 'PNG'; scene.render.use_multiview = False;
-    #     scene.render.filepath = filepath
-
-    #     ok, err = False, None
-    #     try:
-    #         ok = bpy.ops.render.opengl(animation=False, view_context=False, write_still=True) == {'FINISHED'}  # write_still=True, view_context=True
-    #     except Exception as ex:
-    #         err = f"Primary OpenGL capture failed: {ex}"; ok = False
-    #     if not ok:
-    #         try:
-    #             ok = bpy.ops.render.opengl(write_still=True) == {'FINISHED'}
-    #         except Exception as ex2:
-    #             err = (err + " | " if err else "") + f"Fallback failed: {ex2}"; ok = False
-    #     if not ok: raise RuntimeError(err or "OpenGL capture failed.")
-    # except Exception as ex:
-    #     ok = False
-    #     msg = f"Viewport capture failed: {ex}"
-    #     print(f"[ScreenSnap] {msg}")
-    #     prefs.last_message = msg
-    # finally:
-    #     # if edit_hide_snapshot: _restore_hidden_edit_elements(edit_hide_snapshot)
-    #     # for mat, bprev, sprev in mats_state:
-    #     #     try:
-    #     #         mat.blend_method = bprev
-    #     #         if sprev is not None and hasattr(mat, "shadow_method"): mat.shadow_method = sprev
-    #     #     except Exception: pass
-    #     # for obj in temp_hidden_objs:
-    #     #     try: obj.hide_viewport = False
-    #     #     except Exception: pass
-    #     # for lc, ex_prev in modified_layer_collections:
-    #     #     try: lc.exclude = ex_prev
-    #     #     except Exception: pass
-    #     # if 'floor_prev' in locals():
-    #     #     if hasattr(ov, "show_floor"): ov.show_floor = floor_prev
-    #     #     if hasattr(ov, "show_axis_x"): ov.show_axis_x = axx_prev
-    #     #     if hasattr(ov, "show_axis_y"): ov.show_axis_y = axy_prev
-    #     #     if hasattr(ov, "show_axis_z"): ov.show_axis_z = axz_prev
-
-    #     # _restore_view_state(space, state)
-    #     scene.render.filepath, scene.render.image_settings.file_format, scene.render.use_multiview = prev_fp, prev_fmt, prev_mv
-    #     # try: bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-    #     # except Exception: pass
-    # #finally:
-    # _internal_change = False
-
-    # if ok: prefs.last_message = f"Saved: {filepath}"
-    # return ok
-    # oldpath = bpy.context.scene.render.filepath
-    # bpy.context.scene.render.filepath = "/home/pm/KritaRecorder/20260517231119/hi.png"
-    # bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-    # bpy.context.view_layer.update()
-    # bpy.ops.render.opengl(animation=False, view_context=False, write_still=True)
-    # # bpy.ops.render.render(write_still=True)
-    # bpy.context.scene.render.filepath = oldpath
     scene = bpy.context.scene
     old_engine = scene.render.engine
     old_samples = scene.cycles.samples
@@ -407,10 +307,16 @@ def _capture_viewport(context, prefs, filepath):
     oldpath = scene.render.filepath
     f = os.path.join("/home/pm/KritaRecorder/20260517231119/", f"{prefs.index:07d}.png")
     scene.render.filepath = f
+    if os.path.exists(f):
+        print("[ScreenSnap] ERROR file exists, avoid overwriting. something went wrong")
+        popup("ERROR file exists, avoid overwriting. something went wrong")
+        return False
     bpy.ops.render.render(write_still=True)
     scene.render.filepath = oldpath
     scene.render.engine = old_engine
     scene.cycles.samples = old_samples
+    # bpy.app.timers.register(lambda: update_preview(f), first_interval=1)
+    update_preview(f)
     return True
 
 def _do_capture():

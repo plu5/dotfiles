@@ -150,6 +150,8 @@ in [./pm/scripts](pm/scripts)
 - ranger (super-e. file browser)
 - mpv (vidéo et audio)
 - feh (images)
+- imv (images)
+  + not as flexible as feh, but (1) it doesn't flash when you switch between images which is a game changer for timelapses and qol in general, (2) it has ipc that allows you control it from another process (i use it with blender to render images and display the latest one in an existing imv instance), (3) it supports animations which feh does not
 - rofi (super-spc. lanceur, commandes shell rapides, interface pour les scripts)
 - rofi-calc (super-M-spc. calculatrice)
 - warpd (hyper--. émulation de la souris avec le clavier)
