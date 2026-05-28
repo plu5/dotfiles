@@ -11,10 +11,15 @@
 ;;         use-package-expand-minimally t))
 ;; (require 'use-package)
 (add-to-list 'custom-theme-load-path "/media/pnotes/emacs")
+(add-to-list 'custom-theme-load-path "/media/Windows/Users/pm/dev/reps/emacsd")
 (add-to-list 'load-path "/media/Windows/Users/pm/dev/reps/emacs-doentry")
+(add-to-list 'load-path "/media/Windows/Users/pm/dev/reps/emacsd")
 (add-to-list 'load-path "/media/pnotes/emacs")
 (setq auto-save-default nil)
 (require 'pm)
+
+(unless (and (boundp 'server-process) server-process)
+  (server-start))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -25,7 +30,10 @@
  '(ignored-local-variable-values '((projectile-project-name . "notes")))
  '(inhibit-startup-screen t)
  '(package-selected-packages
-   '(expand-region yasnippet magit evil multiple-cursors avy flycheck noflet ws-butler undo-tree smex move-text imenu-list ido-grid-mode ido-completing-read+ diminish anzu))
+   '(anzu avy diminish evil expand-region flycheck gdscript-mode
+          ido-completing-read+ ido-grid-mode imenu-list magit
+          markdown-mode move-text multiple-cursors noflet rainbow-mode
+          smex undo-tree ws-butler yasnippet))
  '(safe-local-variable-values '((projectile-project-name . "notes"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -42,6 +50,6 @@
             (cond
              ((equal (frame-parameter frame 'name) "2nd - GNU Emacs at pos")
               (find-file p-main-file)))))
-(make-frame '((name . "2nd - GNU Emacs at pos")))
+;; (make-frame '((name . "2nd - GNU Emacs at pos")))
 (make-frame)
 ;; (setq default-frame-alist '((font . "SourceCodePro 13")))
