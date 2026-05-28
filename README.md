@@ -107,6 +107,8 @@ in [./pm/scripts](pm/scripts)
     Script for manipulating Krita timelapses (i.e. the captures in ~/KritaRecorder).
 39. [**r**](pm/scripts/r): 2026-05-06 03:34  
     A little script to easily toggle redshift (reddenning screen to reduce brightness) in oneshot manual mode.
+40. [**monitor-config.sh**](pm/scripts/monitor-config.sh): 2026-05-18 15:22  
+    Called by a systemd service when a monitor connects/disconnects. Set up mirror and switch to secondary monitor if it's connected, return to primary monitor if disconnected.
 
 ## TODO
 - **add screenshots**  

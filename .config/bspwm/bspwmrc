@@ -1,13 +1,18 @@
-#! /bin/sh
+#!/usr/bin/env sh
+# bspwmrc; bspwm configuration
+# 2024-12-25 20:29
+#
+# Dependencies:
+# - bspwm
 
-xrandr --output eDP-1 --mode 1280x720
+monitor-config.sh
+
+setxkbmap -option lv3:ralt_switch # avoid emacs compose key problems
 
 ~/pm/scripts/toggle_internal_kbd.sh disable # disable internal keyboard bc i'm probably using external. maybe should check if if external is connected or not in future
 # ~/pm/scripts/toggle_internal_kbd.sh enable
 
 pgrep -x sxhkd > /dev/null || sxhkd &
-
-bspc monitor -d 1 2 3 4 5 6 7 8 9 0
 
 bspc config border_width         0 # 2
 bspc config window_gap           0 # 12 # 0
