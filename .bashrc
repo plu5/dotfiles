@@ -9,7 +9,7 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
 
-alias sgfeed='while true; do python /media/pnotes/py/sgfeed.py; sleep $((60*60*5)); done'
+alias sgfeed='python /media/pnotes/py/sgfeed.py'
 alias qmacs='sudo emacs -nw -q'
 #alias em='SUDO_EDITOR="emacsclient -nw" sudo -e'
 alias krita='krita --nosplash --template /usr/share/krita/templates/texture/.source/Texture1024x10248bitsrgb.kra'
