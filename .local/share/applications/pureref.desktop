@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PureRef
+GenericName=Reference Image Viewer
+Comment=PureRef - Simple and lightweight reference image viewer.
+# After installing from AUR, extract appimage with:
+# sudo /opt/pureref/PureRef.AppImage --appimage-extract
+Exec=/opt/pureref/squashfs-root/usr/bin/PureRef %U
+Terminal=false
+Icon=pureref
+Categories=Graphics;
+MimeType=application/pureref;
+StartupNotify=true
