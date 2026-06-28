@@ -6,6 +6,16 @@
 |   _   |  welcome to
 |  | |  |  my humble home
 ```
+
+## Contents
+1. [Environment](#environment)
+1. [Subdirectories in this repository that contain their own README](#subdirectories-in-this-repository-that-contain-their-own-readme)
+1. [Config contained in separate repositories](#config-contained-in-separate-repositories)
+1. [Scripts](#scripts)
+1. [TODO](#todo)
+1. [List of most-used software](#logiciels-les-plus-utilisés)
+1. [Aknowledgements](#aknowledgements)
+
 ## Environment
 X, bspwm
 
