@@ -11,3 +11,7 @@
 	autocrlf = input
 [init]
 	defaultBranch = main
+[filter "crypt"]
+	clean = jose jwe enc -I- -k oct.jwk --compact
+	smudge = jose jwe dec -i- -k oct.jwk
+	required = true
