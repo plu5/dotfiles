@@ -11,7 +11,7 @@
 ★ : custom
 
 ## Settings
-I made the decision not to commit kritarc because it has a lot of garbage, the list of recent files, and changes every time you open and relaunch. So instead will try to keep here a list of settings I set:
+I made the decision not to commit ~/.config/kritarc because it has a lot of garbage, the list of recent files, and changes every time you open and relaunch. So instead will try to keep here a list of settings I set:
 - AutoSaveInterval=0  
   (disables autosave)
 - ShowOutlineWhilePainting=false
@@ -24,6 +24,17 @@ I made the decision not to commit kritarc because it has a lot of garbage, the l
 - tabletPressureCurve=0,0;0.106843,0.261044;0.324129,0.433735;0.606242,0.871486;1,1;
 - useRightMiddleTabletButtonWorkaround=true  
   (necessary for input mapper 2 emulated mouse clicks to work)
+- recorder/recordautomatically=true  
+  (automatic timelapses)
+- showOnCanvasMessages=false  
+  (disable annoying messages that cover part of the canvas for a few seconds when you press keyboard shortcuts to change zoom or brush. requires a restart before it will take effect.)
+
+```conf
+popuppalette/selectorSize=50
+popuppalette/showColorHistory=true
+popuppalette/showRotationTrack=true
+popuppalette/size=300
+```
 
 I launch Krita like `krita --nosplash --template /usr/share/krita/templates/texture/.source/Texture1024x10248bitsrgb.kra` (I have this in desktop file exec) in order for it to launch immediately into a new file. It launches in about 2 seconds, which is faster than gimp, slightly slower than inkscape.
 
