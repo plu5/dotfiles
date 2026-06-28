@@ -31,7 +31,7 @@ VM_CD=/home/pm/Downloads/win98qi_v0.9.6_stock.iso
 # Change iso in the cdrom while running with:
 # change ide1-cd0 path/to/iso
 
-qemu_cmd=(
+qemu_cmd_win98=(
     qemu-system-i386
     -display gtk,zoom-to-fit=on,show-menubar=off
     -device lsi53c895a,id=vm.scsi_controller
@@ -53,4 +53,114 @@ qemu_cmd=(
     -device AC97
 )
 
-"${qemu_cmd[@]}"
+VM_IMG=/home/pm/pm/vm/win10.img
+VM_CD=/home/pm/Downloads/en-us_windows_10_iot_enterprise_ltsc_2021_x64_dvd_257ad90f.iso
+
+qemu_cmd_win10=(
+    qemu-system-x86_64
+    -enable-kvm
+    -m 8G
+    -smp 4
+    -cpu host
+    -drive file=$VM_IMG,format=qcow2
+    -nic user,id=nic0,smb=/home/pm/Downloads/builds/retype-1.7.0-prerelease3-windows/
+    # -cdrom $VM_CD
+    # -boot d
+)
+
+VM_IMG=/home/pm/pm/vm/macos.img
+VM_CD="/home/pm/Downloads/macOS_Catalina_10.15.7(1).iso"
+# macOSCatalina.iso
+OPENCORE=/home/pm/pm/vm/macOS-Simple-KVM/ESP.qcow2
+#/home/pm/Downloads/OpenCore.qcow2
+
+qemu_cmd_macos=(
+    qemu-system-x86_64
+    -enable-kvm
+    -m 8G
+    -smp 4
+    -cpu host
+    -drive file=$VM_IMG,format=qcow2
+    -cdrom $VM_CD
+    -boot d
+    # qemu-system-x86_64
+    # -enable-kvm
+    # -machine q35,accel=kvm
+    # -m 8G
+    # -smp 4
+    # -cpu Penryn,kvm=on,vendor=GenuineIntel
+    # -bios /usr/share/edk2/x64/OVMF.4m.fd
+    # -device ich9-ahci,id=sata
+    # -drive file=$OPENCORE,if=none,format=qcow2,id=opencore
+    # -device ide-hd,drive=opencore,bus=sata.0
+    # -drive file=$VM_CD,if=none,format=raw,id=installation
+    # -device ide-hd,drive=installation,bus=sata.1
+    # -drive file=$VM_IMG,if=none,format=qcow2,id=disk
+    # -device ide-hd,drive=disk
+    # -vga virtio
+)
+
+# "${qemu_cmd_macos[@]}"
+
+# "${qemu_cmd[@]}"
+
+# https://github.com/LongQT-sea/OpenCore-ISO
+# https://github.com/notAperson535/OneClick-macOS-Simple-KVM
+
+args=(
+    -enable-kvm
+    -m 8G
+    -machine q35,accel=kvm
+    -cpu Haswell-noTSX,model=158
+    -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" \
+    -smbios type=2 \
+    -device intel-hda -device hda-output \
+    -drive if=pflash,format=raw,readonly=on,file="/home/pm/Downloads/OVMF_CODE.fd" \
+    -drive if=pflash,format=raw,file="/home/pm/Downloads/OVMF_VARS.fd" \
+    -vga qxl
+    -usb -device usb-ehci,id=ehci -device usb-kbd,bus=ehci.0 -device usb-tablet,bus=ehci.0 \
+    -netdev user,id=net0
+    -device vmxnet3,netdev=net0,id=net0,mac=52:54:00:c9:18:27
+    -monitor telnet:127.0.0.1:5801,server,nowait
+    -device ich9-ahci,id=sata
+    -drive id=OpenCore,if=none,format=raw,file="/home/pm/Downloads/LongQT-OpenCore-v0.7.iso"
+    -device ide-hd,bus=sata.2,drive=OpenCore
+    # -cdrom "/home/pm/Downloads/macOS_Catalina_10.15.7(1).iso"
+    -drive id=SystemDisk,if=none,file="/home/pm/pm/vm/macos.img" \
+    -device ide-hd,bus=sata.4,drive=SystemDisk \
+)
+
+#qemu-system-x86_64 "${args[@]}"
+
+# Adjust these paths
+VM_IMG=~/pm/vm/macos.img
+VM_ISO=~/Downloads/macOS_Catalina_10.15.7.iso
+OC_ISO=~/Downloads/LongQT-OpenCore-v0.7.iso
+OVMF_CODE=~/Downloads/OVMF_CODE.fd
+OVMF_VARS=~/Downloads/OVMF_VARS.fd
+
+args=(
+    -enable-kvm
+    -m 8G
+    -machine q35,accel=kvm
+    -cpu Haswell-noTSX,model=158
+    -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
+    -smbios type=2
+    -device intel-hda -device hda-output
+    -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE"
+    -drive if=pflash,format=raw,file="$OVMF_VARS"
+    -vga qxl
+    -usb -device usb-ehci,id=ehci -device usb-kbd,bus=ehci.0 -device usb-tablet,bus=ehci.0
+    -netdev user,id=net0
+    -device vmxnet3,netdev=net0,id=net0,mac=52:54:00:c9:18:27
+    -monitor telnet:127.0.0.1:5801,server,nowait
+    -device ich9-ahci,id=sata
+    -drive if=none,id=OpenCore,media=cdrom,file="$OC_ISO"
+    -device ide-cd,bus=sata.0,drive=OpenCore,bootindex=1
+    -drive if=none,id=Installer,media=cdrom,file="$VM_ISO"
+    -device ide-cd,bus=sata.1,drive=Installer
+    -drive if=none,id=SystemDisk,file="$VM_IMG"
+    -device ide-hd,bus=sata.2,drive=SystemDisk
+)
+
+qemu-system-x86_64 "${args[@]}"
