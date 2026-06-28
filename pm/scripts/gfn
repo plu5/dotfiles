@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# name
+# 2026-06-04 03:34
+#
+# Dependencies:
+# -
+#
+# Usage:
+#
+
+export LANG=fr_FR.UTF-8
+flatpak run com.nvidia.geforcenow

@@ -1,0 +1,181 @@
+#!/usr/bin/env node
+// popenssl - decrypt openssl aes-gcm output with only the private key
+// 2026-06-13 12:05
+//
+// Dependencies:
+// - openssl
+//
+// It's possible to get rid of the openssl dependency by using another
+// CLI or library that supports extracting encryptedKey,
+// encryptedContent, IV, mac from the CMS structure, for example in
+// JavaScript with pki.js/asn1.js.
+//
+// Refs:
+// - https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
+// - https://stackoverflow.com/a/78634900/18396947
+// - https://javascript.info/regexp-lookahead-lookbehind
+//
+// Usage:
+//     popenssl enc.bin key.pem
+// where enc.bin should be openssl cipher output created with something like:
+//     openssl cms -encrypt -aes-256-gcm -in input.txt -out enc.bin \
+//      -recip req.pem -keyopt rsa_padding_mode:oaep -keyopt rsa_oaep_md:sha256
+// (-aes-256-gcm and the keyopts to specify oaep and sha256 are required)
+// and key should be a decrypted private key.
+// private key can be created with:
+//     openssl req -x509 -newkey rsa:2048 -keyout key.pem -out req.pem
+// and decrypted with:
+//     openssl rsa -in key.pem -out keydecrypted.pem
+// or created without encryption to begin with by adding -nodes
+
+const {execFileSync} = require('child_process');
+const fs = require('node:fs');
+
+function cmsDump(file) {
+  return execFileSync(
+    'openssl',
+    ['cms', '-cmsout', '-print', '-in', file],
+    { encoding: 'utf8' }
+  );
+}
+
+function str2ab(str) {
+  const buf = new ArrayBuffer(str.length);
+  const bufView = new Uint8Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+async function pemImport(file) {
+  const data = fs.readFileSync(file, 'utf8');
+
+  const pemHeader = "-----BEGIN PRIVATE KEY-----";
+  const pemFooter = "-----END PRIVATE KEY-----";
+
+  const pemContents = data.replace(pemHeader, '').replace(pemFooter, '')//.replace(/\s+/g, '');
+
+  if (data.length == pemContents.length) {
+    throw new Error(`Key file does not contain PEM private key header and footer
+(${pemHeader}, ${pemFooter}). If your key is encrypted, decrypt it first with:
+openssl rsa -in key.pem -out keydecrypted.pem`);
+  }
+
+  // base64 decode the string to get the binary data
+  const binaryDerString = atob(pemContents);
+  // convert from a binary string to an ArrayBuffer
+  const binaryDer = str2ab(binaryDerString);
+
+  return crypto.subtle.importKey(
+    "pkcs8", binaryDer, {name: "RSA-OAEP", hash: "SHA-256"}, true, ["decrypt"],
+  );
+}
+
+// Input format:
+//    0000 - d2 3f 26 5f 8b 3d 63 17-b2 39 40 c4 4e 92 11 8d   .?&_.=c..9@.N...
+// (any string containing hex bytes in lowercase separated by space or hyphen)
+function hexdump2ab(s) {
+  const a = s.match(/(?<=(\s|-))[a-f0-9]{2}(?=(\s|-))/g);
+  const res = new Uint8Array(Math.ceil(a.length));
+  for (let i = 0; i < a.length; i++) {
+    res[i] = Number.parseInt(a[i], 16);
+  }
+  return res;
+}
+
+// Input format:
+// 1CC5D17F5EBBC7C2F4428938
+// (string containing hex bytes in uppercase with no separation or junk)
+function hexcaps2ab(s) {
+  const res = new Uint8Array(Math.ceil(s.length / 2));
+  for (let i = 0; i < s.length; i += 2) {
+    res[i/2] = Number.parseInt(s.slice(i, i+2), 16);
+  }
+  return res;
+}
+
+function extractHexdumpSection(s, fieldName) {
+  const lines = s.split('\n');
+  const start = lines.findIndex(l => l.trim().startsWith(fieldName));
+  if (start === -1) {
+    throw new Error(`${fieldName} not found`);
+  }
+  const dump = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!/^\s*[0-9a-f]{4}\s+/.test(line))
+      break;
+    dump.push(line);
+  }
+  return hexdump2ab(dump.join('\n'));
+}
+
+function extractEncryptedKey(s) {
+  return extractHexdumpSection(s, 'encryptedKey:');
+}
+
+function extractEncryptedContent(s) {
+  return extractHexdumpSection(s, 'encryptedContent:');
+}
+
+function extractMac(s) {
+  return extractHexdumpSection(s, 'mac:');
+}
+
+function extractIv(s) {
+  const m = s.match(/OCTET STRING\s+\[HEX DUMP\]:([0-9A-F]+)/);
+  if (!m.length) throw new Error('IV not found');
+  return hexcaps2ab(m[1]);
+}
+
+args = process.argv.slice(2);
+if (args.length != 2) {
+  process.exitCode = 1;
+  return console.log('Usage: popenssl enc.bin key.pem');
+}
+
+function importPrivateKey(pem) {
+  const binaryDerString = atob(pem);
+  const binaryDer = str2ab(binaryDerString);
+  return crypto.subtle.importKey(
+    "pkcs8", binaryDer, {name: "RSA-OAEP", hash: "SHA-256"}, true, ["encrypt"],
+  );
+}
+
+async function getAesKey(cmsdump, pemfile) {
+  // 1. Get the decrypted version of the RSA private key
+  // 2. Import it to WebCrypto with pkcs8 and usage "decrypt"
+  const rsaKey = await pemImport(pemfile);
+  // 3. Get encryptedKey from CMS dump and convert to array buffer
+  const encryptedKey = extractEncryptedKey(cmsdump);
+  // 4. Decrypt 3 with RSA and the key imported in 2
+  const decryptedKeyData = await crypto.subtle.decrypt(
+    {name: 'RSA-OAEP'}, rsaKey, encryptedKey);
+  // 5. Import the resulting data as an AES-GCM key
+  return crypto.subtle.importKey(
+    "raw", decryptedKeyData, {name: "AES-GCM"}, true, ["decrypt"]);
+}
+
+async function decryptContent(encfile, pemfile) {
+  const cmsdump = cmsDump(encfile);
+  const aesKey = await getAesKey(cmsdump, pemfile);
+  // 6. Get encryptedContent from CMS dump and convert to array buffer
+  const encryptedContent = extractEncryptedContent(cmsdump);
+  // 7. Get mac from CMS dump and convert to array buffer
+  const mac = extractMac(cmsdump);
+  // 8. Get the IV from CMS dump (OCTET STRING) and convert to array buffer
+  const iv = extractIv(cmsdump);
+  // 9. Combine 6 and 7 to one array buffer
+  const ciphertext = new Uint8Array(encryptedContent.byteLength + mac.byteLength)
+  ciphertext.set(encryptedContent, 0)
+  ciphertext.set(mac, encryptedContent.byteLength)
+  // 10. Decrypt 9 with AES-GCM, key from 5, IV from 8
+  return new TextDecoder().decode(
+    await crypto.subtle.decrypt(
+      {name: 'AES-GCM', iv}, aesKey, ciphertext));
+}
+
+(async () => {
+  console.log(await decryptContent(args[0], args[1]));
+})();

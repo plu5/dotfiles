@@ -119,6 +119,12 @@ in [./pm/scripts](pm/scripts)
     A little script to easily toggle redshift (reddenning screen to reduce brightness) in oneshot manual mode.
 40. [**monitor-config.sh**](pm/scripts/monitor-config.sh): 2026-05-18 15:22  
     Called by a systemd service when a monitor connects/disconnects. Set up mirror and switch to secondary monitor if it's connected, return to primary monitor if disconnected.
+41. [**gfn**](pm/scripts/gfn): 2026-06-04 03:34  
+    Launcher for Geforce Now flatpak with language settings (French).
+42. [**popenssl**](pm/scripts/popenssl): 2026-06-13 12:05  
+    Hacky proof of concept for decrypting OpenSSL CMS without certificate.
+43. [**crypt**](pm/scripts/crypt): 2026-06-14 12:54  
+    Unnecessary script for encryption/decryption with OpenSSL CMS. It has useless use of cat, I switched to JWE, and I favour just using the commands directly now, so I don't use this.
 
 ## TODO
 - **add screenshots**  
