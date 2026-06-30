@@ -125,6 +125,8 @@ in [./pm/scripts](pm/scripts)
     Hacky proof of concept for decrypting OpenSSL CMS without certificate.
 43. [**crypt**](pm/scripts/crypt): 2026-06-14 12:54  
     Unnecessary script for encryption/decryption with OpenSSL CMS. It has useless use of cat, I switched to JWE, and I favour just using the commands directly now, so I don't use this.
+44. [**places2csv**](pm/scripts/places2csv): 2026-06-29 03:37  
+    Data extraction from places.sqlite (Firefox history and bookmarks)
 
 ## TODO
 - **add screenshots**  

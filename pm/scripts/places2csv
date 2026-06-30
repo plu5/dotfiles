@@ -1,0 +1,288 @@
+#!/usr/bin/env python3
+# places2csv
+# 2026-06-29 03:37
+"""Extracts selected information from places.sqlite
+
+Usage:
+    places2csv ~/.mozilla/firefox/*.default-release/places.sqlite -st ~/out.csv
+
+Note that the same id can appear multiple times (it generates a row
+per visit, the id is the place id, and the same place can have
+multiple visits)"""
+import os
+import csv
+import sqlite3
+import argparse
+from datetime import datetime
+
+PROG = 'places2csv'
+DEFAULTSAVENAME = 'places.csv'
+# Caution: If the date format is changed to less precision, there will
+# be an issue with duplicates when updating data with no epoch field
+DATEFORMAT = '%F %T.%f'
+
+FORMATOPTIONS = {
+    'V': 'visit', 'v': 'visit epoch',
+    'i': 'id', 'u': 'url', 't': 'title', 'd': 'description',
+}
+DEFAULTFORMATOPTIONS = 'iutvV'
+INTFIELDS = [FORMATOPTIONS['v'], FORMATOPTIONS['i']]
+
+QUIET = False
+
+
+def msg(text):
+    # type: (str) -> None
+    """Utility for logs/errors, could be replaced with proper logging"""
+    if not QUIET:
+        print(f'{PROG}: {text}')
+
+
+def readable_date_from_epoch(e):
+    """Takes epoch in microseconds"""
+    # type: (int) -> str
+    return datetime.fromtimestamp(e/1000000).strftime(DATEFORMAT)
+
+
+def epoch_from_readable_date(d):
+    """Returns epoch in microseconds"""
+    # type: (str) -> int
+    return int(datetime.fromisoformat(d).timestamp()*1000000)
+
+
+def get_visit_information(entry_dict, visit_dict, fmt):
+    # type: (dict, dict, str) -> dict
+    res = {}
+
+    v = visit_dict.get('visit_date')
+
+    # This architecture is from metaf but doesn't make as much sense
+    # here since our calls are not heavy. It would probably cheaper to
+    # preset all of them instead of having the lambdas. But maybe in
+    # future we would want to add a field that would be heavier.
+    dispatch = {
+        'v': lambda: v,  # or 0 instead of None?
+        'V': lambda: readable_date_from_epoch(v) if v else None,
+        'i': lambda: entry_dict.get('id'),  # is this int or str?
+        'u': lambda: entry_dict.get('url'),
+        't': lambda: entry_dict.get('title'),
+        'd': lambda: entry_dict.get('description'),
+    }
+    # ^ not sure if fallbacks should be None or 0 / ''. I want to be
+    # able to tell if it didn't exist in the dictionary so I'm leaving
+    # None for now but I'm not sure how csv handles it.
+
+    for char in fmt:
+        opt = FORMATOPTIONS.get(char)
+        if not opt or char not in dispatch:
+            continue
+        res[opt] = dispatch[char]()
+
+    return res
+
+
+def parse_csv(s):
+    # type: str -> list
+    res = []
+    rows = list(csv.DictReader(s.splitlines()))
+    keys = list(rows[0].keys())
+    for row in rows:
+        r = {}
+        for field in keys:
+            r[field] = int(row[field]) if field in INTFIELDS else row[field]
+        res.append(r)
+    return res
+
+
+def read_existing(path):
+    # type: str -> dict | None
+    existing = None
+    with open(path, "r") as f:
+        existing = parse_csv(f.read())
+    return existing
+
+
+class CsvOutput():
+    """Passed to csv module to get it write into a string instead of a file.
+    Adapted from Bhavesh Poddar:
+    https://levelup.gitconnected.com/building-csv-strings-in-python-32934aed5a9e
+    """
+    def __init__(self):
+        self.lines = []
+
+    def write(self, line):
+        self.lines.append(line)
+
+    def __str__(self):
+        return ''.join(self.lines)
+
+
+def export_csv(a):
+    # type: (list) -> str
+    fieldnames = [*list((a[0] if len(a) else {}).keys())]
+    rows = [fieldnames]
+    for item in a:
+        rows.append([str(v) for v in item.values()])
+
+    out = CsvOutput()
+    writer = csv.writer(out)
+    writer.writerows(rows)
+
+    return str(out)
+
+
+def merge(existing, new, fmt):
+    # type: (list, list, str) -> list
+    # Merge visits with existing but only the fields in fmt as there
+    # may be fields in existing that are not in current fmt
+    fields = [FORMATOPTIONS[c] for c in fmt]
+    return [{k: d[k] for k in fields} for d in existing] + new
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(prog=PROG)
+    parser.add_argument(
+        'places_sqlite',
+        help='places.sqlite file')
+    parser.add_argument(
+        '-q', '--quiet', action='store_true',
+        help='Suppress messages in output.')
+    parser.add_argument(
+        '-f', '--format', default=DEFAULTFORMATOPTIONS,
+        help='Which metadata fields to include and in which order. '
+        f'Default: {DEFAULTFORMATOPTIONS}. '
+        'Options: '
+        f'{", ".join([f"{k} ({v})" for k, v in FORMATOPTIONS.items()])}.')
+    parser.add_argument(
+        '--sort', choices=[x for k in FORMATOPTIONS for x in (k, k + 'r')],
+        help='Sort by a given metadata field. Options are the same as for '
+        '-f/--format, or followed by r for reverse order. '
+        '(Example: vr -> sort by visit epoch, reverse order.)')
+    parser.add_argument(
+        '-s', '--save', action='store_true',
+        help='Save output to file instead of printing to stdout. '
+        f'Will save to ./{DEFAULTSAVENAME} unless a different path '
+        'is provided with the -t/--save-to option.')
+    parser.add_argument(
+        '-t', '--save-to',
+        help='Path to save output to. '
+        'Ignored if -s/--save is not provided.')
+    parser.add_argument(
+        '-o', '--overwrite', action='store_true',
+        help='Overwrite save file if it already exists. '
+        'Ignored if -s/--save is not provided.')
+    parser.add_argument(
+        '-u', '--update', action='store_true',
+        help='Update save file if it already exists. '
+        'Ignored if -s/--save is not provided. If both -o/--overwrite '
+        'and -u/--update are provided, overwrite will take precedence.')
+    parser.add_argument(
+        '--dryrun', action='store_true',
+        help='Don\'t write to disk.')
+    return parser.parse_args()
+
+
+def main():
+    # type: () -> None
+    global QUIET
+
+    args = parse_args()
+    QUIET = args.quiet
+
+    save_to = args.save_to or DEFAULTSAVENAME
+    fmt = args.format or DEFAULTFORMATOPTIONS
+
+    update_after = None
+    existing = None
+
+    # Fail fast if save file already exists and overwrite is False
+    # unless update is True
+    if args.save and not args.overwrite:
+        if os.path.exists(save_to):
+            if not args.update:
+                msg(f'Save file \'{save_to}\' already exists. '
+                    'Run with -u/--update if you wish to update it. '
+                    'Run with -o/--overwrite if you wish to overwrite it. '
+                    'Run with -t/--save-to to specify a different save file.')
+                exit(1)
+
+            existing = read_existing(save_to)
+            if not len(existing):
+                msg('existing is empty')
+            one = existing[0]
+            V = one.get(FORMATOPTIONS['V'])
+            v = one.get(FORMATOPTIONS['v'])
+            # Check format options are all there
+            one['visit_date'] = v or epoch_from_readable_date(V)
+            test = get_visit_information(existing[0], existing[0], fmt)
+            if None in test.values():
+                msg('Existing data does not contain all format '
+                    f'options, so we have to query everything. {test} | {one}')
+            # Check we have dates
+            elif not v and not V:
+                msg('Existing data has no visit dates. Without dates in the '
+                    'data there is no reference point, we have to query '
+                    'everything.')
+            else:
+                # Sort data in order to get the most recent date in it
+                if v:
+                    existing.sort(key=lambda r: r[FORMATOPTIONS['v']])
+                else:
+                    existing.sort(key=lambda r: r[FORMATOPTIONS['V']])
+                V = existing[-1].get(FORMATOPTIONS['V'])
+                v = existing[-1].get(FORMATOPTIONS['v'])
+                if not v:
+                    v = epoch_from_readable_date(V)
+                update_after = v
+                msg(f'Adding visits after {v} ({readable_date_from_epoch(v)})')
+
+    con = sqlite3.connect(f"file:{args.places_sqlite}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+
+    query = "SELECT * FROM moz_places"
+    query += f' WHERE last_visit_date > {update_after}' if update_after else ''
+    res = cur.execute(query)
+    entries = [dict(s) for s in res]
+
+    # Get visits for each entry
+    visits = []
+    for entry in entries:
+        query = ("SELECT * FROM moz_historyvisits "
+                 f'WHERE place_id = {entry['id']}')
+        query += f' AND visit_date > {update_after}' if update_after else ''
+        cross = cur.execute(query)
+        for s in cross:
+            visits.append(get_visit_information(entry, dict(s), fmt))
+
+    con.close()
+
+    visits = merge(existing, visits, fmt) if update_after else visits
+
+    def sort_key(item):
+        k = FORMATOPTIONS[args.sort[0]]
+        data_to_sort_by = item.get(k, None)
+        if data_to_sort_by is None:
+            msg(f"{k} not in entry data, can't sort by it")
+            data_to_sort_by = False
+        # REMARK(plu5): I set it ^ to False because one can't compare
+        # None to None, but comparing booleans is fine.
+        return data_to_sort_by
+
+    if args.sort:
+        reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        visits.sort(key=sort_key, reverse=reverse)
+
+    dump = export_csv(visits)
+
+    if args.save and not args.dryrun:
+        open_as = 'w' if args.overwrite or args.update else 'x'
+        with open(save_to, open_as) as f:
+            f.write(dump)
+            msg(f'Wrote to {save_to}')
+    else:
+        print(dump)
+
+
+if __name__ == '__main__':
+    main()
