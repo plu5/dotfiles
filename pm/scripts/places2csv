@@ -4,11 +4,16 @@
 """Extracts selected information from places.sqlite
 
 Usage:
-    places2csv ~/.mozilla/firefox/*.default-release/places.sqlite -st ~/out.csv
+    places2csv ~/.mozilla/firefox/*.default-release/places.sqlite -st ~/out.csv --sort v  # noqa: E501
+
+(the noqa is just to avoid flake8 shouting at me for line length, you
+don't need it in the command, but it won't hurt either since # is a
+comment in most shells)
 
 Note that the same id can appear multiple times (it generates a row
 per visit, the id is the place id, and the same place can have
-multiple visits)"""
+multiple visits)
+"""
 import os
 import csv
 import sqlite3
