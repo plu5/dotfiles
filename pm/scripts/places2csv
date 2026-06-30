@@ -237,6 +237,7 @@ def main():
                 msg(f'Adding visits after {v} ({readable_date_from_epoch(v)})')
 
     con = sqlite3.connect(f"file:{args.places_sqlite}?mode=ro", uri=True)
+    con.text_factory = lambda data: str(data, errors="surrogateescape")
     con.row_factory = sqlite3.Row
     cur = con.cursor()
 
