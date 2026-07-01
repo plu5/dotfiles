@@ -43,3 +43,8 @@ xsetwacom set "${pad}" Button 12 "key +ctrl left -ctrl"
 xsetwacom set "${pad}" Button 13 "key +ctrl right -ctrl"
 
 xsetwacom set "${touch}" Touch off
+
+# vertical
+xsetwacom set "$stylus" Mode Absolute
+xsetwacom set "$stylus" Rotate ccw
+xsetwacom set "$stylus" Area 14494 0 30210 27940
