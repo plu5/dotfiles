@@ -342,6 +342,7 @@ def cmd_h(args):
 
     if args.sort:
         reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        msg(f'Sorting by {args.sort[0]}{" in reverse" if reverse else ""}')
         visits.sort(key=sort_key, reverse=reverse)
 
     dump = export_csv(visits)
@@ -455,6 +456,7 @@ def cmd_b(args):
 
     if args.sort:
         reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        msg(f'Sorting by {args.sort[0]}{" in reverse" if reverse else ""}')
         bookmarks.sort(key=sort_key, reverse=reverse)
 
     dump = export_csv(bookmarks)
