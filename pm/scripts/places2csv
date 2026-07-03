@@ -33,12 +33,16 @@ HFORMATOPTIONS = {
     'i': 'id', 'u': 'url', 't': 'title', 'd': 'description',
 }
 DEFAULTHFORMATOPTIONS = 'iutvV'
-INTFIELDS = [HFORMATOPTIONS['v'], HFORMATOPTIONS['i']]
 
 BFORMATOPTIONS = {
+    'A': 'added', 'a': 'added epoch',
+    'M': 'modified', 'm': 'modified epoch',
     'i': 'id', 'u': 'url', 't': 'title',
 }
-DEFAULTBFORMATOPTIONS = 'iut'
+DEFAULTBFORMATOPTIONS = 'iutaAmM'
+
+INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'],
+             BFORMATOPTIONS['m'], BFORMATOPTIONS['a'])
 
 # Args that we need in several commands but can't make top-level due
 # to argument-order issues
@@ -151,7 +155,14 @@ def get_bookmark_information(bookmark_dict, place_dict, fmt):
     # type: (dict, dict, str) -> dict
     res = {}
 
+    a = bookmark_dict.get('dateAdded')
+    m = bookmark_dict.get('lastModified')
+
     dispatch = {
+        'a': lambda: a,
+        'A': lambda: readable_date_from_epoch(a) if a else None,
+        'm': lambda: m,
+        'M': lambda: readable_date_from_epoch(m) if m else None,
         'i': lambda: bookmark_dict.get('id'),
         'u': lambda: place_dict.get('url'),
         't': lambda: bookmark_dict.get('title'),
@@ -216,12 +227,24 @@ def export_csv(a):
     return str(out)
 
 
-def merge(existing, new, fmt):
+def hmerge(existing, new, fmt):
     # type: (list, list, str) -> list
     # Merge visits with existing but only the fields in fmt as there
     # may be fields in existing that are not in current fmt
     fields = [HFORMATOPTIONS[c] for c in fmt]
     return [{k: d[k] for k in fields} for d in existing] + new
+
+
+def bmerge(existing, new, fmt):
+    # type: (list, list, str) -> list
+    """Create dictionary from existing and new with only the fields in fmt
+    and no duplicate IDs
+    """
+    fields = [BFORMATOPTIONS[c] for c in fmt]
+    by_id = {d['id']: {k: d[k] for k in fields} for d in existing}
+    for d in new:
+        by_id[d['id']] = d
+    return list(by_id.values())
 
 
 def cmd_h(args):
@@ -294,7 +317,7 @@ def cmd_h(args):
 
     con.close()
 
-    visits = merge(existing, visits, fmt) if update_after else visits
+    visits = hmerge(existing, visits, fmt) if update_after else visits
 
     def sort_key(item):
         k = HFORMATOPTIONS[args.sort[0]]
@@ -322,11 +345,60 @@ def cmd_h(args):
 
 
 def cmd_b(args):
-    if args.save or args.overwrite or args.update:
-        raise NotImplementedError(
-            "save, overwrite, update not implemented yet for bookmarks")
-
+    save_to = args.save_to or DEFAULTSAVENAME
     fmt = args.format or DEFAULTBFORMATOPTIONS
+
+    update_after = None
+    existing = None
+
+    # Fail fast if save file already exists and overwrite is False
+    # unless update is True
+    if args.save and not args.overwrite:
+        if os.path.exists(save_to):
+            if not args.update:
+                msg(f'Save file \'{save_to}\' already exists. '
+                    'Run with -u/--update if you wish to update it. '
+                    'Run with -o/--overwrite if you wish to overwrite it. '
+                    'Run with -t/--save-to to specify a different save file.')
+                exit(1)
+
+            existing = read_existing(save_to)
+            if not len(existing):
+                msg('existing is empty')
+            one = existing[0]
+            M = one.get(BFORMATOPTIONS['M'])
+            m = one.get(BFORMATOPTIONS['m'])
+            id = one.get(BFORMATOPTIONS['i'])
+            # Check format options are all there
+            one['lastModified'] = m or epoch_from_readable_date(M)
+            one['dateAdded'] = m or epoch_from_readable_date(M)
+            # ^ (not correct but it's just to give it some date)
+            test = get_bookmark_information(existing[0], existing[0], fmt)
+            if None in test.values():
+                msg('Existing data does not contain all format '
+                    f'options, so we have to query everything. {test} | {one}')
+            # Check we have dates
+            elif not m and not M:
+                msg('Existing data has no modification dates. Without dates '
+                    'in the data there is no reference point, we have to '
+                    'query everything.')
+            # Check we have IDs
+            elif not id:
+                msg('Existing data has no IDs. Without IDs in the data'
+                    'there is no way to know which bookmarks were modified.')
+            else:
+                # Sort data in order to get the most recent date in it
+                if m:
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['m']])
+                else:
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['M']])
+                m = existing[-1].get(BFORMATOPTIONS['m'])
+                if not m:
+                    M = existing[-1].get(BFORMATOPTIONS['M'])
+                    m = epoch_from_readable_date(M)
+                update_after = m
+                msg('Updating bookmarks after '
+                    f'{m} ({readable_date_from_epoch(m)})')
 
     con = sqlite3.connect(f"file:{args.places_sqlite}?mode=ro", uri=True)
     con.text_factory = lambda data: str(data, errors="surrogateescape")
@@ -334,6 +406,7 @@ def cmd_b(args):
     cur = con.cursor()
 
     query = "SELECT * FROM moz_bookmarks"
+    query += f' WHERE lastModified > {update_after}' if update_after else ''
     res = cur.execute(query)
     entries = [dict(s) for s in res]
 
@@ -350,6 +423,8 @@ def cmd_b(args):
 
     con.close()
 
+    bookmarks = bmerge(existing, bookmarks, fmt) if update_after else bookmarks
+
     def sort_key(item):
         k = BFORMATOPTIONS[args.sort[0]]
         data_to_sort_by = item.get(k, None)
@@ -363,7 +438,14 @@ def cmd_b(args):
         bookmarks.sort(key=sort_key, reverse=reverse)
 
     dump = export_csv(bookmarks)
-    print(dump)
+
+    if args.save and not args.dryrun:
+        open_as = 'w' if args.overwrite or args.update else 'x'
+        with open(save_to, open_as) as f:
+            f.write(dump)
+            msg(f'Wrote to {save_to}')
+    else:
+        print(dump)
 
 
 def parse_args():
