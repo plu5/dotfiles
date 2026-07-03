@@ -44,6 +44,11 @@ DEFAULTBFORMATOPTIONS = 'iutaAmM'
 INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'],
              BFORMATOPTIONS['m'], BFORMATOPTIONS['a'])
 
+S_UNDESIREDOVERWRITE = """
+Exiting to avoid undesired overwriting.
+Run with --overwrite if you wish to overwrite.
+"""
+
 # Args that we need in several commands but can't make top-level due
 # to argument-order issues
 REPEATEDARGS = [
@@ -267,22 +272,28 @@ def cmd_h(args):
 
             existing = read_existing(save_to)
             if not len(existing):
-                msg('existing is empty')
+                msg('Existing is empty. Either the file is empty or something '
+                    'went wrong.' + S_UNDESIREDOVERWRITE)
+                exit(1)
             one = existing[0]
             V = one.get(HFORMATOPTIONS['V'])
             v = one.get(HFORMATOPTIONS['v'])
+            # Check we have dates
+            if not v and not V:
+                msg('Existing data has no visit dates. Without dates in the '
+                    'data there is no reference point, so everything would '
+                    'have to be queried from scratch.' + S_UNDESIREDOVERWRITE)
+                exit(1)
             # Check format options are all there
             one['visit_date'] = v or epoch_from_readable_date(V)
             test = get_visit_information(existing[0], existing[0], fmt)
             if None in test.values():
                 msg('Existing data does not contain all format '
-                    f'options, so we have to query everything. {test} | {one}')
-            # Check we have dates
-            elif not v and not V:
-                msg('Existing data has no visit dates. Without dates in the '
-                    'data there is no reference point, we have to query '
-                    'everything.')
-            else:
+                    'options, so everything would have to be queried from '
+                    f'scratch. {test} | {one}'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
+            else:               # Proceed with the update
                 # Sort data in order to get the most recent date in it
                 if v:
                     existing.sort(key=lambda r: r[HFORMATOPTIONS['v']])
@@ -364,11 +375,26 @@ def cmd_b(args):
 
             existing = read_existing(save_to)
             if not len(existing):
-                msg('existing is empty')
+                msg('Existing is empty. Either the file is empty or something '
+                    'went wrong.' + S_UNDESIREDOVERWRITE)
+                exit(1)
             one = existing[0]
             M = one.get(BFORMATOPTIONS['M'])
             m = one.get(BFORMATOPTIONS['m'])
             id = one.get(BFORMATOPTIONS['i'])
+            # Check we have dates
+            if not m and not M:
+                msg('Existing data has no modification dates. Without dates '
+                    'in the data there is no reference point, so everything '
+                    'would have to be queried from scratch.'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
+            # Check we have IDs
+            if not id:
+                msg('Existing data has no IDs. Without IDs in the data'
+                    'there is no way to know which bookmarks were modified.'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
             # Check format options are all there
             one['lastModified'] = m or epoch_from_readable_date(M)
             one['dateAdded'] = m or epoch_from_readable_date(M)
@@ -376,17 +402,11 @@ def cmd_b(args):
             test = get_bookmark_information(existing[0], existing[0], fmt)
             if None in test.values():
                 msg('Existing data does not contain all format '
-                    f'options, so we have to query everything. {test} | {one}')
-            # Check we have dates
-            elif not m and not M:
-                msg('Existing data has no modification dates. Without dates '
-                    'in the data there is no reference point, we have to '
-                    'query everything.')
-            # Check we have IDs
-            elif not id:
-                msg('Existing data has no IDs. Without IDs in the data'
-                    'there is no way to know which bookmarks were modified.')
-            else:
+                    'options, so everything would have to be queried from '
+                    f'scratch. {test} | {one}'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
+            else:               # Proceed with the update
                 # Sort data in order to get the most recent date in it
                 if m:
                     existing.sort(key=lambda r: r[BFORMATOPTIONS['m']])
