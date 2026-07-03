@@ -328,6 +328,9 @@ def cmd_h(args):
 
     con.close()
 
+    if not visits:
+        msg("No new visits")
+
     visits = hmerge(existing, visits, fmt) if update_after else visits
 
     def sort_key(item):
@@ -443,6 +446,9 @@ def cmd_b(args):
             bookmarks.append(get_bookmark_information(entry, dict(s), fmt))
 
     con.close()
+
+    if not bookmarks:
+        msg("No new bookmarks")
 
     bookmarks = bmerge(existing, bookmarks, fmt) if update_after else bookmarks
 
