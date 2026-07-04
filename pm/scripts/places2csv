@@ -249,6 +249,22 @@ def export_csv(a):
     return str(out)
 
 
+def hhasfields(d, fmt):
+    # type: (dict, str) -> bool
+    for c in fmt:
+        if HFORMATOPTIONS.get(c) not in d:
+            return False
+    return True
+
+
+def bhasfields(d, fmt):
+    # type: (dict, str) -> bool
+    for c in fmt:
+        if BFORMATOPTIONS.get(c) not in d:
+            return False
+    return True
+
+
 def hmerge(existing, new, fmt):
     # type: (list, list, str) -> list
     # Merge visits with existing but only the fields in fmt as there
@@ -302,12 +318,10 @@ def cmd_h(args):
                     'have to be queried from scratch.' + S_UNDESIREDOVERWRITE)
                 exit(1)
             # Check format options are all there
-            one['visit_date'] = v or epoch_from_readable_date(V)
-            test = get_visit_information(existing[0], existing[0], fmt)
-            if None in test.values():
+            if not hhasfields(one, fmt):
                 msg('Existing data does not contain all format '
                     'options, so everything would have to be queried from '
-                    f'scratch. {test} | {one}'
+                    f'scratch. {one} | {fmt}'
                     + S_UNDESIREDOVERWRITE)
                 exit(1)
             else:               # Proceed with the update
@@ -415,14 +429,10 @@ def cmd_b(args):
                     + S_UNDESIREDOVERWRITE)
                 exit(1)
             # Check format options are all there
-            one['lastModified'] = m or epoch_from_readable_date(M)
-            one['dateAdded'] = m or epoch_from_readable_date(M)
-            # ^ (not correct but it's just to give it some date)
-            test = get_bookmark_information(0, existing[0], existing[0], fmt)
-            if None in test.values():
+            if not bhasfields(one, fmt):
                 msg('Existing data does not contain all format '
                     'options, so everything would have to be queried from '
-                    f'scratch. {test} | {one}'
+                    f'scratch. {one} | {fmt}'
                     + S_UNDESIREDOVERWRITE)
                 exit(1)
             else:               # Proceed with the update
