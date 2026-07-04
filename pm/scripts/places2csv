@@ -337,10 +337,8 @@ def cmd_h(args):
         k = HFORMATOPTIONS[args.sort[0]]
         data_to_sort_by = item.get(k, None)
         if data_to_sort_by is None:
-            msg(f"{k} not in entry data, can't sort by it")
-            data_to_sort_by = False
-        # REMARK(plu5): I set it ^ to False because one can't compare
-        # None to None, but comparing booleans is fine.
+            msg(f"{k} not in entry data")
+            data_to_sort_by = 0 if k in INTFIELDS else ''
         return data_to_sort_by
 
     if args.sort:
@@ -456,8 +454,8 @@ def cmd_b(args):
         k = BFORMATOPTIONS[args.sort[0]]
         data_to_sort_by = item.get(k, None)
         if data_to_sort_by is None:
-            msg(f"{k} not in entry data, can't sort by it")
-            data_to_sort_by = False
+            msg(f"{k} not in entry data")
+            data_to_sort_by = 0 if k in INTFIELDS else ''
         return data_to_sort_by
 
     if args.sort:
