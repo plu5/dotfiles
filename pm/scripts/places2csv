@@ -37,9 +37,9 @@ DEFAULTHFORMATOPTIONS = 'iutvV'
 BFORMATOPTIONS = {
     'A': 'added', 'a': 'added epoch',
     'M': 'modified', 'm': 'modified epoch',
-    'i': 'id', 'u': 'url', 't': 'title',
+    'i': 'id', 'u': 'url', 't': 'title', 'p': 'path',
 }
-DEFAULTBFORMATOPTIONS = 'iutaAmM'
+DEFAULTBFORMATOPTIONS = 'iutaAmMp'
 
 INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'],
              BFORMATOPTIONS['m'], BFORMATOPTIONS['a'])
@@ -156,8 +156,24 @@ def get_visit_information(entry_dict, visit_dict, fmt):
     return res
 
 
-def get_bookmark_information(bookmark_dict, place_dict, fmt):
-    # type: (dict, dict, str) -> dict
+def get_bookmark_path(cur, bookmark):
+    # type: (sqlite3.Cursor, dict) -> str
+    parents = []
+    p_id = bookmark.get('parent', 0)
+    while p_id > 1:
+        cur.execute(f"SELECT * FROM moz_bookmarks WHERE id = {p_id}")
+        parent = cur.fetchone()
+        if not parent:
+            msg(f'Parent {p_id} not found')
+            return '?'
+        parent = dict(parent)
+        parents.append(parent.get('title', '?'))
+        p_id = parent.get('parent', 0)
+    return '/'.join(reversed(parents))
+
+
+def get_bookmark_information(cur, bookmark_dict, place_dict, fmt):
+    # type: (sqlite3.Cursor, dict, dict, str) -> dict
     res = {}
 
     a = bookmark_dict.get('dateAdded')
@@ -171,6 +187,7 @@ def get_bookmark_information(bookmark_dict, place_dict, fmt):
         'i': lambda: bookmark_dict.get('id'),
         'u': lambda: place_dict.get('url'),
         't': lambda: bookmark_dict.get('title'),
+        'p': lambda: get_bookmark_path(cur, bookmark_dict),
     }
 
     for char in fmt:
@@ -401,7 +418,7 @@ def cmd_b(args):
             one['lastModified'] = m or epoch_from_readable_date(M)
             one['dateAdded'] = m or epoch_from_readable_date(M)
             # ^ (not correct but it's just to give it some date)
-            test = get_bookmark_information(existing[0], existing[0], fmt)
+            test = get_bookmark_information(0, existing[0], existing[0], fmt)
             if None in test.values():
                 msg('Existing data does not contain all format '
                     'options, so everything would have to be queried from '
@@ -441,7 +458,8 @@ def cmd_b(args):
                  f'WHERE id = {entry['fk']}')
         cross = cur.execute(query)
         for s in cross:
-            bookmarks.append(get_bookmark_information(entry, dict(s), fmt))
+            bookmarks.append(
+                get_bookmark_information(cur, entry, dict(s), fmt))
 
     con.close()
 
