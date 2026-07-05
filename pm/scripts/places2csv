@@ -38,6 +38,7 @@ BFORMATOPTIONS = {
     'A': 'added', 'a': 'added epoch',
     'M': 'modified', 'm': 'modified epoch',
     'i': 'id', 'u': 'url', 't': 'title', 'p': 'path', 'k': 'keyword',
+    'f': 'fk',
 }
 DEFAULTBFORMATOPTIONS = 'iutaAmMpk'
 
@@ -227,6 +228,7 @@ def get_bookmark_information(cur, bookmark_dict, place_dict, fmt, keywords={}):
         't': lambda: bookmark_dict.get('title'),
         'p': lambda: get_bookmark_path(cur, bookmark_dict),
         'k': lambda: keywords.get(bookmark_dict.get('fk')),
+        'f': lambda: bookmark_dict.get('fk'),
     }
 
     for char in fmt:
