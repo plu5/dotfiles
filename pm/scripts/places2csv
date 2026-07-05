@@ -31,8 +31,9 @@ QUIET = False
 HFORMATOPTIONS = {
     'V': 'visit', 'v': 'visit epoch',
     'i': 'id', 'u': 'url', 't': 'title', 'd': 'description',
+    'f': 'fk',
 }
-DEFAULTHFORMATOPTIONS = 'iutvV'
+DEFAULTHFORMATOPTIONS = 'futvV'
 
 BFORMATOPTIONS = {
     'A': 'added', 'a': 'added epoch',
@@ -43,7 +44,7 @@ BFORMATOPTIONS = {
 }
 DEFAULTBFORMATOPTIONS = 'iutaAmMpok'
 
-INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'],
+INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'], HFORMATOPTIONS['f'],
              BFORMATOPTIONS['m'], BFORMATOPTIONS['a'])
 
 S_UNDESIREDOVERWRITE = """
@@ -140,7 +141,8 @@ def get_visit_information(entry_dict, visit_dict, fmt):
     dispatch = {
         'v': lambda: v,  # or 0 instead of None?
         'V': lambda: readable_date_from_epoch(v) if v else None,
-        'i': lambda: entry_dict.get('id'),  # is this int or str?
+        'f': lambda: entry_dict.get('id'),
+        'i': lambda: visit_dict.get('id'),
         'u': lambda: entry_dict.get('url'),
         't': lambda: entry_dict.get('title'),
         'd': lambda: entry_dict.get('description'),
