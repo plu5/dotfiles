@@ -171,7 +171,7 @@ def get_bookmark_path(cur, bookmark):
             msg(f'Parent {p_id} not found')
             return '?'
         parent = dict(parent)
-        parents.append(parent.get('title', '?'))
+        parents.append(parent.get('title', '?') or '')
         p_id = parent.get('parent', 0)
     return '/'.join(reversed(parents))
 
