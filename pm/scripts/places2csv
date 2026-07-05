@@ -37,9 +37,9 @@ DEFAULTHFORMATOPTIONS = 'iutvV'
 BFORMATOPTIONS = {
     'A': 'added', 'a': 'added epoch',
     'M': 'modified', 'm': 'modified epoch',
-    'i': 'id', 'u': 'url', 't': 'title', 'p': 'path',
+    'i': 'id', 'u': 'url', 't': 'title', 'p': 'path', 'k': 'keyword',
 }
-DEFAULTBFORMATOPTIONS = 'iutaAmMp'
+DEFAULTBFORMATOPTIONS = 'iutaAmMpk'
 
 INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'],
              BFORMATOPTIONS['m'], BFORMATOPTIONS['a'])
@@ -172,8 +172,46 @@ def get_bookmark_path(cur, bookmark):
     return '/'.join(reversed(parents))
 
 
-def get_bookmark_information(cur, bookmark_dict, place_dict, fmt):
-    # type: (sqlite3.Cursor, dict, dict, str) -> dict
+def get_keyword_alist(cur):
+    # type: (sqlite3.Cursor) -> dict[int, str]
+    alist = {}
+    res = cur.execute("SELECT * FROM moz_keywords")
+    for s in res:
+        k = dict(s)
+        alist[k.get('place_id')] = k.get('keyword')
+    return alist
+
+
+def update_keywords(cur, existing, keywords):
+    # type: (sqlite3.Cursor, dict, dict) -> None
+    changed = False
+    url2keyword = None
+    for b in existing:
+        k = None
+        if 'fk' in b:           # Update based on fk
+            k = keywords.get(b.get('fk'))
+        else:                   # Update based on URL
+            if url2keyword is None:
+                url2keyword = {}
+                for id, keyword in keywords.items():
+                    cur.execute(f"SELECT * FROM moz_places WHERE id = {id}")
+                    place = cur.fetchone()
+                    if not place:
+                        msg(f"update_keywords: Place {id} not found")
+                        continue
+                    place = dict(place)
+                    url2keyword[place.get('url')] = keyword
+            k = url2keyword.get(b.get('url'))
+
+        if k and k != b.get(BFORMATOPTIONS['k']):
+            b[BFORMATOPTIONS['k']] = k
+            changed = True
+    if changed:
+        msg('Keywords changed')
+
+
+def get_bookmark_information(cur, bookmark_dict, place_dict, fmt, keywords={}):
+    # type: (sqlite3.Cursor, dict, dict, str, dict) -> dict
     res = {}
 
     a = bookmark_dict.get('dateAdded')
@@ -188,6 +226,7 @@ def get_bookmark_information(cur, bookmark_dict, place_dict, fmt):
         'u': lambda: place_dict.get('url'),
         't': lambda: bookmark_dict.get('title'),
         'p': lambda: get_bookmark_path(cur, bookmark_dict),
+        'k': lambda: keywords.get(bookmark_dict.get('fk')),
     }
 
     for char in fmt:
@@ -428,6 +467,10 @@ def cmd_b(args):
                     'there is no way to know which bookmarks were modified.'
                     + S_UNDESIREDOVERWRITE)
                 exit(1)
+            # If keywords in format options, check we have URLs or fk
+            if 'k' in fmt and not ('url' in one or 'fk' in one):
+                msg('Updating keywords requires fk or URLs in the data.')
+                exit(1)
             # Check format options are all there
             if not bhasfields(one, fmt):
                 msg('Existing data does not contain all format '
@@ -454,6 +497,11 @@ def cmd_b(args):
     con.row_factory = sqlite3.Row
     cur = con.cursor()
 
+    keywords = {}
+    if 'k' in fmt:
+        keywords = get_keyword_alist(cur)
+        update_keywords(cur, existing or {}, keywords)
+
     query = "SELECT * FROM moz_bookmarks"
     query += f' WHERE lastModified > {update_after}' if update_after else ''
     res = cur.execute(query)
@@ -469,7 +517,7 @@ def cmd_b(args):
         cross = cur.execute(query)
         for s in cross:
             bookmarks.append(
-                get_bookmark_information(cur, entry, dict(s), fmt))
+                get_bookmark_information(cur, entry, dict(s), fmt, keywords))
 
     con.close()
 
