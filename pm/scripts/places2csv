@@ -37,10 +37,11 @@ DEFAULTHFORMATOPTIONS = 'iutvV'
 BFORMATOPTIONS = {
     'A': 'added', 'a': 'added epoch',
     'M': 'modified', 'm': 'modified epoch',
-    'i': 'id', 'u': 'url', 't': 'title', 'p': 'path', 'k': 'keyword',
+    'i': 'id', 'u': 'url', 't': 'title',
+    'p': 'path', 'o': 'position', 'k': 'keyword',
     'f': 'fk',
 }
-DEFAULTBFORMATOPTIONS = 'iutaAmMpk'
+DEFAULTBFORMATOPTIONS = 'iutaAmMpok'
 
 INTFIELDS = (HFORMATOPTIONS['v'], HFORMATOPTIONS['i'],
              BFORMATOPTIONS['m'], BFORMATOPTIONS['a'])
@@ -229,6 +230,7 @@ def get_bookmark_information(cur, bookmark_dict, place_dict, fmt, keywords={}):
         'p': lambda: get_bookmark_path(cur, bookmark_dict),
         'k': lambda: keywords.get(bookmark_dict.get('fk')),
         'f': lambda: bookmark_dict.get('fk'),
+        'o': lambda: bookmark_dict.get('position'),
     }
 
     for char in fmt:
