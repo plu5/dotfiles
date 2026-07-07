@@ -20,9 +20,9 @@ BOOKMARK_ROOTS = 'roots'
 TOPLEVEL_BOOKMARK_FOLDERS = ["bookmark_bar", "other", "synced"]
 
 BFORMATOPTIONS = {
-    'i': 'id', 'u': 'url',
+    'i': 'id', 'u': 'url', 'n': 'name', 'g': 'guid',
 }
-DEFAULTBFORMATOPTIONS = 'iu'
+DEFAULTBFORMATOPTIONS = 'iun'
 
 COMMANDS = {
     "":                         # TOP LEVEL ARGS
@@ -75,6 +75,8 @@ def get_bookmark_information(d, fmt):
     dispatch = {
         'i': lambda: d.get('id'),
         'u': lambda: d.get('url'),
+        'n': lambda: d.get('name'),
+        'g': lambda: d.get('guid'),
     }
 
     for char in fmt:
