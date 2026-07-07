@@ -24,9 +24,9 @@ TOPLEVEL_BOOKMARK_FOLDERS = ["bookmark_bar", "other", "synced"]
 BFORMATOPTIONS = {
     'A': 'added', 'a': 'added epoch', 'C': 'used', 'c': 'used epoch',
     'i': 'id', 'u': 'url', 'n': 'name', 'g': 'guid',
-    'p': 'path',
+    'p': 'path', 'o': 'position',
 }
-DEFAULTBFORMATOPTIONS = 'iunaAcCp'
+DEFAULTBFORMATOPTIONS = 'iunaAcCpo'
 
 COMMANDS = {
     "":                         # TOP LEVEL ARGS
@@ -79,7 +79,7 @@ def readable_date_from_epoch(e):
     return datetime.fromtimestamp(e/1000000-11644473600).strftime(DATEFORMAT)
 
 
-def get_bookmark_information(d, fmt, path):
+def get_bookmark_information(d, fmt, path, position):
     res = {}
 
     a = int(d.get('date_added'))
@@ -95,6 +95,7 @@ def get_bookmark_information(d, fmt, path):
         'n': lambda: d.get('name'),
         'g': lambda: d.get('guid'),
         'p': lambda: path,
+        'o': lambda: position,
     }
 
     for char in fmt:
@@ -106,14 +107,16 @@ def get_bookmark_information(d, fmt, path):
     return res
 
 
-def get_bookmarks_folder_generator(d, fmt, path=''):
-    t = d.get('type')
-    if t == 'folder':
+def get_bookmarks_folder_generator(d, fmt, path='', recursed=False):
+    if d.get('type') == 'folder':
+        position = 0
+        path = f'{path}/{d.get('name')}'
         for c in d.get('children', []):
-            yield from get_bookmarks_folder_generator(
-                c, fmt, f'{path}/{d.get('name')}')
-    elif t == 'url':
-        yield get_bookmark_information(d, fmt, path)
+            if c.get('type') == 'folder':
+                yield from get_bookmarks_folder_generator(c, fmt, path, True)
+            elif c.get('type') == 'url':
+                yield get_bookmark_information(c, fmt, path, position)
+                position += 1
 
 
 def get_bookmarks_toplevel_generator(d, fmt):
