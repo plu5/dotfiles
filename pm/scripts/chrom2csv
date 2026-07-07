@@ -61,7 +61,7 @@ def get_bookmarks_folder_generator(d):
         for c in d.get('children', []):
             yield from get_bookmarks_folder_generator(c)
     elif t == 'url':
-        yield {'url': d.get('url')}
+        yield {'id': d.get('id'), 'url': d.get('url')}
 
 
 def get_bookmarks_toplevel_generator(d):
