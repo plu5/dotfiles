@@ -11,18 +11,21 @@ import sys
 import csv
 import json
 import argparse
+from datetime import datetime
 
 PROG = 'chrom2csv'
 DEFAULTSAVENAME = 'bookmarks.csv'
+DATEFORMAT = '%F %T.%f'
 QUIET = False
 
 BOOKMARK_ROOTS = 'roots'
 TOPLEVEL_BOOKMARK_FOLDERS = ["bookmark_bar", "other", "synced"]
 
 BFORMATOPTIONS = {
+    'A': 'added', 'a': 'added epoch', 'C': 'used', 'c': 'used epoch',
     'i': 'id', 'u': 'url', 'n': 'name', 'g': 'guid',
 }
-DEFAULTBFORMATOPTIONS = 'iun'
+DEFAULTBFORMATOPTIONS = 'iunaAcC'
 
 COMMANDS = {
     "":                         # TOP LEVEL ARGS
@@ -69,10 +72,23 @@ def msg(text):
         print(f'{PROG}: {text}')
 
 
+def readable_date_from_epoch(e):
+    """Takes epoch in microseconds since 1 January 1601 00:00 UTC"""
+    # type: (int) -> str
+    return datetime.fromtimestamp(e/1000000-11644473600).strftime(DATEFORMAT)
+
+
 def get_bookmark_information(d, fmt):
     res = {}
 
+    a = int(d.get('date_added'))
+    c = int(d.get('date_last_used'))
+
     dispatch = {
+        'a': lambda: a,
+        'A': lambda: readable_date_from_epoch(a) if a else None,
+        'c': lambda: c,
+        'C': lambda: readable_date_from_epoch(c) if c else None,
         'i': lambda: d.get('id'),
         'u': lambda: d.get('url'),
         'n': lambda: d.get('name'),
