@@ -33,7 +33,7 @@ Don't write to disk."""}),
 Suppress messages in output."""}),
     ]},
     "b":                        # B (bookmarks)
-    {"desc": "extract bookmarks data", "usage": """[-f FORMAT]
+    {"desc": "extract bookmarks data", "usage": """[-f FORMAT] [--sort SORT]
 [-s] [-t SAVE_TO] [-o] [-u]
 file""",
      "args": [
@@ -42,6 +42,11 @@ e.g. ~/.config/chromium/Default/Bookmarks"""}),
          (["-f", "--format"], {"default": DEFAULTBFORMATOPTIONS, "help": f"""
 Which metadata fields to include and in which order. Default: {DEFAULTBFORMATOPTIONS}.
 Options: {", ".join([f"{k} ({v})" for k, v in BFORMATOPTIONS.items()])}."""}),
+         (["--sort"], {"choices":
+                       [x for k in BFORMATOPTIONS for x in (k, k + 'r')],
+                       "help": """Sort by a given metadata field.
+Options are the same as for -f/--format, or followed by r for reverse order.
+(Example: ir -> sort by id, reverse order.)"""}),
          (["-s", "--save"], {"action": "store_true", "help": f"""Save output to
 file instead of printing to stdout. Will save to ./{DEFAULTSAVENAME} unless a
 different path is provided with the -t/--save-to option."""}),
@@ -150,6 +155,19 @@ def cmd_b(args):
         data = json.load(f)
 
     bookmarks = get_bookmarks(data, args.format)
+
+    def sort_key(item):
+        k = BFORMATOPTIONS[args.sort[0]]
+        data_to_sort_by = item.get(k, None)
+        if data_to_sort_by is None:
+            msg(f"{k} not in entry data")
+            data_to_sort_by = ''
+        return data_to_sort_by
+
+    if args.sort:
+        reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        msg(f'Sorting by {args.sort[0]}{" in reverse" if reverse else ""}')
+        bookmarks.sort(key=sort_key, reverse=reverse)
 
     dump = export_csv(bookmarks)
 
