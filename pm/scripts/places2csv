@@ -99,7 +99,7 @@ Options: {", ".join([f"{k} ({v})" for k, v in BFORMATOPTIONS.items()])}."""}),
                        [x for k in BFORMATOPTIONS for x in (k, k + 'r')],
                        "help": """Sort by a given metadata field.
 Options are the same as for -f/--format, or followed by r for reverse order.
-(Example: vr -> sort by visit epoch, reverse order.)"""}),
+(Example: ar -> sort by added epoch, reverse order.)"""}),
      ]},
 }
 
