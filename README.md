@@ -127,6 +127,8 @@ in [./pm/scripts](pm/scripts)
     Unnecessary script for encryption/decryption with OpenSSL CMS. It has useless use of cat, I switched to JWE, and I favour just using the commands directly now, so I don't use this.
 44. [**places2csv**](pm/scripts/places2csv): 2026-06-29 03:37  
     Data extraction from places.sqlite (Firefox history and bookmarks)
+45. [**chrom2csv**](pm/scripts/chrom2csv): 2026-07-06 19:19  
+    Like places2csv but for Chromium
 
 ## TODO
 - **add screenshots**  

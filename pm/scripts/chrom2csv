@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+# chrom2csv
+# 2026-07-06 19:19
+"""Extracts selected information from Chromium bookmarks
+
+Usage:
+    chrom2csv b ~/.config/chromium/Default/Bookmarks
+"""
+import os
+import sys
+import csv
+import json
+import argparse
+
+PROG = 'chrom2csv'
+DEFAULTSAVENAME = 'bookmarks.csv'
+QUIET = False
+
+BOOKMARK_ROOTS = 'roots'
+TOPLEVEL_BOOKMARK_FOLDERS = ["bookmark_bar", "other", "synced"]
+
+COMMANDS = {
+    "":                         # TOP LEVEL ARGS
+    {"args": [
+        (["--dryrun"], {"action": "store_true", "help": """
+Don't write to disk."""}),
+        (["-q", "--quiet"], {"action": "store_true", "help": """
+Suppress messages in output."""}),
+    ]},
+    "b":                        # B (bookmarks)
+    {"desc": "extract bookmarks data", "usage": """[-s] [-t SAVE_TO] [-o] [-u]
+file""",
+     "args": [
+         (["file"], {"help": """Bookmarks file.
+e.g. ~/.config/chromium/Default/Bookmarks"""}),
+         (["-s", "--save"], {"action": "store_true", "help": f"""Save output to
+file instead of printing to stdout. Will save to ./{DEFAULTSAVENAME} unless a
+different path is provided with the -t/--save-to option."""}),
+         (["-t", "--save-to"], {"help": """Path to save output to.
+Ignored if -s/--save is not provided."""}),
+         (["-o", "--overwrite"], {"action": "store_true", "help": """Overwrite
+save file if it already exists. Ignored if -s/--save is not provided."""}),
+         (["-u", "--update"], {"action": "store_true", "help": """Update save
+file if it already exists. Ignored if -s/--save is not provided.
+If both -o/--overwrite and -u/--update are provided,
+overwrite will take precedence."""}),
+     ]},
+}
+
+
+def msg(text):
+    # type: (str) -> None
+    """Utility for logs/errors, could be replaced with proper logging"""
+    if not QUIET:
+        print(f'{PROG}: {text}')
+
+
+def get_bookmarks_folder_generator(d):
+    t = d.get('type')
+    if t == 'folder':
+        for c in d.get('children', []):
+            yield from get_bookmarks_folder_generator(c)
+    elif t == 'url':
+        yield {'url': d.get('url')}
+
+
+def get_bookmarks_toplevel_generator(d):
+    test = [d.get(f, {}) for f in TOPLEVEL_BOOKMARK_FOLDERS]
+    print(test)
+    for g in [get_bookmarks_folder_generator(d.get(f, {}))
+              for f in TOPLEVEL_BOOKMARK_FOLDERS]:
+        yield from g
+
+
+def get_bookmarks(d):
+    return list(get_bookmarks_toplevel_generator(d[BOOKMARK_ROOTS]))
+
+
+class CsvOutput():
+    """Passed to csv module to get it write into a string instead of a file.
+    Adapted from Bhavesh Poddar:
+    https://levelup.gitconnected.com/building-csv-strings-in-python-32934aed5a9e
+    """
+    def __init__(self):
+        self.lines = []
+
+    def write(self, line):
+        self.lines.append(line)
+
+    def __str__(self):
+        return ''.join(self.lines)
+
+
+def export_csv(a):
+    # type: (list) -> str
+    fieldnames = [*list((a[0] if len(a) else {}).keys())]
+    rows = [fieldnames]
+    for item in a:
+        rows.append([str(v) for v in item.values()])
+
+    out = CsvOutput()
+    writer = csv.writer(out)
+    writer.writerows(rows)
+
+    return str(out)
+
+
+def cmd_b(args):
+    save_to = args.save_to or DEFAULTSAVENAME
+
+    if args.update:
+        raise NotImplementedError()
+
+    # Fail fast if save file already exists and overwrite is False
+    # unless update is True
+    if args.save and not args.overwrite:
+        if os.path.exists(save_to):
+            if not args.update:
+                msg(f'Save file \'{save_to}\' already exists. '
+                    'Run with -u/--update if you wish to update it. '
+                    'Run with -o/--overwrite if you wish to overwrite it. '
+                    'Run with -t/--save-to to specify a different save file.')
+                exit(1)
+
+    with open(args.file, 'r') as f:
+        data = json.load(f)
+
+    bookmarks = get_bookmarks(data)
+
+    dump = export_csv(bookmarks)
+
+    if args.save and not args.dryrun:
+        open_as = 'w' if args.overwrite or args.update else 'x'
+        with open(save_to, open_as) as f:
+            f.write(dump)
+            msg(f'Wrote to {save_to}')
+    else:
+        print(dump)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(prog=PROG)
+    parser.suggest_on_error = True
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    descs = []
+    for k, v in COMMANDS.items():
+        if v.get('desc'):       # description generation
+            descs.append(f"{v['desc']} ({k})")
+        if k == "":             # arguments on top parser
+            for args, kwargs in v['args']:
+                parser.add_argument(*args, **kwargs)
+            continue
+        subparser = subparsers.add_parser(
+            k, help=f"[-h|--help] {v.get('usage')}")
+        for args, kwargs in v['args']:
+            subparser.add_argument(*args, **kwargs)
+        # Set handler
+        subparser.set_defaults(func=v.get('func'))
+    # Add generated description
+    if len(descs) > 1:
+        descs[-1] = f"or {descs[-1]}"
+    parser.description = f"A utility script to \
+{' '.join(descs)} from Chromium files."
+    # Parse args / print help and quit if no args
+    # (Primer https://stackoverflow.com/a/47440202/18396947)
+    return parser.parse_args(sys.argv[1:] or ['--help'])
+
+
+COMMANDS['b']['func'] = cmd_b
+
+
+def main():
+    # type: () -> None
+    global QUIET
+
+    args = parse_args()
+    QUIET = args.quiet
+
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()
