@@ -19,6 +19,11 @@ QUIET = False
 BOOKMARK_ROOTS = 'roots'
 TOPLEVEL_BOOKMARK_FOLDERS = ["bookmark_bar", "other", "synced"]
 
+BFORMATOPTIONS = {
+    'i': 'id', 'u': 'url',
+}
+DEFAULTBFORMATOPTIONS = 'iu'
+
 COMMANDS = {
     "":                         # TOP LEVEL ARGS
     {"args": [
@@ -28,11 +33,15 @@ Don't write to disk."""}),
 Suppress messages in output."""}),
     ]},
     "b":                        # B (bookmarks)
-    {"desc": "extract bookmarks data", "usage": """[-s] [-t SAVE_TO] [-o] [-u]
+    {"desc": "extract bookmarks data", "usage": """[-f FORMAT]
+[-s] [-t SAVE_TO] [-o] [-u]
 file""",
      "args": [
          (["file"], {"help": """Bookmarks file.
 e.g. ~/.config/chromium/Default/Bookmarks"""}),
+         (["-f", "--format"], {"default": DEFAULTBFORMATOPTIONS, "help": f"""
+Which metadata fields to include and in which order. Default: {DEFAULTBFORMATOPTIONS}.
+Options: {", ".join([f"{k} ({v})" for k, v in BFORMATOPTIONS.items()])}."""}),
          (["-s", "--save"], {"action": "store_true", "help": f"""Save output to
 file instead of printing to stdout. Will save to ./{DEFAULTSAVENAME} unless a
 different path is provided with the -t/--save-to option."""}),
@@ -55,25 +64,40 @@ def msg(text):
         print(f'{PROG}: {text}')
 
 
-def get_bookmarks_folder_generator(d):
+def get_bookmark_information(d, fmt):
+    res = {}
+
+    dispatch = {
+        'i': lambda: d.get('id'),
+        'u': lambda: d.get('url'),
+    }
+
+    for char in fmt:
+        opt = BFORMATOPTIONS.get(char)
+        if not opt or char not in dispatch:
+            continue
+        res[opt] = dispatch[char]()
+
+    return res
+
+
+def get_bookmarks_folder_generator(d, fmt):
     t = d.get('type')
     if t == 'folder':
         for c in d.get('children', []):
-            yield from get_bookmarks_folder_generator(c)
+            yield from get_bookmarks_folder_generator(c, fmt)
     elif t == 'url':
-        yield {'id': d.get('id'), 'url': d.get('url')}
+        yield get_bookmark_information(d, fmt)
 
 
-def get_bookmarks_toplevel_generator(d):
-    test = [d.get(f, {}) for f in TOPLEVEL_BOOKMARK_FOLDERS]
-    print(test)
-    for g in [get_bookmarks_folder_generator(d.get(f, {}))
+def get_bookmarks_toplevel_generator(d, fmt):
+    for g in [get_bookmarks_folder_generator(d.get(f, {}), fmt)
               for f in TOPLEVEL_BOOKMARK_FOLDERS]:
         yield from g
 
 
-def get_bookmarks(d):
-    return list(get_bookmarks_toplevel_generator(d[BOOKMARK_ROOTS]))
+def get_bookmarks(d, fmt):
+    return list(get_bookmarks_toplevel_generator(d[BOOKMARK_ROOTS], fmt))
 
 
 class CsvOutput():
@@ -125,7 +149,7 @@ def cmd_b(args):
     with open(args.file, 'r') as f:
         data = json.load(f)
 
-    bookmarks = get_bookmarks(data)
+    bookmarks = get_bookmarks(data, args.format)
 
     dump = export_csv(bookmarks)
 
