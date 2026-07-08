@@ -188,31 +188,46 @@ def get_bookmarks(d, fmt, update_after=None):
         d[BOOKMARK_ROOTS], fmt, update_after))
 
 
-def get_visit_information(d, fmt):
-    res = {}
+def hquery(fmt):
+    select = []
 
-    v = d.get('visit_time')
-
-    dispatch = {
-        'v': lambda: v,
-        'V': lambda: readable_date_from_epoch(int(v)) if v and int(v) else '',
-        'i': lambda: d.get('id'),
-        'u': lambda: d.get('url'),
-        't': lambda: d.get('title'),
-        'r': lambda: d.get('from_visit'),
-        'n': lambda: d.get('transition'),
-        'd': lambda: d.get('visit_duration'),
-        's': lambda: d.get('engagement_score'),
-        'f': lambda: d.get('fk'),
+    q = {
+        'v': f'v.visit_time "{HFORMATOPTIONS['v']}"',
+        # formatted later in hformat
+        'V': f'v.visit_time "{HFORMATOPTIONS['V']}"',
+        'i': f'v.id "{HFORMATOPTIONS['i']}"',
+        'u': f'u.url "{HFORMATOPTIONS['u']}"',
+        't': f'u.title "{HFORMATOPTIONS['t']}"',
+        'r': f'v.from_visit "{HFORMATOPTIONS['r']}"',
+        'n': f'v.transition "{HFORMATOPTIONS['n']}"',
+        'd': f'v.visit_duration "{HFORMATOPTIONS['d']}"',
+        's': f'c.engagement_score "{HFORMATOPTIONS['s']}"',
+        'f': f'v.url "{HFORMATOPTIONS['f']}"',
     }
 
     for char in fmt:
         opt = HFORMATOPTIONS.get(char)
-        if not opt or char not in dispatch:
+        if not opt or char not in q:
             continue
-        res[opt] = dispatch[char]()
+        select.append(q[char])
 
-    return res
+    res = []
+    if len(select):
+        res.append(f'SELECT {', '.join(select)} from visits v')
+        if 'u' in fmt or 't' in fmt:
+            res.append('LEFT OUTER JOIN urls u ON v.url = u.id')
+        if 's' in fmt:
+            res.append(
+                'LEFT OUTER JOIN clusters_and_visits c ON v.id = c.visit_id')
+
+    return ' '.join(res)
+
+
+def hformat(d):
+    V = HFORMATOPTIONS['V']
+    if d.get(V):
+        d[V] = readable_date_from_epoch(d[V])
+    return d
 
 
 def parse_csv(s):
@@ -434,13 +449,9 @@ def cmd_h(args):
         con.row_factory = sqlite3.Row
         con.text_factory = lambda data: str(data, errors="surrogateescape")
         cur = con.cursor()
-        res = cur.execute("""SELECT v.id, v.url fk, u.url, u.title,
-        v.visit_time, v.from_visit, v.transition, v.visit_duration,
-        c.engagement_score FROM visits v
-        LEFT OUTER JOIN urls u ON v.url = u.id
-        LEFT OUTER JOIN clusters_and_visits c ON v.id = c.visit_id""")
+        res = cur.execute(hquery(args.format))
 
-    visits = [get_visit_information(dict(s), args.format) for s in res]
+    visits = [hformat(dict(s)) for s in res]
 
     def sort_key(item):
         k = HFORMATOPTIONS[args.sort[0]]
