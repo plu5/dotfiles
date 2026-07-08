@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # chrom2csv
 # 2026-07-06 19:19
-"""Extracts selected information from Chromium bookmarks
+"""Extracts selected information from Chromium bookmarks and history
 
 Usage:
+Bookmarks
     chrom2csv b ~/.config/chromium/Default/Bookmarks -st o.csv --sort a
+History
+    chrom2csv h ~/.config/chromium/Default/History -st o.csv --sort v
 
 Known issues:
 * Stale used dates if using --update and the containing folder hasn't
@@ -17,11 +20,12 @@ import os
 import sys
 import csv
 import json
+import sqlite3
 import argparse
 from datetime import datetime
 
 PROG = 'chrom2csv'
-DEFAULTSAVENAME = 'bookmarks.csv'
+DEFAULTSAVENAME = 'chrome.csv'
 DATEFORMAT = '%F %T.%f'
 QUIET = False
 
@@ -35,10 +39,37 @@ BFORMATOPTIONS = {
 }
 DEFAULTBFORMATOPTIONS = 'iunaAcCpo'
 
+HFORMATOPTIONS = {
+    'V': 'visit', 'v': 'visit epoch',
+    'i': 'id', 'u': 'url', 't': 'title',
+    'r': 'from', 'n': 'transition', 'd': 'duration', 's': 'engagement score',
+    'f': 'fk',
+}
+DEFAULTHFORMATOPTIONS = 'ifutvVds'
+INTFIELDS = ['visit epoch', 'id', 'from', 'transition', 'duration',
+             'engagement score', 'fk',]
+
 S_UNDESIREDOVERWRITE = """
 Exiting to avoid undesired overwriting.
 Run with --overwrite if you wish to overwrite.
 """
+
+# Args that we need in several commands but can't make top-level due
+# to argument-order issues
+REPEATEDARGS = [
+    # Maybe there should be a different defaultsavename for each command
+    (["-s", "--save"], {"action": "store_true", "help": f"""Save output to
+file instead of printing to stdout. Will save to ./{DEFAULTSAVENAME} unless a
+different path is provided with the -t/--save-to option."""}),
+    (["-t", "--save-to"], {"help": """Path to save output to.
+Ignored if -s/--save is not provided."""}),
+    (["-o", "--overwrite"], {"action": "store_true", "help": """Overwrite
+save file if it already exists. Ignored if -s/--save is not provided."""}),
+    (["-u", "--update"], {"action": "store_true", "help": """Update save
+file if it already exists. Ignored if -s/--save is not provided.
+If both -o/--overwrite and -u/--update are provided,
+overwrite will take precedence."""}),
+]
 
 COMMANDS = {
     "":                         # TOP LEVEL ARGS
@@ -63,17 +94,24 @@ Options: {", ".join([f"{k} ({v})" for k, v in BFORMATOPTIONS.items()])}."""}),
                        "help": """Sort by a given metadata field.
 Options are the same as for -f/--format, or followed by r for reverse order.
 (Example: ir -> sort by id, reverse order.)"""}),
-         (["-s", "--save"], {"action": "store_true", "help": f"""Save output to
-file instead of printing to stdout. Will save to ./{DEFAULTSAVENAME} unless a
-different path is provided with the -t/--save-to option."""}),
-         (["-t", "--save-to"], {"help": """Path to save output to.
-Ignored if -s/--save is not provided."""}),
-         (["-o", "--overwrite"], {"action": "store_true", "help": """Overwrite
-save file if it already exists. Ignored if -s/--save is not provided."""}),
-         (["-u", "--update"], {"action": "store_true", "help": """Update save
-file if it already exists. Ignored if -s/--save is not provided.
-If both -o/--overwrite and -u/--update are provided,
-overwrite will take precedence."""}),
+         *REPEATEDARGS,
+     ]},
+    "h":                        # H (history)
+    {"desc": "extract history data", "usage": """[-f FORMAT] [--sort SORT]
+[-s] [-t SAVE_TO] [-o] [-u]
+file""",
+     "args": [
+         (["file"], {"help": """History file.
+e.g. ~/.config/chromium/Default/History"""}),
+         (["-f", "--format"], {"default": DEFAULTHFORMATOPTIONS, "help": f"""
+Which metadata fields to include and in which order. Default: {DEFAULTHFORMATOPTIONS}.
+Options: {", ".join([f"{k} ({v})" for k, v in HFORMATOPTIONS.items()])}."""}),
+         (["--sort"], {"choices":
+                       [x for k in HFORMATOPTIONS for x in (k, k + 'r')],
+                       "help": """Sort by a given metadata field.
+Options are the same as for -f/--format, or followed by r for reverse order.
+(Example: ir -> sort by id, reverse order.)"""}),
+         *REPEATEDARGS,
      ]},
 }
 
@@ -148,6 +186,33 @@ def get_bookmarks_toplevel_generator(d, fmt, update_after=None):
 def get_bookmarks(d, fmt, update_after=None):
     return list(get_bookmarks_toplevel_generator(
         d[BOOKMARK_ROOTS], fmt, update_after))
+
+
+def get_visit_information(d, fmt):
+    res = {}
+
+    v = d.get('visit_time')
+
+    dispatch = {
+        'v': lambda: v,
+        'V': lambda: readable_date_from_epoch(int(v)) if v and int(v) else '',
+        'i': lambda: d.get('id'),
+        'u': lambda: d.get('url'),
+        't': lambda: d.get('title'),
+        'r': lambda: d.get('from_visit'),
+        'n': lambda: d.get('transition'),
+        'd': lambda: d.get('visit_duration'),
+        's': lambda: d.get('engagement_score'),
+        'f': lambda: d.get('fk'),
+    }
+
+    for char in fmt:
+        opt = HFORMATOPTIONS.get(char)
+        if not opt or char not in dispatch:
+            continue
+        res[opt] = dispatch[char]()
+
+    return res
 
 
 def parse_csv(s):
@@ -349,7 +414,60 @@ def parse_args():
     return parser.parse_args(sys.argv[1:] or ['--help'])
 
 
+def cmd_h(args):
+    if args.update:
+        raise NotImplementedError()
+
+    # Fail fast if save file already exists and overwrite is False
+    # unless update is True
+    if args.save and not args.overwrite:
+        if os.path.exists(args.save_to):
+            if not args.update:
+                msg(f'Save file \'{args.save_to}\' already exists. '
+                    'Run with -u/--update if you wish to update it. '
+                    'Run with -o/--overwrite if you wish to overwrite it. '
+                    'Run with -t/--save-to to specify a different save file.')
+                exit(1)
+
+    with sqlite3.connect(
+            f"file:{args.file}?mode=ro&nolock=1", uri=True) as con:
+        con.row_factory = sqlite3.Row
+        con.text_factory = lambda data: str(data, errors="surrogateescape")
+        cur = con.cursor()
+        res = cur.execute("""SELECT v.id, v.url fk, u.url, u.title,
+        v.visit_time, v.from_visit, v.transition, v.visit_duration,
+        c.engagement_score FROM visits v
+        LEFT OUTER JOIN urls u ON v.url = u.id
+        LEFT OUTER JOIN clusters_and_visits c ON v.id = c.visit_id""")
+
+    visits = [get_visit_information(dict(s), args.format) for s in res]
+
+    def sort_key(item):
+        k = HFORMATOPTIONS[args.sort[0]]
+        data_to_sort_by = item.get(k, None)
+        if data_to_sort_by is None:
+            msg(f"{k} not in entry data")
+            data_to_sort_by = 0 if k in INTFIELDS else ''
+        return data_to_sort_by
+
+    if args.sort:
+        reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        msg(f'Sorting by {args.sort[0]}{" in reverse" if reverse else ""}')
+        visits.sort(key=sort_key, reverse=reverse)
+
+    dump = export_csv(visits)
+
+    if args.save and not args.dryrun:
+        open_as = 'w' if args.overwrite or args.update else 'x'
+        with open(args.save_to, open_as) as f:
+            f.write(dump)
+            msg(f'Wrote to {args.save_to}')
+    else:
+        print(dump)
+
+
 COMMANDS['b']['func'] = cmd_b
+COMMANDS['h']['func'] = cmd_h
 
 
 def main():
