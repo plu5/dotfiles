@@ -4,7 +4,14 @@
 """Extracts selected information from Chromium bookmarks
 
 Usage:
-    chrom2csv b ~/.config/chromium/Default/Bookmarks
+    chrom2csv b ~/.config/chromium/Default/Bookmarks -st o.csv --sort a
+
+Known issues:
+* Stale used dates if using --update and the containing folder hasn't
+  changed. This is because only folders have modification dates and
+  update uses them to decide which folders to enter, but these
+  dates do not change when only use dates change, only if the
+  name or url of a bookmark inside the folder changed.
 """
 import os
 import sys
