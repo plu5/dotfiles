@@ -28,6 +28,11 @@ BFORMATOPTIONS = {
 }
 DEFAULTBFORMATOPTIONS = 'iunaAcCpo'
 
+S_UNDESIREDOVERWRITE = """
+Exiting to avoid undesired overwriting.
+Run with --overwrite if you wish to overwrite.
+"""
+
 COMMANDS = {
     "":                         # TOP LEVEL ARGS
     {"args": [
@@ -79,17 +84,23 @@ def readable_date_from_epoch(e):
     return datetime.fromtimestamp(e/1000000-11644473600).strftime(DATEFORMAT)
 
 
+def epoch_from_readable_date(d):
+    """Returns epoch in microseconds since 1 January 1601 00:00 UTC"""
+    # type: (str) -> int
+    return int(datetime.fromisoformat(d).timestamp()*1000000)+11644473600
+
+
 def get_bookmark_information(d, fmt, path, position):
     res = {}
 
-    a = int(d.get('date_added'))
-    c = int(d.get('date_last_used'))
+    a = d.get('date_added')
+    c = d.get('date_last_used')
 
     dispatch = {
         'a': lambda: a,
-        'A': lambda: readable_date_from_epoch(a) if a else None,
+        'A': lambda: readable_date_from_epoch(int(a)) if a and int(a) else '',
         'c': lambda: c,
-        'C': lambda: readable_date_from_epoch(c) if c else None,
+        'C': lambda: readable_date_from_epoch(int(c)) if c and int(c) else '',
         'i': lambda: d.get('id'),
         'u': lambda: d.get('url'),
         'n': lambda: d.get('name'),
@@ -107,26 +118,71 @@ def get_bookmark_information(d, fmt, path, position):
     return res
 
 
-def get_bookmarks_folder_generator(d, fmt, path='', recursed=False):
+def get_bookmarks_folder_generator(d, fmt, update_after=None, path=''):
     if d.get('type') == 'folder':
+        if update_after and d.get('date_modified', 0) < update_after:
+            return
         position = 0
         path = f'{path}/{d.get('name')}'
         for c in d.get('children', []):
             if c.get('type') == 'folder':
-                yield from get_bookmarks_folder_generator(c, fmt, path, True)
+                yield from get_bookmarks_folder_generator(c, fmt, path)
             elif c.get('type') == 'url':
                 yield get_bookmark_information(c, fmt, path, position)
                 position += 1
 
 
-def get_bookmarks_toplevel_generator(d, fmt):
-    for g in [get_bookmarks_folder_generator(d.get(f, {}), fmt)
+def get_bookmarks_toplevel_generator(d, fmt, update_after=None):
+    for g in [get_bookmarks_folder_generator(d.get(f, {}), fmt, update_after)
               for f in TOPLEVEL_BOOKMARK_FOLDERS]:
         yield from g
 
 
-def get_bookmarks(d, fmt):
-    return list(get_bookmarks_toplevel_generator(d[BOOKMARK_ROOTS], fmt))
+def get_bookmarks(d, fmt, update_after=None):
+    return list(get_bookmarks_toplevel_generator(
+        d[BOOKMARK_ROOTS], fmt, update_after))
+
+
+def parse_csv(s):
+    # type: str -> list
+    res = []
+    rows = list(csv.DictReader(s.splitlines()))
+    keys = list(rows[0].keys())
+    for row in rows:
+        r = {}
+        for field in keys:
+            r[field] = row[field]
+        res.append(r)
+    return res
+
+
+def read_existing(path):
+    # type: str -> dict
+    existing = None
+    with open(path, "r") as f:
+        existing = parse_csv(f.read())
+    return existing
+
+
+def bhasfields(d, fmt, require_all=True):
+    # type: (dict, str, bool) -> bool
+    f = all if require_all else any
+    return f(BFORMATOPTIONS.get(c) in d for c in fmt)
+
+
+def bmerge(existing, new, fmt):
+    # type: (list, list, str) -> list
+    """Create dictionary from existing and new with only the fields in fmt
+    and no duplicate IDs/GUIDs
+    """
+    if not existing:
+        return new
+    i = 'id' if bhasfields(existing[0], 'i') else 'guid'
+    fields = [BFORMATOPTIONS[c] for c in fmt]
+    by_id = {d[i]: {k: d[k] for k in fields} for d in existing}
+    for d in new:
+        by_id[d[i]] = d
+    return list(by_id.values())
 
 
 class CsvOutput():
@@ -161,8 +217,8 @@ def export_csv(a):
 def cmd_b(args):
     save_to = args.save_to or DEFAULTSAVENAME
 
-    if args.update:
-        raise NotImplementedError()
+    existing = None
+    update_after = None
 
     # Fail fast if save file already exists and overwrite is False
     # unless update is True
@@ -175,10 +231,64 @@ def cmd_b(args):
                     'Run with -t/--save-to to specify a different save file.')
                 exit(1)
 
+            existing = read_existing(save_to)
+            if not len(existing):
+                msg('Existing is empty. Either the file is empty or something '
+                    'went wrong.' + S_UNDESIREDOVERWRITE)
+                exit(1)
+            one = existing[0]
+            # Check we have at least one of the date fields
+            if not bhasfields(one, 'aAcC', require_all=False):
+                msg('Existing data has no date fields. Without dates '
+                    'in the data there is no reference point, so everything '
+                    f'would have to be queried from scratch. {one}'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
+            # Check we have IDs or GUIDs
+            if not bhasfields(one, 'ig', require_all=False):
+                msg('Existing data has no IDs or GUIDs. Without identifiers '
+                    'in the data there is no way to know which bookmarks were '
+                    'modified.' + S_UNDESIREDOVERWRITE)
+                exit(1)
+            # Check format options are all there
+            if not bhasfields(one, args.format, require_all=True):
+                msg('Existing data does not contain all format '
+                    'options, so everything would have to be queried from '
+                    f'scratch. {one} | {args.format}'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
+            else:               # Proceed with the update
+                # Sort data in order to get the most recent date in it
+                a = c = 0
+                if bhasfields(one, 'a', require_all=False):
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['a']])
+                    a = existing[-1].get(BFORMATOPTIONS['a'])
+                elif bhasfields(one, 'A', require_all=False):
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['A']])
+                    A = existing[-1].get(BFORMATOPTIONS['A'])
+                    a = epoch_from_readable_date(A)
+                if bhasfields(one, 'c', require_all=False):
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['c']])
+                    c = existing[-1].get(BFORMATOPTIONS['c'])
+                elif bhasfields(one, 'C', require_all=False):
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['C']])
+                    C = existing[-1].get(BFORMATOPTIONS['C'])
+                    c = epoch_from_readable_date(C)
+                update_after = a if a > c else c
+                msg('Updating bookmarks after '
+                    f'{update_after} '
+                    f'({readable_date_from_epoch(int(update_after))})')
+
     with open(args.file, 'r') as f:
         data = json.load(f)
 
-    bookmarks = get_bookmarks(data, args.format)
+    bookmarks = get_bookmarks(data, args.format, update_after)
+
+    if update_after and not bookmarks:
+        msg("No new data")
+
+    bookmarks = bmerge(
+        existing, bookmarks, args.format) if update_after else bookmarks
 
     def sort_key(item):
         k = BFORMATOPTIONS[args.sort[0]]
