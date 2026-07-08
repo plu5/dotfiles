@@ -46,8 +46,6 @@ HFORMATOPTIONS = {
     'f': 'fk',
 }
 DEFAULTHFORMATOPTIONS = 'ifutvVds'
-INTFIELDS = ['visit epoch', 'id', 'from', 'transition', 'duration',
-             'engagement score', 'fk',]
 
 S_UNDESIREDOVERWRITE = """
 Exiting to avoid undesired overwriting.
@@ -188,7 +186,7 @@ def get_bookmarks(d, fmt, update_after=None):
         d[BOOKMARK_ROOTS], fmt, update_after))
 
 
-def hquery(fmt):
+def hquery(fmt, update_after=None):
     select = []
 
     q = {
@@ -219,6 +217,10 @@ def hquery(fmt):
         if 's' in fmt:
             res.append(
                 'LEFT OUTER JOIN clusters_and_visits c ON v.id = c.visit_id')
+        if update_after and 'id' in update_after:
+            res.append(f'WHERE v.id > {update_after['id']}')
+        elif update_after and 'epoch' in update_after:
+            res.append(f'WHERE v.visit_time > {update_after['epoch']}')
 
     return ' '.join(res)
 
@@ -231,7 +233,7 @@ def hformat(d):
 
 
 def parse_csv(s):
-    # type: str -> list
+    # type: (str) -> list
     res = []
     rows = list(csv.DictReader(s.splitlines()))
     keys = list(rows[0].keys())
@@ -244,7 +246,7 @@ def parse_csv(s):
 
 
 def read_existing(path):
-    # type: str -> dict
+    # type: (str) -> dict
     existing = None
     with open(path, "r") as f:
         existing = parse_csv(f.read())
@@ -255,6 +257,12 @@ def bhasfields(d, fmt, require_all=True):
     # type: (dict, str, bool) -> bool
     f = all if require_all else any
     return f(BFORMATOPTIONS.get(c) in d for c in fmt)
+
+
+def hhasfields(d, fmt, require_all=True):
+    # type: (dict, str, bool) -> bool
+    f = all if require_all else any
+    return f(HFORMATOPTIONS.get(c) in d for c in fmt)
 
 
 def bmerge(existing, new, fmt):
@@ -270,6 +278,14 @@ def bmerge(existing, new, fmt):
     for d in new:
         by_id[d[i]] = d
     return list(by_id.values())
+
+
+def hmerge(existing, new, fmt):
+    # type: (list, list, str) -> list
+    # Merge visits with existing but only the fields in fmt as there
+    # may be fields in existing that are not in current fmt
+    fields = [HFORMATOPTIONS[c] for c in fmt]
+    return [{k: d[k] for k in fields} for d in existing] + new
 
 
 class CsvOutput():
@@ -401,6 +417,97 @@ def cmd_b(args):
         print(dump)
 
 
+def cmd_h(args):
+    existing = None
+    update_after = None
+
+    # Fail fast if save file already exists and overwrite is False
+    # unless update is True
+    if args.save and not args.overwrite:
+        if os.path.exists(args.save_to):
+            if not args.update:
+                msg(f'Save file \'{args.save_to}\' already exists. '
+                    'Run with -u/--update if you wish to update it. '
+                    'Run with -o/--overwrite if you wish to overwrite it. '
+                    'Run with -t/--save-to to specify a different save file.')
+                exit(1)
+
+            existing = read_existing(args.save_to)
+            if not len(existing):
+                msg('Existing is empty. Either the file is empty or something '
+                    'went wrong.' + S_UNDESIREDOVERWRITE)
+                exit(1)
+            one = existing[0]
+            # Check we have dates or IDs
+            if not hhasfields(one, 'vVi', require_all=False):
+                msg('Existing data has no dates or IDs. One of the dates or '
+                    'ID fields needs to be present to have a reference point '
+                    f'to update from. {one}' + S_UNDESIREDOVERWRITE)
+                exit(1)
+            # Check format options are all there
+            if not hhasfields(one, args.format, require_all=True):
+                msg('Existing data does not contain all format '
+                    'options, so everything would have to be queried from '
+                    f'scratch. {one} | {args.format}'
+                    + S_UNDESIREDOVERWRITE)
+                exit(1)
+            else:               # Proceed with the update
+                # Sort data in order to get the most recent ID/date in it
+                if hhasfields(one, 'i'):
+                    existing.sort(key=lambda r: r[HFORMATOPTIONS['i']])
+                    update_after = {'id': existing[-1][HFORMATOPTIONS['i']]}
+                elif hhasfields(one, 'v'):
+                    existing.sort(key=lambda r: r[HFORMATOPTIONS['v']])
+                    update_after = {'epoch': existing[-1][HFORMATOPTIONS['v']]}
+                elif hhasfields(one, 'V'):
+                    existing.sort(key=lambda r: r[BFORMATOPTIONS['V']])
+                    V = existing[-1].get(BFORMATOPTIONS['V'])
+                    update_after = {'epoch': epoch_from_readable_date(V)}
+                msg('Updating bookmarks after '
+                    f'{update_after}' +
+                    (f' ({readable_date_from_epoch(update_after['epoch'])})'
+                     if 'epoch' in update_after else ''))
+
+    with sqlite3.connect(
+            f"file:{args.file}?mode=ro&nolock=1", uri=True) as con:
+        con.row_factory = sqlite3.Row
+        con.text_factory = lambda data: str(data, errors="surrogateescape")
+        cur = con.cursor()
+        res = cur.execute(hquery(args.format, update_after))
+
+    visits = [hformat(dict(s)) for s in res]
+
+    if update_after and not visits:
+        msg("No new visits")
+
+    visits = hmerge(existing, visits, args.format) if update_after else visits
+
+    def sort_key(item):
+        k = HFORMATOPTIONS[args.sort[0]]
+        data_to_sort_by = item.get(k, None)
+        if data_to_sort_by is None:
+            msg(f"{k} not in entry data")
+            data_to_sort_by = ''
+        # To avoid issues sorting existing+new data, because existing
+        # data is all strings due to csv having no types distinction
+        return str(data_to_sort_by)
+
+    if args.sort:
+        reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
+        msg(f'Sorting by {args.sort[0]}{" in reverse" if reverse else ""}')
+        visits.sort(key=sort_key, reverse=reverse)
+
+    dump = export_csv(visits)
+
+    if args.save and not args.dryrun:
+        open_as = 'w' if args.overwrite or args.update else 'x'
+        with open(args.save_to, open_as) as f:
+            f.write(dump)
+            msg(f'Wrote to {args.save_to}')
+    else:
+        print(dump)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(prog=PROG)
     parser.suggest_on_error = True
@@ -427,54 +534,6 @@ def parse_args():
     # Parse args / print help and quit if no args
     # (Primer https://stackoverflow.com/a/47440202/18396947)
     return parser.parse_args(sys.argv[1:] or ['--help'])
-
-
-def cmd_h(args):
-    if args.update:
-        raise NotImplementedError()
-
-    # Fail fast if save file already exists and overwrite is False
-    # unless update is True
-    if args.save and not args.overwrite:
-        if os.path.exists(args.save_to):
-            if not args.update:
-                msg(f'Save file \'{args.save_to}\' already exists. '
-                    'Run with -u/--update if you wish to update it. '
-                    'Run with -o/--overwrite if you wish to overwrite it. '
-                    'Run with -t/--save-to to specify a different save file.')
-                exit(1)
-
-    with sqlite3.connect(
-            f"file:{args.file}?mode=ro&nolock=1", uri=True) as con:
-        con.row_factory = sqlite3.Row
-        con.text_factory = lambda data: str(data, errors="surrogateescape")
-        cur = con.cursor()
-        res = cur.execute(hquery(args.format))
-
-    visits = [hformat(dict(s)) for s in res]
-
-    def sort_key(item):
-        k = HFORMATOPTIONS[args.sort[0]]
-        data_to_sort_by = item.get(k, None)
-        if data_to_sort_by is None:
-            msg(f"{k} not in entry data")
-            data_to_sort_by = 0 if k in INTFIELDS else ''
-        return data_to_sort_by
-
-    if args.sort:
-        reverse = True if len(args.sort) > 1 and args.sort[1] == 'r' else False
-        msg(f'Sorting by {args.sort[0]}{" in reverse" if reverse else ""}')
-        visits.sort(key=sort_key, reverse=reverse)
-
-    dump = export_csv(visits)
-
-    if args.save and not args.dryrun:
-        open_as = 'w' if args.overwrite or args.update else 'x'
-        with open(args.save_to, open_as) as f:
-            f.write(dump)
-            msg(f'Wrote to {args.save_to}')
-    else:
-        print(dump)
 
 
 COMMANDS['b']['func'] = cmd_b
