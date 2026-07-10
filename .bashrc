@@ -35,6 +35,10 @@ alias rlshorodatagen='find . | while read f; do echo $(ntfsbirth "$f" "%F %H:%M"
 # >:-(
 PROMPT_COMMAND='history -a'
 
+shopt -s histappend
+HISTSIZE=1000000
+HISTFILESIZE=2000000
+
 # afficher birthtime d'un fichier ntfs avec `ntfsbirth 'path'`
 ntfsbirth() {
     [ -z "$1" ] && echo "usage: ntfsbirth <file> [date-format]" && return
