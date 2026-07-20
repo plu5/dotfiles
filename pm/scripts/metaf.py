@@ -13,6 +13,7 @@ Known issues:
    specify your own name/path for the save file with --save-to.
 """
 import os
+import re
 import csv
 import json
 import time
@@ -171,8 +172,8 @@ def get_file_information(path, fmt, existing=None):
 
 
 def get_files_information_recursively(
-        parent_path, fmt, include_subdirs=False, existing=None):
-    # type: (str, str, bool, dict | None) -> dict
+        parent_path, fmt, include_subdirs=False, existing=None, blacklist=[]):
+    # type: (str, str, bool, dict | None, list[str]) -> dict
     """Recurse PARENT_PATH and get information recursively about each
     file. FMT defines which information to get about each file. If
     INCLUDE_SUBDIRS, get information about subdirectories
@@ -183,8 +184,11 @@ def get_files_information_recursively(
     """
     files_info_dict = {}
 
-    def process_file_or_subdir(root, name, is_subdir=False):
-        # type: (str, str, bool) -> None
+    def process_file_or_subdir(root, name, is_subdir=False, blacklist=[]):
+        # type: (str, str, bool, list[str]) -> None
+        for b in blacklist:
+            if re.fullmatch(b, name):
+                return
         p = os.path.join(root, name)
         rel_p = os.path.relpath(p, parent_path)
         e = existing.get(rel_p) if existing else None
@@ -202,9 +206,9 @@ def get_files_information_recursively(
     for root, subdirs, files in os.walk(parent_path):
         if include_subdirs:
             for f in subdirs:
-                process_file_or_subdir(root, f, is_subdir=True)
+                process_file_or_subdir(root, f, True, blacklist)
         for f in files:
-            process_file_or_subdir(root, f)
+            process_file_or_subdir(root, f, False, blacklist)
 
     return files_info_dict
 
@@ -323,6 +327,9 @@ def parse_args():
         '-a', '--all', action='store_true',
         help='Include metadata for directories too.')
     parser.add_argument(
+        '--blacklist', nargs='+',
+        help='Regexes matching (fullmatch) names to exclude from the output.')
+    parser.add_argument(
         '-s', '--save', action='store_true',
         help='Save output to file instead of printing to stdout. '
         f'Will save to PATH/{DEFAULTSAVENAME} unless a different path '
@@ -396,7 +403,7 @@ def main():
     now = time.time()
 
     d = get_files_information_recursively(
-        parent_path, args.format, args.all, existing)
+        parent_path, args.format, args.all, existing, args.blacklist)
 
     def sort_key(item):
         key, value = item
