@@ -36,6 +36,11 @@ DEFAULTFORMATOPTIONS = 'CcMm'
 
 QUIET = False
 
+DEFAULTRECURSIONBLACKLIST = [
+    '\\.git', '__pycache__', '\\.tox', '\\.mypy_cache', '\\.pytest_cache',
+    'node_modules', '\\.venv', '\\.cache', '__astcache',
+]
+
 MAGICCSVKEYPREFIX = '<<metaf:'
 
 
@@ -357,8 +362,11 @@ def parse_args():
         '--blacklist', nargs='+', default=[],
         help='Regexes matching (fullmatch) names to exclude from the output.')
     parser.add_argument(
-        '--blacklist-recursion', nargs='+', default=[],
-        help='Regexes matching (fullmatch) names of folders to not enter.')
+        '--blacklist-recursion', nargs='+',
+        default=DEFAULTRECURSIONBLACKLIST,
+        help='Regexes matching (fullmatch) names of folders to not enter. '
+        'This is populated with standard defaults like .git and .cache. '
+        'Run with --blacklist-recursion \'\' if this is undesired.')
     parser.add_argument(
         '-s', '--save', action='store_true',
         help='Save output to file instead of printing to stdout. '
