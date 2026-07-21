@@ -178,8 +178,8 @@ def get_file_information(path, fmt, existing=None):
 
 def get_files_information_recursively(
         parent_path, fmt, include_subdirs=False, existing=None,
-        blacklist=[], rblacklist=[]):
-    # type: (str, str, bool, dict | None, list[str]) -> dict
+        blacklist=[], rblacklist=[], topdown=True):
+    # type: (str, str, bool, dict | None, list[str], list[str], bool) -> dict
     """Recurse PARENT_PATH and get information recursively about each
     file. FMT defines which information to get about each file. If
     INCLUDE_SUBDIRS, get information about subdirectories
@@ -222,7 +222,7 @@ def get_files_information_recursively(
                 return True
         return False
 
-    for root, subdirs, files in os.walk(parent_path):
+    for root, subdirs, files in os.walk(parent_path, topdown):
         if blacklisted(os.path.basename(root), rblacklist):
             msg(f'Skipping blacklisted path {root}')
             blacklistedroots.append(root)
@@ -359,6 +359,11 @@ def parse_args():
         '-a', '--all', action='store_true',
         help='Include metadata for directories too.')
     parser.add_argument(
+        '--topdown', action='store_true', default=True,
+        help='Topdown argument passed to os.walk. '
+        'True is passed by default, resulting in top-level files shown first '
+        'before going into each (if no sort).')
+    parser.add_argument(
         '--blacklist', nargs='+', default=[],
         help='Regexes matching (fullmatch) names to exclude from the output.')
     parser.add_argument(
@@ -442,7 +447,7 @@ def main():
 
     d = get_files_information_recursively(
         parent_path, args.format, args.all, existing,
-        args.blacklist, args.blacklist_recursion)
+        args.blacklist, args.blacklist_recursion, args.topdown)
 
     def sort_key(item):
         key, value = item
