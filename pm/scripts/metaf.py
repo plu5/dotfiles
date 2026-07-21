@@ -207,9 +207,22 @@ def get_files_information_recursively(
                 return True
         return False
 
+    blacklistedroots = []
+
+    def startswith_blacklistedroot(root):
+        # type: (str, list[str]) -> bool
+        for r in blacklistedroots:
+            if root.startswith(os.path.join(r, '')):
+                return True
+        return False
+
     for root, subdirs, files in os.walk(parent_path):
         if blacklisted(os.path.basename(root), blacklist):
             msg(f'Skipping blacklisted path {root}')
+            blacklistedroots.append(root)
+            continue
+        if startswith_blacklistedroot(root):
+            msg(f'Skipping blacklisted nested path {root}')
             continue
         if include_subdirs:
             for f in subdirs:
