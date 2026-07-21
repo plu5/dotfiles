@@ -38,7 +38,7 @@ QUIET = False
 
 DEFAULTRECURSIONBLACKLIST = [
     '\\.git', '__pycache__', '\\.tox', '\\.mypy_cache', '\\.pytest_cache',
-    'node_modules', '\\.venv', '\\.cache', '__astcache',
+    'node_modules', '\\.venv', '\\.cache', '__astcache', 'shader_cache',
 ]
 
 MAGICCSVKEYPREFIX = '<<metaf:'
