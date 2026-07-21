@@ -184,11 +184,8 @@ def get_files_information_recursively(
     """
     files_info_dict = {}
 
-    def process_file_or_subdir(root, name, is_subdir=False, blacklist=[]):
-        # type: (str, str, bool, list[str]) -> None
-        for b in blacklist:
-            if re.fullmatch(b, name):
-                return
+    def process_file_or_subdir(root, name, is_subdir=False):
+        # type: (str, str, bool) -> None
         p = os.path.join(root, name)
         rel_p = os.path.relpath(p, parent_path)
         e = existing.get(rel_p) if existing else None
@@ -203,12 +200,28 @@ def get_files_information_recursively(
                 msg(f'{p} not found - broken symlink? Exception: {e}'
                     '\nSkipping.')
 
+    def blacklisted(name, blacklist=[]):
+        # type: (str, list[str]) -> bool
+        for b in blacklist:
+            if re.fullmatch(b, name):
+                return True
+        return False
+
     for root, subdirs, files in os.walk(parent_path):
+        if blacklisted(os.path.basename(root), blacklist):
+            msg(f'Skipping blacklisted path {root}')
+            continue
         if include_subdirs:
             for f in subdirs:
-                process_file_or_subdir(root, f, True, blacklist)
+                if blacklisted(f, blacklist):
+                    msg(f'Skipping blacklisted subdir {f}')
+                    continue
+                process_file_or_subdir(root, f, True)
         for f in files:
-            process_file_or_subdir(root, f, False, blacklist)
+            if blacklisted(f, blacklist):
+                msg(f'Skipping blacklisted file {f}')
+                continue
+            process_file_or_subdir(root, f, False)
 
     return files_info_dict
 
