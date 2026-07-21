@@ -172,7 +172,8 @@ def get_file_information(path, fmt, existing=None):
 
 
 def get_files_information_recursively(
-        parent_path, fmt, include_subdirs=False, existing=None, blacklist=[]):
+        parent_path, fmt, include_subdirs=False, existing=None,
+        blacklist=[], rblacklist=[]):
     # type: (str, str, bool, dict | None, list[str]) -> dict
     """Recurse PARENT_PATH and get information recursively about each
     file. FMT defines which information to get about each file. If
@@ -210,14 +211,14 @@ def get_files_information_recursively(
     blacklistedroots = []
 
     def startswith_blacklistedroot(root):
-        # type: (str, list[str]) -> bool
+        # type: (str) -> bool
         for r in blacklistedroots:
             if root.startswith(os.path.join(r, '')):
                 return True
         return False
 
     for root, subdirs, files in os.walk(parent_path):
-        if blacklisted(os.path.basename(root), blacklist):
+        if blacklisted(os.path.basename(root), rblacklist):
             msg(f'Skipping blacklisted path {root}')
             blacklistedroots.append(root)
             continue
@@ -353,8 +354,11 @@ def parse_args():
         '-a', '--all', action='store_true',
         help='Include metadata for directories too.')
     parser.add_argument(
-        '--blacklist', nargs='+',
+        '--blacklist', nargs='+', default=[],
         help='Regexes matching (fullmatch) names to exclude from the output.')
+    parser.add_argument(
+        '--blacklist-recursion', nargs='+', default=[],
+        help='Regexes matching (fullmatch) names of folders to not enter.')
     parser.add_argument(
         '-s', '--save', action='store_true',
         help='Save output to file instead of printing to stdout. '
@@ -429,7 +433,8 @@ def main():
     now = time.time()
 
     d = get_files_information_recursively(
-        parent_path, args.format, args.all, existing, args.blacklist)
+        parent_path, args.format, args.all, existing,
+        args.blacklist, args.blacklist_recursion)
 
     def sort_key(item):
         key, value = item
