@@ -177,9 +177,16 @@ def get_file_information(path, fmt, existing=None):
 
 
 def get_files_information_recursively(
-        parent_path, fmt, include_subdirs=False, existing=None,
-        blacklist=[], rblacklist=[], topdown=True):
-    # type: (str, str, bool, dict | None, list[str], list[str], bool) -> dict
+        parent_path,            # type: str
+        fmt,                    # type: str
+        include_subdirs=False,  # type: bool
+        existing=None,          # type: dict | None
+        blacklist=[],           # type: list[str]
+        rblacklist=[],          # type: list[str]
+        topdown=True,           # type: bool
+        limit=None              # type: int | None
+):
+    # type: (...) -> dict
     """Recurse PARENT_PATH and get information recursively about each
     file. FMT defines which information to get about each file. If
     INCLUDE_SUBDIRS, get information about subdirectories
@@ -222,6 +229,8 @@ def get_files_information_recursively(
                 return True
         return False
 
+    nsep = parent_path.count(os.path.sep)
+
     for root, subdirs, files in os.walk(parent_path, topdown):
         if blacklisted(os.path.basename(root), rblacklist):
             msg(f'Skipping blacklisted path {root}')
@@ -241,6 +250,9 @@ def get_files_information_recursively(
                 msg(f'Skipping blacklisted file {f}')
                 continue
             process_file_or_subdir(root, f, False)
+        nsep_cur = root.count(os.path.sep)
+        if limit is not None and nsep + limit <= nsep_cur:
+            del subdirs[:]
 
     return files_info_dict
 
@@ -373,6 +385,11 @@ def parse_args():
         'This is populated with standard defaults like .git and .cache. '
         'Run with --blacklist-recursion \'\' if this is undesired.')
     parser.add_argument(
+        '--depth-limit', type=int,
+        help='Avoid going deeper than a given level into nested subfolders. '
+        '0 or negative values means do not recurse (top-level items only). '
+        'Only works when topdown is True (which is the default).')
+    parser.add_argument(
         '-s', '--save', action='store_true',
         help='Save output to file instead of printing to stdout. '
         f'Will save to PATH/{DEFAULTSAVENAME} unless a different path '
@@ -449,7 +466,8 @@ def main():
 
     d = get_files_information_recursively(
         parent_path, args.format, args.all, existing,
-        args.blacklist, args.blacklist_recursion, topdown)
+        args.blacklist, args.blacklist_recursion,
+        topdown, args.depth_limit)
 
     def sort_key(item):
         key, value = item
