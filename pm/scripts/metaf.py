@@ -359,10 +359,10 @@ def parse_args():
         '-a', '--all', action='store_true',
         help='Include metadata for directories too.')
     parser.add_argument(
-        '--topdown', action='store_true', default=True,
-        help='Topdown argument passed to os.walk. '
-        'True is passed by default, resulting in top-level files shown first '
-        'before going into each (if no sort).')
+        '--bottomup', action='store_true', default=False,
+        help='Pass topdown=False argument to os.walk. '
+        'topdown=True is passed by default, resulting in top-level files '
+        'shown first before going into each (if no sort).')
     parser.add_argument(
         '--blacklist', nargs='+', default=[],
         help='Regexes matching (fullmatch) names to exclude from the output.')
@@ -445,9 +445,11 @@ def main():
 
     now = time.time()
 
+    topdown = not args.bottomup
+
     d = get_files_information_recursively(
         parent_path, args.format, args.all, existing,
-        args.blacklist, args.blacklist_recursion, args.topdown)
+        args.blacklist, args.blacklist_recursion, topdown)
 
     def sort_key(item):
         key, value = item
