@@ -28,9 +28,9 @@ alias poschrom="chrom2csv h ~/.config/chromium/Default/History -st ~/OneDrive/ba
 alias poschromb="chrom2csv b ~/.config/chromium/Default/Bookmarks -st ~/OneDrive/backups/historybackups/poschromb.csv --update --sort a"
 
 # ls avec date de modification et création, trié par ce dernier
-alias lshorodatage='shopt -s dotglob && stat * --format "%.16w %.16y %n" | sort -n'
+alias lshorodatage='shopt -s dotglob && stat --format "%.16w %.16y %n" -- * | sort -n'
 # seulement date de modification, trié par ce dernier
-alias lshorodatagem='shopt -s dotglob && stat * --format "%.16y %n" | sort -n'
+alias lshorodatagem='shopt -s dotglob && stat --format "%.16y %n" -- * | sort -n'
 # lshorodatage avec date de création ntfs
 alias lshorodatagen='for f in *; do echo $(ntfsbirth "$f" "%F %H:%M") $(date -r "$f" "+%F %H:%M") $f; done | sort -n'
 # version recursive
