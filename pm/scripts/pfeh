@@ -13,6 +13,8 @@
 
 IMAGESDIR=/home/pm/pm/r
 
+[ -n "$1" ] && IMAGESDIR=$1
+
 cmd=(
     feh
     # rename
