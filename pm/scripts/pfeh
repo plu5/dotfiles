@@ -8,28 +8,30 @@
 # - script prename (for rename)
 # - script fehfavoris (for saving and loading favourites)
 # - mpv (for open in mpv)
+#
+# Note: feh's %F includes quotes, so don't put more quotes around it
 
 IMAGESDIR=/home/pm/pm/r
 
 cmd=(
     feh
     # rename
-    --action 'notify-send "$(prename "%F")"'
+    --action 'notify-send "$(prename %F)"'
     # file type and size
-    --action9 'notify-send "$(file "%F")"'
+    --action9 'notify-send "$(file %F)"'
     # file dates
-    --action8 'notify-send "$(stat "%F")"'
+    --action8 'notify-send "$(stat %F)"'
     # copy path
-    --action7 'echo -n "%F" | xclip -selection clipboard'
+    --action7 'echo -n %F | xclip -selection clipboard'
     # copy image. should maybe be image/%t, but with that it doesn't work
     # everywhere, for example pasting into imgur doesn't work
     --action6 'xclip -selection clipboard -t image/png -i %F'
     # open in mpv. useful for gifs, which feh can't play
-    --action5 'mpv "%F"'
+    --action5 'mpv %F'
     # open favourites
     --action1 'fehfavoris'
     # save to favourites
-    --action2 'fehfavoris "%F"'
+    --action2 'fehfavoris %F'
     # scale to fit
     --scale-down
     # sort by modification date
