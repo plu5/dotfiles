@@ -22,6 +22,10 @@ alias connecthotspot='sudo systemctl start usbmuxd'
 alias archupgrade='sudo pacman -Syyu 2>&1 | tee ~/OneDrive/Documents/archupgrade.txt'
 alias restartmouse='sudo modprobe -r psmouse && sudo modprobe psmouse'
 alias doentrycount='ls "/media/pnotes/Day One/Journal.dayone/entries/" | grep -c "^[A-Z0-9]*\.doentry$"'
+alias posplaces="places2csv h /home/pm/.mozilla/firefox/4afxl8gu.default-release/places.sqlite -st ~/OneDrive/backups/historybackups/posplaces.csv --update --sort v"
+alias posplacesb="places2csv b /home/pm/.mozilla/firefox/4afxl8gu.default-release/places.sqlite -st ~/OneDrive/backups/historybackups/posplacesb.csv --update --sort a"
+alias poschrom="chrom2csv h ~/.config/chromium/Default/History -st ~/OneDrive/backups/historybackups/poschrom.csv --update --sort v"
+alias poschromb="chrom2csv b ~/.config/chromium/Default/Bookmarks -st ~/OneDrive/backups/historybackups/poschromb.csv --update --sort a"
 
 # ls avec date de modification et création, trié par ce dernier
 alias lshorodatage='shopt -s dotglob && stat * --format "%.16w %.16y %n" | sort -n'
