@@ -1,0 +1,87 @@
+#!/usr/bin/env sh
+# interlacevids - download and interlace two videos
+# 2026-08-12 04:54
+#
+# Dependencies:
+# - yt-dlp
+# - ffmpeg
+#
+# Usage:
+# mkdir dirforvideofiles
+# interlacevids youtube.com/watch?v=xyLRG5P-HSU youtube.com/watch?v=w4OHnWwS5d0
+
+NOM="${0##*/}"
+V1="$NOM-vid1"
+V2="$NOM-vid2"
+YTDLPARGS="-f worst"
+SUBDIR="segments"
+T=30  # Size of each segment in seconds
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+    printf "$NOM: requires 2 arguments (video links)\n"
+    exit 1
+fi
+
+if [ "$3" != "--nodownload" ]; then
+    yt-dlp $YTDLPARGS -o "$V1" "$1"
+
+    if [ $? != 0 ]; then
+        printf "$NOM: fatal: video 1 download failed\n"
+        exit 1
+    fi
+
+    yt-dlp $YTDLPARGS -o "$V2" "$2"
+
+    if [ $? != 0 ]; then
+        printf "$NOM: fatal: video 2 download failed\n"
+        exit 1
+    fi
+fi
+
+mkdir "$SUBDIR"
+
+if [ $? != 0 ]; then
+    printf "$NOM: fatal: can't create $SUBDIR subdir\n"
+    exit 1
+fi
+
+cd "$SUBDIR"
+
+ffmpeg -i ../"$V1" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid1-%03d.mp4
+
+ffmpeg -i ../"$V2" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid2-%03d.mp4
+
+python3 <<PY
+from pathlib import Path
+
+a = sorted(Path(".").glob("vid1-*"))
+b = sorted(Path(".").glob("vid2-*"))
+
+segments = []
+
+for i in range(max(len(a), len(b))):
+    if i < len(a):
+        segments.append((a[i], f"vid1 segment {i + 1}"))
+    if i < len(b):
+        segments.append((b[i], f"vid2 segment {i + 1}"))
+
+with open("concat.txt", "w", encoding="utf-8") as f:
+    for path, _ in segments:
+        f.write(f"file '{path}'\n")
+
+with open("chapters.txt", "w", encoding="utf-8") as f:
+    f.write(";FFMETADATA1\n\n")
+
+    for i, (_, title) in enumerate(segments):
+        start = i * ${T}_000
+        end = (i + 1) * ${T}_000
+
+        f.write("[CHAPTER]\n")
+        f.write("TIMEBASE=1/1000\n")
+        f.write(f"START={start}\n")
+        f.write(f"END={end}\n")
+        f.write(f"title={title}\n\n")
+PY
+
+cd ..
+ffmpeg -f concat -safe 0 -i "$SUBDIR/concat.txt" -i "$SUBDIR/chapters.txt" -map 0 -map_metadata 1 -c copy interlaced.mp4

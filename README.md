@@ -129,6 +129,8 @@ in [./pm/scripts](pm/scripts)
     Data extraction from places.sqlite (Firefox history and bookmarks)
 45. [**chrom2csv**](pm/scripts/chrom2csv): 2026-07-06 19:19  
     Like places2csv but for Chromium
+46. [**interlacevids**](pm/scripts/interlacevids): 2026-08-12 04:54  
+    Downloads videos with yt-dlp, then using ffmpeg cuts them into segments and makes one video that alternates between them.
 
 ## TODO
 - **add screenshots**  
