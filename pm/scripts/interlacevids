@@ -32,6 +32,7 @@ Usage: $NOM [options] link1 link2 ...
 Options:
 
 -h | --help   Show this help text and exit.
+-t=N          Split into segments of N seconds (default: $T seconds).
 --nodownload  Don't download the video links (will use existing "$NOM-vid\$i"
               files).
 --noreencode  Don't re-encode segments. This is much faster for when you know
@@ -52,6 +53,9 @@ while [ $# -gt 0 ]; do
         -h|--help)
             help
             exit;;
+        -t=*)
+            T="${1#-t=}"
+            echo "$NOM: Segment length $T";;
         --nodownload)
             nodownload_flag=1;;
         --noreencode)
@@ -60,7 +64,7 @@ while [ $# -gt 0 ]; do
             shift
             break;;
         -*)
-            echo "$NAME: Unknown option $1" >&2
+            echo "$NOM: Unknown option $1" >&2
             exit 1;;
         *)
             break;;
