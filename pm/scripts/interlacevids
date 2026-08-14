@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# interlacevids - download and interlace two videos
+# interlacevids - download and interlace two or more videos
 # 2026-08-12 04:54
 #
 # Dependencies:
@@ -11,59 +11,102 @@
 # interlacevids youtube.com/watch?v=xyLRG5P-HSU youtube.com/watch?v=w4OHnWwS5d0
 
 NOM="${0##*/}"
-V1="$NOM-vid1"
-V2="$NOM-vid2"
 YTDLPARGS="-f worst"
 SUBDIR="segments"
 T=30  # Size of each segment in seconds
 
+help() {
+    cat <<EOF
+Usage: $NOM [options] link1 link2 ...
+
+Options:
+
+-h | --help   Show this help text and exit.
+--nodownload  Don't download the video links (will use existing "$NOM-vid\$i"
+              files).
+
+Examples:
+* $NOM youtube.com/watch?v=xyLRG5P-HSU youtube.com/watch?v=w4OHnWwS5d0
+EOF
+}
+
+nodownload_flag=0
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            help
+            exit;;
+        --nodownload)
+            nodownload_flag=1;;
+        --)
+            shift
+            break;;
+        -*)
+            echo "$NAME: Unknown option $1" >&2
+            exit 1;;
+        *)
+            break;;
+    esac
+    shift
+done
+
 if [ -z "$1" ] || [ -z "$2" ]; then
-    printf "$NOM: requires 2 arguments (video links)\n"
+    printf "$NOM: requires 2 or more video links\n"
     exit 1
 fi
 
-if [ "$3" != "--nodownload" ]; then
-    yt-dlp $YTDLPARGS -o "$V1" "$1"
+i=1
 
-    if [ $? != 0 ]; then
-        printf "$NOM: fatal: video 1 download failed\n"
-        exit 1
-    fi
+if [ "$nodownload_flag" = 0 ]; then
+    for lien in "$@"; do
+        V="$NOM-vid$i"
 
-    yt-dlp $YTDLPARGS -o "$V2" "$2"
+        if ! yt-dlp $YTDLPARGS -o "$V" "$lien"; then
+            printf '%s: fatal: video %d download failed\n' "$NOM" "$i" >&2
+            exit 1
+        fi
 
-    if [ $? != 0 ]; then
-        printf "$NOM: fatal: video 2 download failed\n"
-        exit 1
-    fi
+        i=$((i + 1))
+    done
 fi
 
-mkdir "$SUBDIR"
-
-if [ $? != 0 ]; then
+if ! mkdir "$SUBDIR"; then
     printf "$NOM: fatal: can't create $SUBDIR subdir\n"
     exit 1
 fi
 
 cd "$SUBDIR"
 
-ffmpeg -i ../"$V1" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid1-%03d.mp4
+i=1
 
-ffmpeg -i ../"$V2" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid2-%03d.mp4
+for lien in "$@"; do
+    V="$NOM-vid$i"
+
+    if ! ffmpeg -i ../"$V" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid$i-%03d.mp4; then
+        printf '%s: fatal: cutting video %d into segments failed\n' "$NOM" "$i" >&2
+        exit 1
+    fi
+
+    i=$((i + 1))
+done
+
+i=$((i - 1))
 
 python3 <<PY
 from pathlib import Path
 
-a = sorted(Path(".").glob("vid1-*"))
-b = sorted(Path(".").glob("vid2-*"))
+vids = {}
+
+for i in range(1, ${i} + 1):
+    vids[i] = sorted(Path(".").glob(f"vid{i}-*"))
 
 segments = []
 
-for i in range(max(len(a), len(b))):
-    if i < len(a):
-        segments.append((a[i], f"vid1 segment {i + 1}"))
-    if i < len(b):
-        segments.append((b[i], f"vid2 segment {i + 1}"))
+for i in range(max(len(v) for v in vids.values())):
+    for k, v in vids.items():
+        if i < len(v):
+            segments.append((v[i], f"vid{k} segment {i + 1}"))
 
 with open("concat.txt", "w", encoding="utf-8") as f:
     for path, _ in segments:
