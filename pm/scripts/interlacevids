@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # interlacevids - download and interlace two or more videos
 # 2026-08-12 04:54
 #
@@ -10,10 +10,20 @@
 # mkdir dirforvideofiles
 # interlacevids youtube.com/watch?v=xyLRG5P-HSU youtube.com/watch?v=w4OHnWwS5d0
 
+set -euxo pipefail
+
 NOM="${0##*/}"
 YTDLPARGS="-f worst"
+OUT="interlaced.mp4"
+T=60  # Size of each segment in seconds
+
+# Only used when --noreencode
 SUBDIR="segments"
-T=30  # Size of each segment in seconds
+
+# Only used when no --noreencode
+WIDTH=640
+HEIGHT=360
+FPS=30
 
 help() {
     cat <<EOF
@@ -24,6 +34,10 @@ Options:
 -h | --help   Show this help text and exit.
 --nodownload  Don't download the video links (will use existing "$NOM-vid\$i"
               files).
+--noreencode  Don't re-encode segments. This is much faster for when you know
+              the videos are compatible. It will result in imprecise segment
+              lengths. If the videos are not compatible, there will be
+              errors and glitches in the resulting video.
 
 Examples:
 * $NOM youtube.com/watch?v=xyLRG5P-HSU youtube.com/watch?v=w4OHnWwS5d0
@@ -31,6 +45,7 @@ EOF
 }
 
 nodownload_flag=0
+noreencode_flag=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -39,6 +54,8 @@ while [ $# -gt 0 ]; do
             exit;;
         --nodownload)
             nodownload_flag=1;;
+        --noreencode)
+            noreencode_flag=1;;
         --)
             shift
             break;;
@@ -56,38 +73,39 @@ if [ -z "$1" ] || [ -z "$2" ]; then
     exit 1
 fi
 
+files=()
 i=1
 
-if [ "$nodownload_flag" = 0 ]; then
-    for lien in "$@"; do
-        V="$NOM-vid$i"
-
+for lien in "$@"; do
+    V="$NOM-vid$i"
+    if [ "$nodownload_flag" = 0 ]; then
         if ! yt-dlp $YTDLPARGS -o "$V" "$lien"; then
             printf '%s: fatal: video %d download failed\n' "$NOM" "$i" >&2
             exit 1
         fi
+    fi
+    files+=($V)
+    i=$((i + 1))
+done
 
-        i=$((i + 1))
-    done
-fi
+# Two different pathways:
+# 1. --noreencode
+#    (split into segments in segments subdir + concat copy. faster)
+# 2. no --noreencode
+#    (filter complex inplace. slower)
 
-if ! mkdir "$SUBDIR"; then
-    printf "$NOM: fatal: can't create $SUBDIR subdir\n"
-    exit 1
-fi
-
+# ===============
+# 1. --noreencode
+# ===============
+if [ "$noreencode_flag" = 1 ]; then
+mkdir "$SUBDIR"
 cd "$SUBDIR"
 
 i=1
 
 for lien in "$@"; do
     V="$NOM-vid$i"
-
-    if ! ffmpeg -i ../"$V" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid$i-%03d.mp4; then
-        printf '%s: fatal: cutting video %d into segments failed\n' "$NOM" "$i" >&2
-        exit 1
-    fi
-
+    ffmpeg -i ../"$V" -map 0 -c copy -f segment -segment_time "$T" -reset_timestamps 1 vid$i-%03d.mp4
     i=$((i + 1))
 done
 
@@ -118,6 +136,7 @@ with open("chapters.txt", "w", encoding="utf-8") as f:
     for i, (_, title) in enumerate(segments):
         start = i * ${T}_000
         end = (i + 1) * ${T}_000
+filter+="${concat}concat=n=${segments}:v=1:a=1[vout][aout]"
 
         f.write("[CHAPTER]\n")
         f.write("TIMEBASE=1/1000\n")
@@ -127,4 +146,57 @@ with open("chapters.txt", "w", encoding="utf-8") as f:
 PY
 
 cd ..
-ffmpeg -f concat -safe 0 -i "$SUBDIR/concat.txt" -i "$SUBDIR/chapters.txt" -map 0 -map_metadata 1 -c copy interlaced.mp4
+ffmpeg -f concat -safe 0 -i "$SUBDIR/concat.txt" -i "$SUBDIR/chapters.txt" map 0 -map_metadata 1 -c copy "$OUT"
+exit
+fi
+
+# ==================
+# 2. no --noreencode
+# ==================
+inputs=()
+durations=()
+maxduration=0
+
+for f in "${files[@]}"; do
+    inputs+=(-i "$f")
+    duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$f")
+    durations+=("$duration")
+    if awk "BEGIN {exit !($duration > $maxduration)}"; then
+        maxduration="$duration"
+    fi
+done
+
+chunks=$(awk -v d="$maxduration" -v t="$T" 'BEGIN { print int((d-0.000001)/t)+1 }')
+filter=""
+concat=""
+segments=0
+chapters=";FFMETADATA1\n\n"
+chapter_start=0
+
+for ((chunk=0; chunk<chunks; chunk++)); do
+    start=$(awk -v n="$chunk" -v t="$T" 'BEGIN { printf "%.6f", n*t }')
+    end=$(awk -v n="$chunk" -v t="$T" 'BEGIN { printf "%.6f", (n+1)*t }')
+    for ((i=0; i<${#files[@]}; i++)); do
+        duration="${durations[$i]}"
+        if ! awk -v start="$start" -v duration="$duration" 'BEGIN { exit !(start < duration) }'; then
+            continue
+        fi
+        chapter_end=$((chapter_start + T * 1000))
+        chapters="${chapters}[CHAPTER]\nTIMEBASE=1/1000\nSTART=${chapter_start}\nEND=${chapter_end}\ntitle=vid$((i+1)) segment $((chunk+1))\n\n"
+        chapter_start=$chapter_end
+        V="v${chunk}_${i}"
+        A="a${chunk}_${i}"
+        # video
+        filter+="[$i:v:0]trim=start=$start:end=$end,scale=${WIDTH}:${HEIGHT}:force_original_aspect_ratio=decrease,pad=${WIDTH}:${HEIGHT}:(ow-iw)/2:(oh-ih)/2,fps=${FPS},setpts=N/(${FPS}*TB),settb=1/${FPS},format=yuv420p[$V];"
+        # audio
+        filter+="[$i:a:0]atrim=start=$start:end=$end,aresample=48000,asetpts=N/SR/TB,aformat=sample_rates=48000:channel_layouts=stereo[$A];"
+        concat+="[$V][$A]"
+        segments=$((segments + 1))
+    done
+done
+
+filter+="${concat}concat=n=${segments}:v=1:a=1[vout][aout]"
+
+printf "${chapters}" > chapters.txt
+
+ffmpeg "${inputs[@]}" -f ffmetadata -i chapters.txt -map_metadata "${#files[@]}" -map_chapters "${#files[@]}" -filter_complex "$filter" -map "[vout]" -map "[aout]" -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -ac 2 -movflags +faststart "$OUT"
