@@ -20,14 +20,15 @@ def parse_args():
 Tool to convert quoted-printable encoded text to readable text""")
     parser.add_argument('enc', help="""
 quoted-printable encoded text, including the header that specifies the
-content type, charset, and encoding.""")
+content type, charset, and encoding.
+You can also pass this as stdin instead. Try passing it in a heredoc to avoid
+shell escaping issues: <<'EOF' [Enter] [Paste] [Enter] EOF [Enter]""")
     return parser.parse_args(sys.argv[1:] or ['--help'])
 
 
 if __name__ == '__main__':
-    print(sys.argv)
-    args = parse_args()
-    charset, content = enc_to_charset_and_content(args.enc)
+    enc = parse_args().enc if sys.stdin.isatty() else sys.stdin.read()
+    charset, content = enc_to_charset_and_content(enc)
     if not charset:
         print("Failed to detect charset")
         exit(1)
