@@ -131,6 +131,8 @@ in [./pm/scripts](pm/scripts)
     Like places2csv but for Chromium
 46. [**interlacevids**](pm/scripts/interlacevids): 2026-08-12 04:54  
     Downloads videos with yt-dlp, then using ffmpeg cuts them into segments and makes one video that alternates between them.
+47. [**quopri**](pm/scripts/quopri): 2026-08-15 02:10  
+    Convert quoted-printable encoded text to readable text with charset detected from the header.
 
 ## TODO
 - **add screenshots**  

@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+# quopri - quoted-printable encoded text to readable text
+# 2026-08-15 02:10
+import re
+import sys
+import quopri
+import argparse
+
+HEADER = """[ ]*Content-type: text/plain; charset="([a-zA-Z0-9-]+)"
+[ ]*(Content-transfer-encoding: quoted-printable)?"""
+
+
+def enc_to_charset_and_content(enc):
+    match = re.match(HEADER, enc, flags=re.I)
+    return (match.group(1), enc[match.span()[1]:]) if match else (None, None)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(prog='quopri', description="""
+Tool to convert quoted-printable encoded text to readable text""")
+    parser.add_argument('enc', help="""
+quoted-printable encoded text, including the header that specifies the
+content type, charset, and encoding.""")
+    return parser.parse_args(sys.argv[1:] or ['--help'])
+
+
+if __name__ == '__main__':
+    print(sys.argv)
+    args = parse_args()
+    charset, content = enc_to_charset_and_content(args.enc)
+    if not charset:
+        print("Failed to detect charset")
+        exit(1)
+    print(quopri.decodestring(content).decode(charset))
