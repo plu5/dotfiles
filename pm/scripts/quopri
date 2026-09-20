@@ -5,9 +5,12 @@ import re
 import sys
 import quopri
 import argparse
+from base64 import b64decode
 
 HEADER = """[ ]*Content-type: text/plain; charset="([a-zA-Z0-9-]+)"
 [ ]*(Content-transfer-encoding: quoted-printable)?"""
+
+ENCODED_WORD = """=\\?([a-zA-Z0-9-]+)\\?B\\?([a-zA-Z0-9=+/]+)\\?="""
 
 
 def enc_to_charset_and_content(enc):
@@ -15,9 +18,39 @@ def enc_to_charset_and_content(enc):
     return (match.group(1), enc[match.span()[1]:]) if match else (None, None)
 
 
+def enc_words_matches(enc):
+    return list(re.finditer(ENCODED_WORD, enc))
+
+
+def decode_quoted_printable(enc):
+    charset, content = enc_to_charset_and_content(enc)
+    if not charset:
+        print("Failed to detect charset")
+        exit(1)
+    print(quopri.decodestring(content).decode(charset))
+
+
+def decode_encoded_words(enc):
+    matches = reversed(enc_words_matches(enc))
+    if not matches:
+        print("Can't find encoded-words structure "
+              "(example: =?UTF-8?B?[base64]?=)")
+        exit(1)
+    for match in matches:
+        charset = match.group(1)
+        content = match.group(2)
+        start, end = match.span()
+        enc = enc[:start] + b64decode(content).decode(charset) + enc[end:]
+    print(enc)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(prog='quopri', description="""
 Tool to convert quoted-printable encoded text to readable text""")
+    parser.add_argument('-w', action='store_true', help="""
+Treat input encoded-words rather than quoted-printable.""")
+    if not sys.stdin.isatty():  # enc provided in stdin
+        return parser.parse_args()
     parser.add_argument('enc', help="""
 quoted-printable encoded text, including the header that specifies the
 content type, charset, and encoding.
@@ -27,9 +60,6 @@ shell escaping issues: <<'EOF' [Enter] [Paste] [Enter] EOF [Enter]""")
 
 
 if __name__ == '__main__':
-    enc = parse_args().enc if sys.stdin.isatty() else sys.stdin.read()
-    charset, content = enc_to_charset_and_content(enc)
-    if not charset:
-        print("Failed to detect charset")
-        exit(1)
-    print(quopri.decodestring(content).decode(charset))
+    args = parse_args()
+    enc = args.enc if sys.stdin.isatty() else sys.stdin.read()
+    decode_encoded_words(enc) if args.w else decode_quoted_printable(enc)
