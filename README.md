@@ -6,18 +6,20 @@
 |   _   |  welcome to
 |  | |  |  my humble home
 ```
+(stolen from [yasnippet docs](https://joaotavora.github.io/yasnippet/snippet-development.html))
 
 ## Contents
 1. [Environment](#environment)
 1. [Subdirectories in this repository that contain their own README](#subdirectories-in-this-repository-that-contain-their-own-readme)
 1. [Config contained in separate repositories](#config-contained-in-separate-repositories)
 1. [Scripts](#scripts)
-1. [TODO](#todo)
-1. [List of most-used software](#logiciels-les-plus-utilisés)
-1. [Aknowledgements](#aknowledgements)
+1. [Ideas](#ideas)
+1. [List of useful software](#list-of-useful-software)
 
 ## Environment
-X, bspwm
+- Arch Linux
+- Xserver
+- bspwm
 
 ## Subdirectories in this repository that contain their own README
 - [bspwm .config](.config/bspwm)
@@ -132,9 +134,9 @@ in [./pm/scripts](pm/scripts)
 46. [**interlacevids**](pm/scripts/interlacevids): 2026-08-12 04:54  
     Downloads videos with yt-dlp, then using ffmpeg cuts them into segments and makes one video that alternates between them.
 47. [**quopri**](pm/scripts/quopri): 2026-08-15 02:10  
-    Convert quoted-printable encoded text to readable text with charset detected from the header.
+    Convert quoted-printable or encoded-words to readable text with charset detected from the header.
 
-## TODO
+## Ideas
 - **add screenshots**  
   desktop, rofi (maybe that one not on here but on .config/rofi). upload the images to a subfolder called 'static'
 - **general: increase portability**  
@@ -143,8 +145,6 @@ in [./pm/scripts](pm/scripts)
   krita shortcut toggle hide/show panels (without interface cachée)
 - **krita: try using interface cachée anyway**  
   krita shortcut toggle interface cachée
-- **bspwm: minimising**  
-  bspwm "minimising" windows («changer ces fenêtres en mode floating, petite taille, arrangeés quelque part comme au côté gauche de l'écran, comme ça on voit toujours qu'elles sont là, juste "minimisées", et les faire revenir -- on pourrait avoir 2 raccourcis, un pour restaurer la fenêtre activée, un pour restaurer toutes (comme ça pas besoin de les activer) [idéalement seulement pour celles dans l'espace de travail actuel], et ce que restaurer va faire est les remettre en mode tiled.»)
 - **emacs: toggleable files in folder sidebar**  
   emacs toggleable sidebar like imenu-list which I have on C-tab to put on C-S-tab to show files and subfolders in pwd.
 - **emacs: markdown-mode C-RET**  
@@ -169,67 +169,43 @@ in [./pm/scripts](pm/scripts)
 - **easier to use interface for soncontrol**  
   less keystrokes. something like [transient](https://github.com/magit/transient) would be nice, but i need it to be standalone. i guess rofi is not the right choice for this and instead need to invoke a small c++ executable or bash/python script that will take the next key pressed
 
-## Logiciels les plus utilisés
-- emacs (super-S-e. éditeur)
-- urxvt (super-ret. terminal)  
-  i have problems with it like some unicode characters breaking on certain font sizes, 1/3 sessions failing to save history on quit (had to begrudgingly add `PROMPT_COMMAND='history -a'` in bashrc to work around it), and reloading configuration once killed my entire X session somehow (i'm now scared every time I run xrdb)
-- ranger (super-e. file browser)
-- mpv (vidéo et audio)
-- feh (images)
-- imv (images)
-  + not as flexible as feh, but (1) it doesn't flash when you switch between images which is a game changer for timelapses and qol in general, (2) it has ipc that allows you control it from another process (i use it with blender to render images and display the latest one in an existing imv instance), (3) it supports animations which feh does not
-- rofi (super-spc. lanceur, commandes shell rapides, interface pour les scripts)
-- rofi-calc (super-M-spc. calculatrice)
-- warpd (hyper--. émulation de la souris avec le clavier)
-- krita (éditeur des images rapide à lancer, bien plus rapide que gimp. je le lance parfois même juste pour coller une image que je veux avoir à côté pour référence car ça lance vite avec `krita --nosplash --template /usr/share/krita/templates/texture/.source/Texture1024x10248bitsrgb.kra`)
-- firefox
-  <br>extensions:
-  + [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
-  + dark reader
-  + firefox color (just to make it black)
-  + keygen music play button
-  + notifier for github
-  + reddit enhancement suite
-  + resurrect pages
-  + sponsorblock for youtube
-  + steamdb
-  + treestyletab
-  + ublock origin
-    <br>([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1))
-  + violentmonkey
-    <br>userscripts:
-    - [forvo login wall blocker](https://gist.github.com/plu5/c6d54d88b1c0b252b00c081b8cb67db6)
-    - [bilibili login wall blocker](https://gist.github.com/plu5/acac697b0bc172d4905179f284bffdf1)
-    - [pint login wall blocker](https://gist.github.com/plu5/fd7f2d261b44539402d539cd044e8d4a)
-- chromium
-  <br>extensions:
-  + ublock origin
-  + video speed controller
-  + proxy switchyomega
-    <br>(on a separate profile)
-- thunderbird (mais je ne l'aime pas trop)
-- anki
-- foliate (epub)
-- okular (pdf, cbr, cbz)  
-  fast, has vertical scrolling, and saves your position. doesn't have the option to restore last session but you can have it open with most recent file with `okular "$(cat .local/share/okular/docdata/"$(ls -ct .local/share/okular/docdata | head -n1)" | grep 'documentInfo url' | cut -d\" -f2)"` (credit [kalwardinX](https://www.reddit.com/r/kde/comments/lucqqw/-/i0pfmls/)).
-- inkscape (éditeur svg)
-- plover (sténo)
-- blender
-- godot
-- gwenview (images. je préfère feh la plupart de temps mais avec gwenview et kimageformats on peut visionner des fichiers krita)  
-  agaçant que ça ne laisse pas dézoomer, seulement zoomer. un contournement est de faire en sorte que la fenêtre soit plus petite (par ouvrir des terminaux autour par exemple) puis appuyer sur le bouton "fit".
-- peek (enregistrer des gifs facilement)  
-  v useful to be able to share what you're working on, explain, or demonstrates something. it goes on top of what it's recording, kind of like licecap, so it needs to be floating `bspc rule -a 'Peek' state=floating`. restores last used position, and to position it precisely i use a command like `wmctrl -r Peek -e 0,635,339,657,377`
-- input remapper 2 (pour avoir plusieurs fonctions avec les 2 boutons de mon stylo wacom)
-- fsearch (super-f. j'aimerais passer à un alternatif avec une meilleure navigation clavier)
-- sysmontask (C-S-esc. j'aimerais passer à un alternatif avec une meilleure navigation clavier)
-- onedrive (utile pour avoir un backup facile en arrière-plan contre la corruption spontanée des fichiers sur lequels on est en train de travailler et qu'on n'a pas encore committé, ce qui m'arrive de temps en temps quand il y a des coupures d'électricité)
-- polybar
-- nm-applet
-- alttab
-- dunst
-- magnus (magnification. je ne l'aime pas trop)
-- xdotool
+## List of useful software
+- [editor] emacs (super-S-e)
+- [term] urxvt (super-ret)[^urxvt]
+- [explorer] ranger (super-e)
+- [video] mpv
+- [img] feh
+- [img] imv[^imv]
+- [launcher] rofi (super-spc)
+- [calc] rofi-calc (super-M-spc)
+- [mouse-emu] warpd (hyper--)
+- [2d] krita
+- [svg] inkscape
+- [3d] blender
+- [browser] firefox
+  + extensions: treestyletab, notifier for github, violentmonkey, reddit enhancement suite, sponsorblock for youtube, steamdb, dark reader, firefox color (just to make it black), resurrect pages, ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1)), [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
+- [browser] chromium
+  + extensions: ublock origin, video speed controller, proxy switchyomega (on a separate profile)
+- [mail] thunderbird
+- [flashcards] anki
+- [epub] foliate
+- [pdf/cbr] okular[^okular]
+- [gamedev] godot
+- [img] gwenview[^gwenview]
+- [gifs] peek[^peek]
+- [file-index] fsearch (super-f)
+- [task-manager] sysmontask (C-S-esc)
+- [cloud] abraunegg's onedrive
+- [ui] polybar
+- [ui] nm-applet
+- [ui] alttab
+- [notifs] dunst
+- [magnification] magnus
+- [automation] xdotool
+- [xlsx] visidata
 
-## Acknowledgements
-- [yasnippet docs](https://joaotavora.github.io/yasnippet/snippet-development.html) for the "welcome to my humble home"
+[^urxvt]: Problems with urxvt: (1) some unicode characters breaking on certain font sizes, (2) 1/3 sessions failing to save history on quit (`PROMPT_COMMAND='history -a'` in bashrc to work around it), (3) reloading configuration with xrdb once killed my entire X session somehow.
+[^imv]: imv is not as flexible as feh, but (1) supports animations, (2) doesn't flash when you switch between images, (3) has ipc that allows you control it from another process (I use it with Blender to render images and display the latest one in an existing imv instance).
+[^okular]: okular is fast, has vertical scrolling, and saves your position. doesn't have the option to restore last session but you can have it open with most recent file with `okular "$(cat .local/share/okular/docdata/"$(ls -ct .local/share/okular/docdata | head -n1)" | grep 'documentInfo url' | cut -d\" -f2)"` (credit [kalwardinX](https://www.reddit.com/r/kde/comments/lucqqw/-/i0pfmls/)).
+[^gwenview]: gwenview with kimageformats can preview krita (kra) files. problems: can't zoom out. a workaround is to decrease window size and click on the button "fit".
+[^peek]: peek is useful to be able to share what you're working on, explain, or demonstrates something. it goes on top of what it's recording, kind of like licecap, so it needs to be floating `bspc rule -a 'Peek' state=floating`. restores last used position, and to position it precisely i use a command like `wmctrl -r Peek -e 0,635,339,657,377`
