@@ -141,8 +141,6 @@ in [./pm/scripts](pm/scripts)
   desktop, rofi (maybe that one not on here but on .config/rofi). upload the images to a subfolder called 'static'
 - **general: increase portability**  
   reduce hard-coded paths, or at least have a centralised source of truth for them.
-- **krita: hide/show easily**  
-  krita shortcut toggle hide/show panels without fullscreen
 - **emacs: toggleable files in folder sidebar**  
   emacs toggleable sidebar like imenu-list which I have on C-tab to put on C-S-tab to show files and subfolders in pwd.
 - **emacs: markdown-mode C-RET**  
