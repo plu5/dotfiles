@@ -173,6 +173,7 @@ in [./pm/scripts](pm/scripts)
 - [editor] emacs (super-S-e)
 - [term] urxvt (super-ret)[^urxvt]
 - [explorer] ranger (super-e)
+- [explorer] caja
 - [video] mpv
 - [img] feh
 - [img] imv[^imv]
@@ -180,6 +181,8 @@ in [./pm/scripts](pm/scripts)
 - [calc] rofi-calc (super-M-spc)
 - [mouse-emu] warpd (hyper--)
 - [2d] krita
+- [2d] lazpaint[^lazpaint]
+- [pixel] libresprite[^libresprite]
 - [svg] inkscape
 - [3d] blender
 - [browser] firefox
@@ -204,6 +207,7 @@ in [./pm/scripts](pm/scripts)
 - [automation] xdotool
 - [doc/xlsx] libreoffice
 - [csv/xlsx/json/sqlite] visidata[^visidata]
+- [audio] audacity
 
 [^urxvt]: Problems with urxvt: (1) some unicode characters breaking on certain font sizes, (2) 1/3 sessions failing to save history on quit (`PROMPT_COMMAND='history -a'` in bashrc to work around it), (3) reloading configuration with xrdb once killed my entire X session somehow.
 [^imv]: imv is not as flexible as feh, but (1) supports animations, (2) doesn't flash when you switch between images, (3) has ipc that allows you control it from another process (I use it with Blender to render images and display the latest one in an existing imv instance).
@@ -211,3 +215,5 @@ in [./pm/scripts](pm/scripts)
 [^gwenview]: gwenview with kimageformats can preview krita (kra) files. problems: can't zoom out. a workaround is to decrease window size and click on the button "fit".
 [^peek]: peek is useful to be able to share what you're working on, explain, or demonstrates something. it goes on top of what it's recording, kind of like licecap, so it needs to be floating `bspc rule -a 'Peek' state=floating`. restores last used position, and to position it precisely i use a command like `wmctrl -r Peek -e 0,635,339,657,377`
 [^visidata]: visidata is unreliable for xlsx; it can fail to read the document properly without error, and silently truncate data. S sheets, C-t threads, C-e errors, C-p status messages, [man](https://man.archlinux.org/man/visidata.1.en).
+[^lazpaint]: LazPaint is fast to launch and compatible with Paint.NET files (pdn).
+[^libresprite]: LibreSprite is compatible with aseprite files.
