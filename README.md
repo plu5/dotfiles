@@ -177,6 +177,8 @@ in [./pm/scripts](pm/scripts)
 - [video] mpv
 - [img] feh
 - [img] imv[^imv]
+- [img] gwenview[^gwenview]
+- [gifs] peek[^peek]
 - [launcher] rofi (super-spc)
 - [calc] rofi-calc (super-M-spc)
 - [mouse-emu] warpd (hyper--)
@@ -185,6 +187,7 @@ in [./pm/scripts](pm/scripts)
 - [pixel] libresprite[^libresprite]
 - [svg] inkscape
 - [3d] blender
+- [gamedev] godot
 - [browser] firefox
   + extensions: treestyletab, notifier for github, violentmonkey, reddit enhancement suite, sponsorblock for youtube, steamdb, dark reader, firefox color (just to make it black), resurrect pages, ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1)), [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
 - [browser] chromium
@@ -193,9 +196,6 @@ in [./pm/scripts](pm/scripts)
 - [flashcards] anki
 - [epub] foliate
 - [pdf/cbr] okular[^okular]
-- [gamedev] godot
-- [img] gwenview[^gwenview]
-- [gifs] peek[^peek]
 - [file-index] fsearch (super-f)
 - [task-manager] sysmontask (C-S-esc)
 - [cloud] abraunegg's onedrive
