@@ -142,30 +142,19 @@ in [./pm/scripts](pm/scripts)
 - **general: increase portability**  
   reduce hard-coded paths, or at least have a centralised source of truth for them.
 - **krita: hide/show easily**  
-  krita shortcut toggle hide/show panels (without interface cachée)
-- **krita: try using interface cachée anyway**  
-  krita shortcut toggle interface cachée
+  krita shortcut toggle hide/show panels without fullscreen
 - **emacs: toggleable files in folder sidebar**  
   emacs toggleable sidebar like imenu-list which I have on C-tab to put on C-S-tab to show files and subfolders in pwd.
 - **emacs: markdown-mode C-RET**  
   to when you are in a list item indent the new line so as to be still inside the list item
 - **emacs: markdown-mode: fold list items**  
   emacs markdown-mode ability to fold list items like you can in org-mode, see [this effort by Tobias](https://emacs.stackexchange.com/questions/64729/how-to-fold-nested-list-items-in-markdown-mode)
-- **emacs: org-mode: align text under list item**  
-  advice for org-return that if we're on a list item and the line begins with `"*something:* "` indent a bit extra to align the new line after that.
-  ```
-  - *something:* item 1,
-               item 2
-  ```
-  whether that is aligned or not depends on whether `*` is hidden but for me it is in org-mode and i do this kind of indentation manually, so better automate it. after item 2 it automatically indents to match so we only need to handle the item 2 situation.
 - **XCompose arrow**  
   maybe add another arrow symbol other than →, like ➤ or ➔, because → is barely readable in github readmes, but maybe not all clients would be able to display that. maybe should use just >... -> does not look good either. given that github supports html markup in the markdown it's weird that we can use <> willy nilly
 - **org-goto equivalent for any buffer with imenu**  
   i know there is helm-imenu but i hesitate to have to have the whole of helm as a dependency just for that.
 - **consolidate doentry and markdown**  
   since doentry mode needs to handle markdown as well might as well make it be able to handle purely markdown files?
-- **time spent in application tracker**  
-  something, maybe via `profi`, that kind of like steam keeps track of total time spent in x application? maybe a waste of time because who cares, but it would be maybe cool, or maybe mind pollution and better not incentivise existentialism.
 - **easier to use interface for soncontrol**  
   less keystrokes. something like [transient](https://github.com/magit/transient) would be nice, but i need it to be standalone. i guess rofi is not the right choice for this and instead need to invoke a small c++ executable or bash/python script that will take the next key pressed
 
