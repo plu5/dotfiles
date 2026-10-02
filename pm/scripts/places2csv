@@ -72,6 +72,9 @@ COMMANDS = {
 Don't write to disk."""}),
         (["-q", "--quiet"], {"action": "store_true", "help": """
 Suppress messages in output."""}),
+        (["--nolock"], {"action": "store_true", "help": """Read database even
+if locked, which risks producing bad data if the database changes at the same
+time."""}),
     ]},
     "h":                        # H (history)
     {"desc": "extract history data", "usage": """[-f FORMAT] [--sort SORT]
@@ -377,7 +380,10 @@ def cmd_h(args):
                 update_after = v
                 msg(f'Adding visits after {v} ({readable_date_from_epoch(v)})')
 
-    con = sqlite3.connect(f"file:{args.places_sqlite}?mode=ro", uri=True)
+    sqliteargs = '?mode=ro'
+    sqliteargs += '&immutable=1' if args.nolock else ''
+
+    con = sqlite3.connect(f"file:{args.places_sqlite}{sqliteargs}", uri=True)
     con.text_factory = lambda data: str(data, errors="surrogateescape")
     con.row_factory = sqlite3.Row
     cur = con.cursor()
@@ -492,7 +498,10 @@ def cmd_b(args):
                 msg('Updating bookmarks after '
                     f'{m} ({readable_date_from_epoch(m)})')
 
-    con = sqlite3.connect(f"file:{args.places_sqlite}?mode=ro", uri=True)
+    sqliteargs = '?mode=ro'
+    sqliteargs += '&immutable=1' if args.nolock else ''
+
+    con = sqlite3.connect(f"file:{args.places_sqlite}{sqliteargs}", uri=True)
     con.text_factory = lambda data: str(data, errors="surrogateescape")
     con.row_factory = sqlite3.Row
     cur = con.cursor()
