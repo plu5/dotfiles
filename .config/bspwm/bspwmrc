@@ -8,6 +8,7 @@
 monitor-config.sh
 
 setxkbmap -option lv3:ralt_switch # avoid emacs compose key problems
+setxkbmap -option srvrkeys:none   # disable tty switching hotkeys for now, because it causes freezing on my system i haven't been able to resolve
 
 ~/pm/scripts/toggle_internal_kbd.sh disable # disable internal keyboard bc i'm probably using external. maybe should check if if external is connected or not in future
 # ~/pm/scripts/toggle_internal_kbd.sh enable
