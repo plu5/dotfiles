@@ -176,9 +176,7 @@ in [./pm/scripts](pm/scripts)
 - [3d] blender
 - [gamedev] godot
 - [browser] firefox
-  + extensions: treestyletab, notifier for github, violentmonkey, reddit enhancement suite, sponsorblock for youtube, steamdb, dark reader, firefox color (just to make it black), resurrect pages, ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1)), [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
-- [browser] chromium
-  + extensions: ublock origin, video speed controller, proxy switchyomega (on a separate profile)
+  + extensions: tree style tab, treestyle tab count, notifier for github, violentmonkey, reddit enhancement suite, sponsorblock for youtube, steamdb, dark reader, firefox color (just to make it black), resurrect pages, twp translate, ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1), advanced mode [for umatrix-like functionality]), [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
 - [mail] thunderbird
 - [flashcards] anki
 - [epub] foliate
