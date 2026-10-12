@@ -34,5 +34,8 @@ update_bspwm() {
     exit
 }
 
+# i don't know why but if i don't do this first fullscreen is clipped
+xrandr --output eDP-1 --mode 1280x720
+
 xrandr --output HDMI-2 --same-as eDP-1 --mode 1280x720 --output eDP-1 --off
 update_bspwm
