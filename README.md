@@ -175,8 +175,7 @@ in [./pm/scripts](pm/scripts)
 - [svg] inkscape
 - [3d] blender
 - [gamedev] godot
-- [browser] firefox
-  + extensions: tree style tab, treestyle tab count, notifier for github, violentmonkey, reddit enhancement suite, sponsorblock for youtube, steamdb, dark reader, firefox color (just to make it black), resurrect pages, twp translate, ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1), advanced mode [for umatrix-like functionality]), [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary)
+- [browser] firefox[^firefox]
 - [mail] thunderbird
 - [flashcards] anki
 - [epub] foliate
@@ -202,3 +201,17 @@ in [./pm/scripts](pm/scripts)
 [^visidata]: visidata is unreliable for xlsx; it can fail to read the document properly without error, and silently truncate data. S sheets, C-t threads, C-e errors, C-p status messages, [man](https://man.archlinux.org/man/visidata.1.en).
 [^lazpaint]: LazPaint is fast to launch and compatible with Paint.NET files (pdn).
 [^libresprite]: LibreSprite is compatible with aseprite files.
+[^firefox]: Firefox extensions:
+tree style tab,
+treestyle tab count,
+notifier for github,
+violentmonkey,
+reddit enhancement suite,
+sponsorblock for youtube,
+steamdb,
+dark reader,
+firefox color (just to make it black),
+resurrect pages,
+twp translate (C-M-t),
+[contextual wiktionary](https://github.com/aesarab/contextual-wiktionary),
+ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1), advanced mode [for umatrix-like functionality])
