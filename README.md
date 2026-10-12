@@ -191,7 +191,7 @@ in [./pm/scripts](pm/scripts)
 - [automation] xdotool
 - [doc/xlsx] libreoffice
 - [csv/xlsx/json/sqlite] visidata[^visidata]
-- [audio] audacity
+- [audio] audacity[^audacity]
 
 [^urxvt]: Problems with urxvt: (1) some unicode characters breaking on certain font sizes, (2) 1/3 sessions failing to save history on quit (`PROMPT_COMMAND='history -a'` in bashrc to work around it), (3) reloading configuration with xrdb once killed my entire X session somehow.
 [^imv]: imv is not as flexible as feh, but (1) supports animations, (2) doesn't flash when you switch between images, (3) has ipc that allows you control it from another process (I use it with Blender to render images and display the latest one in an existing imv instance).
@@ -215,3 +215,4 @@ resurrect pages,
 twp translate (C-M-t),
 [contextual wiktionary](https://github.com/aesarab/contextual-wiktionary),
 ublock origin ([filters](https://gist.github.com/plu5/84c50fd061f844210a7042ed3fc223a1), advanced mode [for umatrix-like functionality])
+[^audacity]: Tenacity can sadly not open some Audacity project files.
