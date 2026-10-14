@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GFN GeforceNOW
+GenericName=Videogames remotely
+Exec=gfn
+Terminal=false
+Icon=puzzle
+Categories=Games;
