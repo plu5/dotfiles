@@ -13,7 +13,7 @@
 
 IMAGESDIR=/home/pm/pm/r
 
-[ -n "$1" ] && IMAGESDIR=$1
+[ -n "$1" ] && IMAGESDIR=
 
 cmd=(
     feh
