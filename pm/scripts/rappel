@@ -10,16 +10,27 @@
 # rappel 24h hello
 # rappel 5h 10m "drink water"
 
-SON="/usr/share/sounds/freedesktop/stereo/complete.oga"
+PING=/usr/share/sounds/freedesktop/stereo/complete.oga
+ALARM=/usr/share/sounds/freedesktop/stereo/service-login.oga
 
 NOM="${0##*/}"
 
 helptext() {
-    echo "Usage: $NOM [délai] \"[message]\"
-Exemple: $NOM 5h 10m \"Boire de l'eau\"
-Le dernier argument est le message, tous les autres sont passés à sleep.
-Délai unités s/m/h/d. Avec plusieurs arguments séparés par un espace, \
-il prend la somme de ces valeurs."
+    cat <<EOF
+Usage: $NOM [options] (DELAY) "MESSAGE"
+
+DELAY can be given in units s/m/h/d, like sleep args.
+
+Options:
+
+-h | --help   Show this help text and exit.
+-t=HH:MM      Calculate delay from timestamp.
+--alarm       Play an alarm until notification is closed.
+
+Examples:
+* $NOM 5h 10m "Do something"
+* $NOM -t=18:00 "Do something"
+EOF
 }
 
 if [ $# -lt 2 ]; then
@@ -27,14 +38,80 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+m=
+t_flag=0
+alarm=
+alarm_flag=
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            help
+            exit;;
+        -t=*)
+            t_flag=1
+            t="${1#-t=}"
+            m="${t:3}"
+            h="${t:0:2}"
+            if [ "$h" -gt "$(date "+%H")" ]; then
+                m_to_next=$((60 - $(date "+%M")))
+                h=$(($h - $(($(date "+%H") + 1))))
+                m=$(($m + $h * 60 + m_to_next))
+            elif [ "$h" -lt "$(date "+%H")" ]; then
+                echo "$NOM: Can't handle case hour is past."
+                exit 1
+            else
+                # Note: Laziness instead of checking if minutes is
+                # passed (negative result). The amount of time to
+                # sleep for will not make sense in that case and if
+                # you want to be sensible you should check for that
+                # and exit with an error.
+                m=$(echo $(($(date "+%M") - $m)) | sed 's/-//')
+            fi
+            echo "$NOM: $t is in $m minutes";;
+        --alarm)
+            alarm_flag=1;
+            echo "$NOM: alarm scheduled";;
+        --)
+            shift
+            break;;
+        -*)
+            echo "$NOM: Unknown option $1" >&2
+            exit 1;;
+        *)
+            break;;
+    esac
+    shift
+done
+
+play_alarm() {
+    while true; do
+        paplay "$ALARM"
+    done
+}
+
+kill_alarm() {
+    kill "$alarm" 2>/dev/null
+    wait "$alarm" 2>/dev/null
+}
+
+trap kill_alarm EXIT INT TERM
+
 message="${@:$#}"
 
 (
-    sleep ${@:1:$# - 1}
+    [ "$t_flag" = 1 ] && sleep ${m}m || sleep ${@:1:$# - 1}
     if [ ! $? = 0 ]; then
-        echo "$NOM: un problème est survenu lors de l'exécution du sleep"
+        echo "$NOM: Failed to execute sleep command"
         exit 1
     fi
-    notify-send -u critical "Rappel" "$message"
-    paplay "$SON"
+    if [ "$alarm_flag" = 1 ]; then
+        play_alarm &
+        alarm=$!
+        notify-send --wait -u critical "Rappel alarm" "$message"
+        kill_alarm
+    else
+        notify-send -u critical "Rappel" "$message"
+        paplay "$PING"
+    fi
 ) & disown
