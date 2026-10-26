@@ -10,7 +10,7 @@ from base64 import b64decode
 HEADER = """[ ]*Content-type: text/plain; charset="([a-zA-Z0-9-]+)"
 [ ]*(Content-transfer-encoding: quoted-printable)?"""
 
-ENCODED_WORD = """=\\?([a-zA-Z0-9-]+)\\?B\\?([a-zA-Z0-9=+/]+)\\?="""
+ENCODED_WORD = """=\\?([a-zA-Z0-9-]+)\\?([BQ])\\?([a-zA-Z0-9=+/_:]+)\\?="""
 
 
 def enc_to_charset_and_content(enc):
@@ -31,16 +31,24 @@ def decode_quoted_printable(enc):
 
 
 def decode_encoded_words(enc):
-    matches = reversed(enc_words_matches(enc))
+    matches = reversed(list(enc_words_matches(enc)))
     if not matches:
         print("Can't find encoded-words structure "
               "(example: =?UTF-8?B?[base64]?=)")
         exit(1)
     for match in matches:
         charset = match.group(1)
-        content = match.group(2)
+        encoding = match.group(2)
+        content = match.group(3)
         start, end = match.span()
-        enc = enc[:start] + b64decode(content).decode(charset) + enc[end:]
+        if encoding == 'B':
+            decoded = b64decode(content).decode(charset)
+        elif encoding == 'Q':
+            decoded = quopri.decodestring(content).decode(charset)
+        else:
+            print(f"Unhandled encoding '{encoding}'")
+            exit(1)
+        enc = enc[:start] + decoded + enc[end:]
     print(enc)
 
 
