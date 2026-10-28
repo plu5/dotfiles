@@ -7,6 +7,9 @@
 
 monitor-config.sh
 
+# disable monitor shutting off for inactivity
+xset s off -dpms && xset dpms 0 0 0
+
 setxkbmap -option lv3:ralt_switch # avoid emacs compose key problems
 setxkbmap -option srvrkeys:none   # disable tty switching hotkeys for now, because it causes freezing on my system i haven't been able to resolve
 
