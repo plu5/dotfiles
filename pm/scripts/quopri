@@ -10,7 +10,7 @@ from base64 import b64decode
 HEADER = """[ ]*Content-type: text/plain; charset="([a-zA-Z0-9-]+)"
 [ ]*(Content-transfer-encoding: quoted-printable)?"""
 
-ENCODED_WORD = """=\\?([a-zA-Z0-9-]+)\\?([BQ])\\?([a-zA-Z0-9=+/_:]+)\\?="""
+ENCODED_WORD = """=\\?([a-zA-Z0-9-]+)\\?([BQ])\\?([a-zA-Z0-9=+/_: ]+)\\?="""
 
 
 def enc_to_charset_and_content(enc):
