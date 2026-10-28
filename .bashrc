@@ -9,7 +9,7 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
 
-alias l='ls'
+alias l='ls -a'
 alias lh='lshorodatage'
 
 alias sgfeed='python /media/pnotes/py/sgfeed.py'
