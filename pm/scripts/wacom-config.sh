@@ -44,7 +44,21 @@ xsetwacom set "${pad}" Button 13 "key +ctrl right -ctrl"
 
 xsetwacom set "${touch}" Touch off
 
-# vertical
-xsetwacom set "$stylus" Mode Absolute
-xsetwacom set "$stylus" Rotate ccw
-xsetwacom set "$stylus" Area 14494 0 30210 27940
+case "$1" in
+    v)                          # vertical
+        xsetwacom set "$stylus" Rotate ccw
+        xsetwacom set "$stylus" Area 14494 0 30210 27940
+        ;;
+    v-)                         # back to normal (horizontal)
+        xsetwacom set "$stylus" Rotate none
+        # area is already set earlier in the script
+        ;;
+    r)                          # relative (for games)
+        xsetwacom set "$stylus" Mode Relative
+        xsetwacom set "$stylus" Threshold 800
+        ;;
+    r-)                         # back to normal (absolute)
+        xsetwacom set "$stylus" Mode Absolute
+        xsetwacom set "$stylus" Threshold 26  # default
+        ;;
+esac
