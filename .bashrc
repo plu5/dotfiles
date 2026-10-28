@@ -5,6 +5,12 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+# urxvt sometimes fails to save history on close otherwise
+PROMPT_COMMAND='history -a'
+shopt -s histappend
+HISTSIZE=1000000
+HISTFILESIZE=2000000
+
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
@@ -47,13 +53,6 @@ alias lshorodatagem='lshorodatage -m'
 alias lshorodatagen='for f in *; do echo $(ntfsbirth "$f" "%F %H:%M") $(date -r "$f" "+%F %H:%M") $f; done | sort -n'
 # version recursive
 alias rlshorodatagen='find . | while read f; do echo $(ntfsbirth "$f" "%F %H:%M") $(date -r "$f" "+%F %H:%M") $f; done | sort -n'
-
-# >:-(
-PROMPT_COMMAND='history -a'
-
-shopt -s histappend
-HISTSIZE=1000000
-HISTFILESIZE=2000000
 
 # afficher birthtime d'un fichier ntfs avec `ntfsbirth 'path'`
 ntfsbirth() {
