@@ -11,6 +11,9 @@ shopt -s histappend
 HISTSIZE=1000000
 HISTFILESIZE=2000000
 
+eval `dircolors`
+LS_COLORS="$LS_COLORS:di=00;44"
+
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
