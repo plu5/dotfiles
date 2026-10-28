@@ -9,6 +9,9 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
 
+alias l='ls'
+alias lh='lshorodatage'
+
 alias sgfeed='python /media/pnotes/py/sgfeed.py'
 alias qmacs='sudo emacs -nw -q'
 #alias em='SUDO_EDITOR="emacsclient -nw" sudo -e'
