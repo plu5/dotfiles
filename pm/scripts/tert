@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+# tert - systray terminal time tracker based on bash history file monitoring
+# 2026-10-29 03:16
+#
+# Dependencies:
+# - python-pillow
+# - python-pystray
+# - pyinotify (which is linux-only, so this script is linux-only)
+#
+# Usage:
+# (1) Have PROMPT_COMMAND='history -a' in bash configuration so that each
+#     command modifies ~/.bash_history
+# (2) Run tert. A dynamic tray icon with a number should appear.
+
+import pyinotify
+# run_detached doesn't work with gtk backend so we have to run our own
+# thread in order to run it in the background
+from threading import Thread
+from datetime import datetime                # event timestamp
+from os.path import expanduser               # expand ~
+from PIL import Image, ImageDraw, ImageFont  # dynamic icon image generation
+from pystray import Menu, MenuItem, Icon     # tray icon
+
+HIST = expanduser("~/.bash_history")
+events = []
+
+
+def create_image(h=0):
+    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    dc = ImageDraw.Draw(image)
+    dc.text((2, 0), str(h), font=ImageFont.load_default(size=12))
+    return image
+
+
+def on_quit(icon, item):
+    icon.stop()
+    exit(0)
+
+
+class InotifyHandler(pyinotify.ProcessEvent):
+    def __init__(self):
+        super().__init__()
+        menu = Menu(MenuItem('Quit', on_quit))
+        self.tray = Icon('tert', create_image(), 'terminal time tracker', menu)
+        Thread(target=self.tray.run, daemon=True).start()
+
+    def process_IN_MODIFY(self, event):
+        events.append(datetime.now())
+        # TODO(plu5): Hour calculation based on event timestamps
+        h = len(events)
+        # doesn't work, there is no tooltip
+        self.tray.title = f"{h} events"
+        if h > 9:
+            h = '+'
+        self.tray.icon = create_image(h)
+
+
+def main():
+    wm = pyinotify.WatchManager()
+    notifier = pyinotify.Notifier(wm)
+    wm.add_watch(HIST, pyinotify.IN_MODIFY, InotifyHandler())
+    notifier.loop()
+
+
+if __name__ == '__main__':
+    main()
