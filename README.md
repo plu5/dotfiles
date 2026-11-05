@@ -135,8 +135,10 @@ in [./pm/scripts](pm/scripts)
     Downloads videos with yt-dlp, then using ffmpeg cuts them into segments and makes one video that alternates between them.
 47. [**quopri**](pm/scripts/quopri): 2026-08-15 02:10  
     Convert quoted-printable or encoded-words to readable text with charset detected from the header.
-47. [**tert**](pm/scripts/tert): 2026-10-29 03:16  
+48. [**tert**](pm/scripts/tert): 2026-10-29 03:16  
     Systray terminal time tracker based on bash history file monitoring
+49. [**co2**](pm/scripts/co2): 2026-11-03 18:28  
+    Systray breathhold and co2 tables timer
 
 ## Ideas
 - **add screenshots**  
