@@ -74,10 +74,10 @@ class Tabler:
                 if self.limit and self.i >= self.limit:
                     self.is_recuperating = not self.is_recuperating
                     if self.rounds > 0:
-                        self.rounds -= 1
                         self.limit = (self.calc_co2rec()
                                       if self.is_recuperating else
                                       self.calc_co2hold())
+                        self.rounds -= 1 if self.is_recuperating else 0
                         self.just_started = True
                     else:
                         self.limit = 0
