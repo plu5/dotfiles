@@ -82,6 +82,7 @@ class Tabler:
                     else:
                         self.limit = 0
                         self.in_progress = False
+                        self.is_recuperating = False
                         self.set_idle_icon()
 
     def on_quit(self, icon, item):
@@ -93,11 +94,17 @@ class Tabler:
 
     def on_stop(self, icon, item):
         self.in_progress = False
-        notif = f"Held for {self.i}"
-        if self.pb != 0 and self.i > self.pb and not self.is_recuperating:
-            notif += "\nNew personal best (PB)"
-        self.pb = self.i
-        self.tray.notify(notif)
+        notif = None
+        if not self.is_recuperating:
+            notif = f"Held for {self.i}"
+        if self.i > self.pb and not self.is_recuperating:
+            if self.pb != 0:
+                notif += "\nNew personal best (PB)"
+            self.pb = self.i
+        if notif:
+            self.tray.notify(notif)
+        self.limit = 0
+        self.is_recuperating = False
         self.set_idle_icon()
 
     def on_start(self, icon, item):
