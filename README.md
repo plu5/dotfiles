@@ -36,27 +36,27 @@
 - [emacs](https://github.com/plu5/emacsd)
 
 ## Scripts
-in [./pm/scripts](pm/scripts)
+in [./pm/scripts](pm/scripts). ♥ marks scripts I use a lot.
 
-1. [**toggle_internal_kbd.sh**](pm/scripts/toggle_internal_kbd.sh) : 2024-12-25 19:12:57 (birth)  
+1. ♥ [**toggle_internal_kbd.sh**](pm/scripts/toggle_internal_kbd.sh) : 2024-12-25 19:12:57 (birth)  
    turn off or on internal keyboard and apply modmap. ran at launch, when my external keyboard gets connected, and upon clicking the keyboard layout on polybar
 2. [**close_windows.sh**](pm/scripts/close_windows.sh) : 2025-01-19 04:49:32  
    close all windows gracefully, used in `xlogout.sh` (see below)
 3. [**xlogout.sh**](pm/scripts/xlogout.sh) : 2025-01-19 05:07:25  
    kill bspc gracefully (without killing programs brutally which is what happens if you do just `bspc quit`)
-4. [**xscreenshot.sh**](pm/scripts/xscreenshot.sh) : 2025-01-19 06:02:30  
+4. ♥ [**xscreenshot.sh**](pm/scripts/xscreenshot.sh) : 2025-01-19 06:02:30  
    screenshot commands using maim which i bind using sxhkd. <kbd>super-s</kbd> to take a screenshot and save to a particular directory, <kbd>super-S-s</kbd> to save to clipboard (useful to paste in krita or google docs).
-5. [**wacom-config.sh**](pm/scripts/wacom-config.sh) : 2025-05-20 00:56:38  
+5. ♥ [**wacom-config.sh**](pm/scripts/wacom-config.sh) : 2025-05-20 00:56:38  
    called by a systemd service. xsetwacom commands to set up the area, buttons, and disables touch when i plug in my drawing tablet.
 6. [**kbd-config.sh**](pm/scripts/kbd-config.sh) : 2025-05-20 11:59:55  
    called by a systemd service. calls the script `toggle_internal_kbd.sh` (see above) when i plug in my external keyboard.
 7. [**iwanttodie.sh**](pm/scripts/iwanttodie.sh) : 2025-11-21 19:38:24  
    rofi interface for system commands like logging out and shutting down but also other commands i may need in an emergency, like when the keyboard gets stuck. can be triggered with the mouse by right clicking the power button in polybar.
-8. [**rappel**](pm/scripts/rappel) : 2025-11-26 13:45:45  
+8. ♥ [**rappel**](pm/scripts/rappel) : 2025-11-26 13:45:45  
    reminders using dunst notifications. it doesn't have any persistence at the moment (if you restart or otherwise lose your session any reminder you set is gone).
 9. [**volume**](pm/scripts/volume) : 2025-11-26 15:35:27  
    script to set the volume of any running audio stream selected via regex of its title. with the option 'b' (for 'boucle') keeps listening to pactl events to keep setting the volume on the matching audio streams so that it continues being the desired volume even after pausing or moving to the next thing in a playlist. it's... imperfect. but does work and is very useful to me.
-10. [**t**](pm/scripts/t) : 2025-11-29 01:09:53  
+10. ♥ [**t**](pm/scripts/t) : 2025-11-29 01:09:53  
    a script that calls translate-shell with my desired arguments. i call it from rofi (see `profi` below) like `t translate this please` and it translates it to french by default or you can add arguments like `t -t zh translate this please` which would translate it into chinese. because of the way `profi` is set up i can type single quotes without having to escape them nor wrap the string; `t don't break please`.
 11. [**g**](pm/scripts/g) : 2025-11-29 17:50:53  
     like `t` (see above) but feeds translate-shell into itself; translates into german and from german into french. useful if you just want to "normalise" text, but i don't use it often. like `t` you can give it other arguments you want to pass to translate-shell.
@@ -64,11 +64,11 @@ in [./pm/scripts](pm/scripts)
     i wanted to be able to copy the contents of dunst notifications and this hacky thing was my first go at it, following [the idea here by yutkat](https://github.com/dunst-project/dunst/issues/669). but the fatal problem with it is that any actions do not work on notifications popped back from history, so i changed to using `copy-dunst-history` (see below).
 13. [**copy-dunst-history**](pm/scripts/copy-dunst-history) : 2025-11-30 12:38:55  
     display notifications history from dunstctl rofi interface with ability to copy their summary or pipe them to emacs.
-14. [**profi**](pm/scripts/profi) : 2025-12-01 17:57:30  
+14. ♥ [**profi**](pm/scripts/profi) : 2025-12-01 17:57:30  
     my command to launch rofi which has a complex run-command and run-shell-command. i capture the output to display in a notification, so that you're able to see output of commands or scripts you run in rofi. i worked on this a lot and it's still bad, endless issues with escaping quotes. it's also used to save the desktop we are on to `/tmp/profidesireddesktop`, which is then used by bspwm external rules to open the application that was launch on the desktop we were on when launching it, rather than on the current desktop.
-15. [**pipe-to-emacs**](pm/scripts/pipe-to-emacs) : 2025-12-03 16:51:44  
+15. ♥ [**pipe-to-emacs**](pm/scripts/pipe-to-emacs) : 2025-12-03 16:51:44  
     from [this gist by garaud](https://gist.github.com/garaud/06b38554103aa7120337). i modified it to not pop buffer because i find that annoying.
-16. [**verify-doentries**](pm/scripts/verify-doentries) : 2025-12-05 04:10:38  
+16. ♥ [**verify-doentries**](pm/scripts/verify-doentries) : 2025-12-05 04:10:38  
     verify validity of xml files with exclusions
 17. [**em**](pm/scripts/em) : 2025-12-07 18:34:51  
     Emacs sudo editor in terminal. [SE](https://stackoverflow.com/q/79840434).
@@ -78,7 +78,7 @@ in [./pm/scripts](pm/scripts)
     wget command to save an image to images folder faster than using browser dialog. also adds the current timestamp to it (in a rather cryptic format admittedly, yymmddHHMM, but this is what i've come to use for brevity).
 20. [**prename**](pm/scripts/prename) : 2025-12-21 09:29:36  
     script to rename a file given to it using a rofi interface. one of the suggestions is filename as is so that you can <kbd>Tab</kbd> completion (i think by default it's maybe something else. `kb-row-select: "Tab";`) to get the path in the input line and modify it. another one is the path prefixed by the birth date of the file in format yymmddHHMM to be able to rename files that don't have their date easily (which is a good habit to get into to have them in the name if you ever intend to move your images elsewhere, because birth dates in linux are immutable). used as a feh action (see `pfeh` below).
-21. [**pfeh**](pm/scripts/pfeh) : 2025-12-21 10:30:06  
+21. ♥ [**pfeh**](pm/scripts/pfeh) : 2025-12-21 10:30:06  
     command to launch feh in my images directory with actions to rename <kbd>0</kbd> (see `prename` above), see file information and type <kbd>9</kbd>, see stat dates <kbd>8</kbd>, copy file path to clipboard <kbd>7</kbd>, <kbd>1</kbd> to open `fehfavoris` rofi interface (see below), <kbd>2</kbd> to save the image to `fehfavoris`. i don't have one to delete because i don't want to do it by accident. when i need to delete i press 7 to copy the file path, open a terminal with <kbd>C-e</kbd> and enter rm with the path.
 22. [**pausepp**](pm/scripts/pausepp) : 2025-12-28 17:54:02  
     it's a simple pomodoro-type thing. just sleeps 25 minutes, plays a sound, sleeps another 5 minutes, plays another sound. simple as that so that i have nothing to fiddle with, can't constantly check how much time there is left. the sounds i used i downloaded from forvo. [une pause pipi](https://forvo.com/word/une_pause_pipi/#fr), [alors on continue](https://forvo.com/word/alors%2C_on_continue_%253F/#fr), both by Pat91.
@@ -87,39 +87,38 @@ in [./pm/scripts](pm/scripts)
     a way to save images you want to get back to later in feh, bound to an action in `pfeh` (see above). rofi interface for opening the favourites.
 24. [**pnomsacheminsabsolus**](pm/scripts/pnomsacheminsabsolus) : 2026-01-02 16:47:37  
     a mess from when i was trying to deal with paths on a windows smb share where the accents were mixed, for example sometimes é as one character and sometimes two (unicode combined accent character). was trying to get a file with the list of paths to match the real ones without too much manual work, but it took way too long and required manual work anyway. and i thought it was only a windows-paths-on-linux problem, but then encountered same thing when dealing with these paths on windows as well.
-25. [**sommeil**](pm/scripts/sommeil) : 2026-01-05 08:13:15  
+25. ♥ [**sommeil**](pm/scripts/sommeil) : 2026-01-05 08:13:15  
     lock with xtrlock which prevents input until user types in their password, dim screen automatically and even after you wake up the screen it will go back off in a few seconds, logs timestamp each time someone presses something into a file ~/sommeil.log, then after user types their password to exits out it sends the contents of sommeil.log to an emacs buffer. it's weird but this is what i was doing manually before so better automate but my main motivation for making the script was to prevent the situations where i wake up having to deal with the mess caused by accidentally sleeping on the keyboard. i activate it with <kbd>hyper-]</kbd>
-26. [**soncontrol**](pm/scripts/soncontrol) : 2026-01-05 19:37:01  
+26. ♥ [**soncontrol**](pm/scripts/soncontrol) : 2026-01-05 19:37:01  
     controlling mpv processes with audio files playing in the background, start and stop with rofi interface. instead of keeping them running, to pause i just kill them, and since i use mpv with `--save-position-on-quit` starting/stopping is like pausing/unpausing. to keep track of pids they are saved to file. interface is pretty bad, should make it require less keypresses.
-27. [**togglepause**](pm/scripts/togglepause) : 2026-01-06 08:04:19  
+27. ♥ [**togglepause**](pm/scripts/togglepause) : 2026-01-06 08:04:19  
     pausing/unpausing videos i have in the background. for some you can send a key with xdotool to a window in the background, for others they have to be focused first. but even those you can send the key to, if there are multiple windows, it may send the key to the wrong window, it seems to be sent to the last focused. so as annoying as it is it's more reliable to focus first and then restore focus to previous.
 28. [**toggleplover**](pm/scripts/toggleplover) : 2026-01-06 22:39:33  
     wanted to have a simple button, not to use the outline which inserts and then deletes text which is destructive in something like emacs buffers. tried to use xdotool for it but the application ignores commands sent to it when it is not focused so i was focusing it temporarily like i do for `pause`. and `plover -s plover_send_command toggle` is far too slow. `plover_send_command`, if you clone the plover repo, can work separately and send the command to any running instance, and it's fast.
     - evolved into a python script to run plover (and toggle / send commands) from source without tox.
 29. [**okularf**](pm/scripts/okularf) : 2026-01-22 01:29
     <br>used in desktop file exec for okular. opens okular with most recent document. courtesy of [kalwardinX](https://www.reddit.com/r/kde/comments/lucqqw/-/i0pfmls/).
-30. [**metaf.py**](pm/scripts/metaf.py) : 2026-01-23 19:32
-    <br>creates a json file with a list of files under a path (recursive) and their dates of creation and modification.
-    <br>would like to add saving also size and checksum.
+30. ♥ [**metaf.py**](pm/scripts/metaf.py) : 2026-01-23 19:32
+    <br>creates a json file with a list of files under a path (recursive) with metadata fields of choice (like name, dates, type, checksum).
 31. [**vmman**](pm/scripts/vmman) : 2026-01-30 08:02
     <br>command to launch my win98 qemu vm. named as such because if i create more i will change it to have all the commands and give an argument to which one.
-32. [**pkrita**](pm/scripts/pkrita) : 2026-02-07 10:33
+32. ♥ [**pkrita**](pm/scripts/pkrita) : 2026-02-07 10:33
     <br>command to launch krita with most recent document, with also the possibility to easily create new documents and launch into them
 33. [**gaplessmpv**](pm/scripts/gaplessmpv): 2026-03-10 11:44  
     Modified from [ZaxonXP's `gapless_play`](https://github.com/ZaxonXP/youtube-viewer-scripts/blob/master/gapless_play.sh). Alternates 2 instances of mpv in order to play gaplessly a list of remote videos. Supports also yt-dlp queries and has caching and keeping track of position. (cf devlog 9)
 34. [**queuedmpv**](pm/scripts/queuedmpv): 2026-03-15 21:44  
     Similar to gaplessmpv but in one instance. It works by adding mirror links to the playlist, since with mirror links and prefetch-playlist=yes, mpv is able to cache the next video in the playlist. Unlike gaplessmpv, not only do you not have to juggle several instances, this also has the ability to go back and forwards in the playlist. In some ways it is more complicated though, because mirror links expire, and are sometimes restricted to particular headers or cookies. (cf devlog 9)
-35. [**cachage**](pm/scripts/cachage): 2026-02-25 / 2026-03-23 18:52  
+35. ♥ [**cachage**](pm/scripts/cachage): 2026-02-25 / 2026-03-23 18:52  
     Hacky thing to hide windows on other workspaces in order to optimise CPU usage. Programs have some optimisations for when they are not in the foreground, but when you switch workspaces they seem to think they are still in the foreground normally. Browsers especially benefit from this, especially if you're on a site that does a tonne of timers like bilibili; when you go to another tab or focus a different window, the browser limits what the site can do. (cf devlog 9)
 36. [**onedriveverrer**](pm/scripts/onedriveverrer): 2026-02-22 / 2026-04-02 13:24  
     Script to download an older version of a OneDrive file or folder. (cf devlog 11)
 37. [**micnot**](pm/scripts/micnot): 2026-04-05 11:05  
     Audio feedback when the microphone exceeds a given threshold. I use it to be able to tell when there is an alert when I am in the bathroom. (cf devlog 13)
-38. [**timelapsemod**](pm/scripts/timelapsemod): 2026-04-28 07:03  
+38. ♥ [**timelapsemod**](pm/scripts/timelapsemod): 2026-04-28 07:03  
     Script for manipulating Krita timelapses (i.e. the captures in ~/KritaRecorder).
 39. [**r**](pm/scripts/r): 2026-05-06 03:34  
     A little script to easily toggle redshift (reddenning screen to reduce brightness) in oneshot manual mode.
-40. [**monitor-config.sh**](pm/scripts/monitor-config.sh): 2026-05-18 15:22  
+40. ♥ [**monitor-config.sh**](pm/scripts/monitor-config.sh): 2026-05-18 15:22  
     Called by a systemd service when a monitor connects/disconnects. Set up mirror and switch to secondary monitor if it's connected, return to primary monitor if disconnected.
 41. [**gfn**](pm/scripts/gfn): 2026-06-04 03:34  
     Launcher for Geforce Now flatpak with language settings (French).
@@ -127,17 +126,17 @@ in [./pm/scripts](pm/scripts)
     Hacky proof of concept for decrypting OpenSSL CMS without certificate.
 43. [**crypt**](pm/scripts/crypt): 2026-06-14 12:54  
     Unnecessary script for encryption/decryption with OpenSSL CMS. It has useless use of cat, I switched to JWE, and I favour just using the commands directly now, so I don't use this.
-44. [**places2csv**](pm/scripts/places2csv): 2026-06-29 03:37  
+44. ♥ [**places2csv**](pm/scripts/places2csv): 2026-06-29 03:37  
     Data extraction from places.sqlite (Firefox history and bookmarks)
-45. [**chrom2csv**](pm/scripts/chrom2csv): 2026-07-06 19:19  
+45. ♥ [**chrom2csv**](pm/scripts/chrom2csv): 2026-07-06 19:19  
     Like places2csv but for Chromium
-46. [**interlacevids**](pm/scripts/interlacevids): 2026-08-12 04:54  
+46. ♥ [**interlacevids**](pm/scripts/interlacevids): 2026-08-12 04:54  
     Downloads videos with yt-dlp, then using ffmpeg cuts them into segments and makes one video that alternates between them.
-47. [**quopri**](pm/scripts/quopri): 2026-08-15 02:10  
+47. ♥ [**quopri**](pm/scripts/quopri): 2026-08-15 02:10  
     Convert quoted-printable or encoded-words to readable text with charset detected from the header.
-48. [**tert**](pm/scripts/tert): 2026-10-29 03:16  
+48. ♥ [**tert**](pm/scripts/tert): 2026-10-29 03:16  
     Systray terminal time tracker based on bash history file monitoring
-49. [**co2**](pm/scripts/co2): 2026-11-03 18:28  
+49. ♥ [**co2**](pm/scripts/co2): 2026-11-03 18:28  
     Systray breathhold and co2 tables timer
 
 ## Ideas
