@@ -44,7 +44,7 @@ elif xdotool search --name 哔哩哔哩; then
     xdotool windowactivate --sync $(xdotool search --name 哔哩哔哩) key --clearmodifiers space &&
         xdotool windowactivate $tmp;
 elif xdotool search --name ' - YouTube'; then
-    xdotool search --name ' - YouTube' key --clearmodifiers space;
+    xdotool windowactivate --sync $(xdotool search --name ' - YouTube') key --clearmodifiers space
 elif xdotool search --name ' - mpv'; then
     toggle_oldest ' - mpv'
 fi
