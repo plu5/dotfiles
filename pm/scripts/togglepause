@@ -8,7 +8,7 @@
 # - (Optional) script micnot
 #
 # Usage:
-# bound to a hotkey
+# bound to a hotkey (super-x in my case)
 
 toggle_micnot() {
     micnotpid=$(ps aux | grep [m]icnot | awk '{print $2}')
@@ -37,12 +37,14 @@ toggle_oldest() {           # $1 name search query (can be partial)
 
 if xdotool search --name Parliamentlive.tv; then
     xdotool search --name Parliamentlive.tv key --clearmodifiers space;
-elif xdotool search --name ' - mpv'; then
-    toggle_oldest ' - mpv'
 elif xdotool search --name 哔哩哔哩; then
     tmp=$(xdotool getactivewindow);
-    command -v micnot >/dev/null 2>&1 && toggle_micnot
-    command -v soncontrol >/dev/null 2>&1 && soncontrol stopobscur;
+    # command -v micnot >/dev/null 2>&1 && toggle_micnot
+    # command -v soncontrol >/dev/null 2>&1 && soncontrol stopobscur;
     xdotool windowactivate --sync $(xdotool search --name 哔哩哔哩) key --clearmodifiers space &&
         xdotool windowactivate $tmp;
+elif xdotool search --name ' - YouTube'; then
+    xdotool search --name ' - YouTube' key --clearmodifiers space;
+elif xdotool search --name ' - mpv'; then
+    toggle_oldest ' - mpv'
 fi
