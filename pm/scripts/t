@@ -13,15 +13,18 @@
 # mais si tu veux traduire depuis une autre langue, utilise `t -t de text`.
 # certaines langues n'ont pas de de dictionnaire malheureusement (la, zh)
 
+# options: apertium aspell auto bing google hunspell spell yandex
+# (^ sortie de `trans -S`)
+# dictionnaire ne marche pas avec certains, même si je donne -d explicitement
+MOTEUR=google
+ARGS="-j -no-ansi -show-original n -show-prompt-message n -show-alternatives Y"
+
 set -f  # no glob
 if [ "$1" = ".de" ]; then
-    trans -hl de -t de -j -no-ansi -show-original n -show-prompt-message n \
-          -show-alternatives Y ${@:2}
+    trans -e "$MOTEUR" -hl de -t de $ARGS ${@:2}
 elif [ "$1" = ".en" ]; then
-    trans -hl en -t en -s en -j -no-ansi -show-original n \
-          -show-prompt-message n -show-alternatives Y ${@:2}
+    trans -e "$MOTEUR" -hl en -t en -s en $ARGS ${@:2}
 else
-    trans -hl fr -t fr -j -no-ansi -show-original n -show-prompt-message n \
-          -show-alternatives Y $@
+    trans -e "$MOTEUR" -hl fr -t fr $ARGS $@
 fi
 set +f
