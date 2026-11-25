@@ -101,7 +101,7 @@ in [./pm/scripts](pm/scripts). ♥ marks scripts I use a lot.
 30. ♥ [**metaf.py**](pm/scripts/metaf.py) : 2026-01-23 19:32
     <br>creates a json file with a list of files under a path (recursive) with metadata fields of choice (like name, dates, type, checksum).
 31. [**vmman**](pm/scripts/vmman) : 2026-01-30 08:02
-    <br>command to launch my win98 qemu vm. named as such because if i create more i will change it to have all the commands and give an argument to which one.
+    <br>qemu VMs launcher
 32. ♥ [**pkrita**](pm/scripts/pkrita) : 2026-02-07 10:33
     <br>command to launch krita with most recent document, with also the possibility to easily create new documents and launch into them
 33. [**gaplessmpv**](pm/scripts/gaplessmpv): 2026-03-10 11:44  

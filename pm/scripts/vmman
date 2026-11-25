@@ -1,45 +1,93 @@
 #!/usr/bin/env bash
-# Command to launch my win98 qemu virtual machine
+# Command to launch my qemu virtual machines
 # 2026-01-30 08:02
-#
-# Based on https://computernewb.com/wiki/QEMU/Guests/Windows_98
-# and https://www.qemu.org/docs/master/system/images.html
 #
 # Dependencies (for this script):
 # - qemu
-# - paths in the variables VM_IMG, VM_SHARE, VM_CD defined below
+# - paths defined at the start of the script
 #
-# Requirements to set up VM:
+# Usage:
+# vmman (win98/win10/macos) [--cd=path/to/iso] [--sf=path/to/sharedfolder]
+#
+# Requirements to set up win98 VM:
 # - https://github.com/oerg866/win98-quickinstall for win98 itself
 # - https://github.com/JHRobotics/softgpu for graphics
 # - AC97 driver linked in softgpu readme ^ for sound
 #
-# Usage:
-# vmman
+# Based on https://computernewb.com/wiki/QEMU/Guests/Windows_98
+# and https://www.qemu.org/docs/master/system/images.html
 #
-# Notes:
+# macos resources:
+# - https://github.com/LongQT-sea/OpenCore-ISO
+# - https://github.com/notAperson535/OneClick-macOS-Simple-KVM
+#
 # Careful with the shared folder, vvfat is pretty fragile, you should not
 # change anything it from the host while vm is running. It's also limited
 # to 500 MB max, there is allegedly a way to get it to 2 GB but I've not
 # worked it out. ISOs can be used to transfer larger files, with the advantage
 # that you can change them while the vm is running. Personally to transfer
 # from guest to host I use the vvfat share, and from host to guest I use ISOs.
-
-VM_IMG=/home/pm/pm/vm/win98.img
-VM_SHARE=/home/pm/pm/vm/share
-VM_CD=/home/pm/Downloads/win98qi_v0.9.6_stock.iso
+#
 # Change iso in the cdrom while running with:
 # change ide1-cd0 path/to/iso
+#
+# Base ISOs used:
+# - win98: win98qi_v0.9.6_stock.iso
+# - win10: en-us_windows_10_iot_enterprise_ltsc_2021_x64_dvd_257ad90f.iso
+# - macos: macOS_Catalina_10.15.7.iso
+#
+# For example, to install win98 with the same ISO:
+# vmman win98 --cd=~/Downloads/win98qi_v0.9.6_stock.iso
+
+# Adjust paths
+WIN98_IMG=~/pm/vm/win98.img
+WIN98_SHARE=~/pm/vm/share  # default shared folder for win98 if not specified
+WIN10_IMG=~/pm/vm/win10.img
+MACOS_IMG=~/pm/vm/macos.img
+OC_ISO=~/Downloads/LongQT-OpenCore-v0.7.iso
+OVMF_CODE=~/Downloads/OVMF_CODE.fd
+OVMF_VARS=~/Downloads/OVMF_VARS.fd
+
+cd=
+sf=
+os=
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            cat <<EOF
+Usage: vmman (win98/win10/macos) [--cd=path/to/iso] [--sf=path/to/sharedfolder]
+EOF
+            exit;;
+        win98|win10|macos)
+            os=$1;;
+        --cd=*)
+            cd="${1#--cd=}";;
+        --sf=*)
+            sf="${1#--sf=}"
+            WIN98_SHARE=$sf;;
+        --)
+            shift
+            break;;
+        -*)
+            echo "vmman: Unknown option $1" >&2
+            exit 1;;
+        *)
+            break;;
+    esac
+    shift
+done
+
+if [ -z "$os" ]; then echo "vmman: no supported os specified"; exit 1; fi
 
 qemu_cmd_win98=(
     qemu-system-i386
     -display gtk,zoom-to-fit=on,show-menubar=off
     -device lsi53c895a,id=vm.scsi_controller
-    -drive if=none,id=vm.hda_drive,file=$VM_IMG
+    -drive if=none,id=vm.hda_drive,file=$WIN98_IMG
     -device scsi-hd,id=vm.hda,drive=vm.hda_drive,bus=vm.scsi_controller.0,bootindex=1
-    -drive if=none,id=vvfat,file=fat:rw:$VM_SHARE,format=raw
+    -drive if=none,id=vvfat,file=fat:rw:$WIN98_SHARE,format=raw
     -device scsi-hd,drive=vvfat,bootindex=2
-    -cdrom $VM_CD
     -device VGA,vgamem_mb=64
     -cpu host
     -m 256
@@ -53,8 +101,11 @@ qemu_cmd_win98=(
     -device AC97
 )
 
-VM_IMG=/home/pm/pm/vm/win10.img
-VM_CD=/home/pm/Downloads/en-us_windows_10_iot_enterprise_ltsc_2021_x64_dvd_257ad90f.iso
+if [ -n "$cd" ]; then
+    qemu_cmd_win98+=(
+        -cdrom "$cd"
+    )
+fi
 
 qemu_cmd_win10=(
     qemu-system-x86_64
@@ -62,84 +113,24 @@ qemu_cmd_win10=(
     -m 8G
     -smp 4
     -cpu host
-    -drive file=$VM_IMG,format=qcow2
-    -nic user,id=nic0,smb=/home/pm/Downloads/builds/retype-1.7.0-prerelease3-windows/
-    # -cdrom $VM_CD
-    # -boot d
+    -drive file=$WIN10_IMG,format=qcow2
 )
 
-VM_IMG=/home/pm/pm/vm/macos.img
-VM_CD="/home/pm/Downloads/macOS_Catalina_10.15.7(1).iso"
-# macOSCatalina.iso
-OPENCORE=/home/pm/pm/vm/macOS-Simple-KVM/ESP.qcow2
-#/home/pm/Downloads/OpenCore.qcow2
+if [ -n "$sf" ]; then
+    qemu_cmd_win10+=(
+        -nic user,id=nic0,smb=$sf
+    )
+fi
+
+if [ -n "$cd" ]; then
+    qemu_cmd_win10+=(
+        -cdrom "$cd"
+        -boot d
+    )
+fi
 
 qemu_cmd_macos=(
     qemu-system-x86_64
-    -enable-kvm
-    -m 8G
-    -smp 4
-    -cpu host
-    -drive file=$VM_IMG,format=qcow2
-    -cdrom $VM_CD
-    -boot d
-    # qemu-system-x86_64
-    # -enable-kvm
-    # -machine q35,accel=kvm
-    # -m 8G
-    # -smp 4
-    # -cpu Penryn,kvm=on,vendor=GenuineIntel
-    # -bios /usr/share/edk2/x64/OVMF.4m.fd
-    # -device ich9-ahci,id=sata
-    # -drive file=$OPENCORE,if=none,format=qcow2,id=opencore
-    # -device ide-hd,drive=opencore,bus=sata.0
-    # -drive file=$VM_CD,if=none,format=raw,id=installation
-    # -device ide-hd,drive=installation,bus=sata.1
-    # -drive file=$VM_IMG,if=none,format=qcow2,id=disk
-    # -device ide-hd,drive=disk
-    # -vga virtio
-)
-
-# "${qemu_cmd_macos[@]}"
-
-# "${qemu_cmd[@]}"
-
-# https://github.com/LongQT-sea/OpenCore-ISO
-# https://github.com/notAperson535/OneClick-macOS-Simple-KVM
-
-args=(
-    -enable-kvm
-    -m 8G
-    -machine q35,accel=kvm
-    -cpu Haswell-noTSX,model=158
-    -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" \
-    -smbios type=2 \
-    -device intel-hda -device hda-output \
-    -drive if=pflash,format=raw,readonly=on,file="/home/pm/Downloads/OVMF_CODE.fd" \
-    -drive if=pflash,format=raw,file="/home/pm/Downloads/OVMF_VARS.fd" \
-    -vga qxl
-    -usb -device usb-ehci,id=ehci -device usb-kbd,bus=ehci.0 -device usb-tablet,bus=ehci.0 \
-    -netdev user,id=net0
-    -device vmxnet3,netdev=net0,id=net0,mac=52:54:00:c9:18:27
-    -monitor telnet:127.0.0.1:5801,server,nowait
-    -device ich9-ahci,id=sata
-    -drive id=OpenCore,if=none,format=raw,file="/home/pm/Downloads/LongQT-OpenCore-v0.7.iso"
-    -device ide-hd,bus=sata.2,drive=OpenCore
-    # -cdrom "/home/pm/Downloads/macOS_Catalina_10.15.7(1).iso"
-    -drive id=SystemDisk,if=none,file="/home/pm/pm/vm/macos.img" \
-    -device ide-hd,bus=sata.4,drive=SystemDisk \
-)
-
-#qemu-system-x86_64 "${args[@]}"
-
-# Adjust these paths
-VM_IMG=~/pm/vm/macos.img
-VM_ISO=~/Downloads/macOS_Catalina_10.15.7.iso
-OC_ISO=~/Downloads/LongQT-OpenCore-v0.7.iso
-OVMF_CODE=~/Downloads/OVMF_CODE.fd
-OVMF_VARS=~/Downloads/OVMF_VARS.fd
-
-args=(
     -enable-kvm
     -m 8G
     -machine q35,accel=kvm
@@ -157,10 +148,17 @@ args=(
     -device ich9-ahci,id=sata
     -drive if=none,id=OpenCore,media=cdrom,file="$OC_ISO"
     -device ide-cd,bus=sata.0,drive=OpenCore,bootindex=1
-    -drive if=none,id=Installer,media=cdrom,file="$VM_ISO"
-    -device ide-cd,bus=sata.1,drive=Installer
-    -drive if=none,id=SystemDisk,file="$VM_IMG"
+    -drive if=none,id=SystemDisk,file="$MACOS_IMG"
     -device ide-hd,bus=sata.2,drive=SystemDisk
 )
 
-qemu-system-x86_64 "${args[@]}"
+if [ -n "$cd" ]; then
+    qemu_cmd_macos+=(
+        -drive if=none,id=Installer,media=cdrom,file="$CD"
+        -device ide-cd,bus=sata.1,drive=Installer
+    )
+fi
+
+declare -n qemu_cmd="qemu_cmd_$os"
+echo "vmman: running $os ($qemu_cmd)"
+"${qemu_cmd[@]}"
