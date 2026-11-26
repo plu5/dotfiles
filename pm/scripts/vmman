@@ -21,6 +21,7 @@
 # - https://github.com/LongQT-sea/OpenCore-ISO
 # - https://github.com/notAperson535/OneClick-macOS-Simple-KVM
 #
+# win98:
 # Careful with the shared folder, vvfat is pretty fragile, you should not
 # change anything it from the host while vm is running. It's also limited
 # to 500 MB max, there is allegedly a way to get it to 2 GB but I've not
@@ -31,7 +32,12 @@
 # Change iso in the cdrom while running with:
 # change ide1-cd0 path/to/iso
 #
-# Base ISOs used:
+# win10:
+# Uses smb for the shared folder. Will be in \\10.0.2.4\qemu on the
+# guest. If you need to run executables from there, make sure chmod +x
+# is set on the host, including for supporting DLLs.
+#
+# Base ISOs used for installation (others may be fine):
 # - win98: win98qi_v0.9.6_stock.iso
 # - win10: en-us_windows_10_iot_enterprise_ltsc_2021_x64_dvd_257ad90f.iso
 # - macos: macOS_Catalina_10.15.7.iso
